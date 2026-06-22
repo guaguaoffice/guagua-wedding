@@ -1,0 +1,389 @@
+// 呱呱婚禮資料模型
+// 涵蓋 Dashboard / Timeline / Decision Center / Budget（第一版）
+// 與 Guest / Files / Inspiration / Wedding Day（資料結構先預留）
+
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// ---------- 帳號與權限 ----------
+
+model User {
+  id            String    @id @default(cuid())
+  name          String?
+  email         String    @unique
+  emailVerified DateTime?
+  image         String?
+  createdAt     DateTime  @default(now())
+
+  accounts          Account[]
+  sessions          Session[]
+  memberships       WeddingMember[]
+  candidateRatings  CandidateRating[]
+  candidateComments CandidateComment[]
+  decisionRecords   DecisionRecord[]   @relation("DecidedBy")
+  activityLogs      ActivityLog[]
+  payments          Payment[]
+}
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String?
+  access_token      String?
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String?
+  session_state     String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+}
+
+enum MemberRole {
+  OWNER
+  COLLABORATOR
+  VIEWER
+}
+
+model Wedding {
+  id          String    @id @default(cuid())
+  name        String
+  weddingDate DateTime?
+  totalBudget Decimal?  @db.Decimal(12, 2)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  members          WeddingMember[]
+  timelinePhases   TimelinePhase[]
+  decisionItems    DecisionItem[]
+  budgetItems      BudgetItem[]
+  guests           Guest[]
+  files            FileAsset[]
+  inspirations     InspirationItem[]
+  weddingDayEvents WeddingDayEvent[]
+  activityLogs     ActivityLog[]
+}
+
+model WeddingMember {
+  id        String     @id @default(cuid())
+  weddingId String
+  userId    String
+  role      MemberRole @default(COLLABORATOR)
+  createdAt DateTime   @default(now())
+
+  wedding Wedding @relation(fields: [weddingId], references: [id], onDelete: Cascade)
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([weddingId, userId])
+}
+
+// ---------- Timeline ----------
+
+model TimelinePhase {
+  id        String @id @default(cuid())
+  weddingId String
+  title     String // 例如：婚禮前 12 個月
+  order     Int
+
+  wedding Wedding        @relation(fields: [weddingId], references: [id], onDelete: Cascade)
+  tasks   TimelineTask[]
+}
+
+model TimelineTask {
+  id             String    @id @default(cuid())
+  phaseId        String
+  title          String
+  dueDate        DateTime?
+  completed      Boolean   @default(false)
+  order          Int       @default(0)
+  decisionItemId String?   @unique
+
+  phase        TimelinePhase @relation(fields: [phaseId], references: [id], onDelete: Cascade)
+  decisionItem DecisionItem? @relation(fields: [decisionItemId], references: [id])
+}
+
+// ---------- Decision Center ----------
+
+enum CandidateStatus {
+  CANDIDATE
+  REJECTED
+  DECIDED
+}
+
+model DecisionItem {
+  id        String   @id @default(cuid())
+  weddingId String
+  title     String // 例如：婚宴場地
+  category  String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  wedding        Wedding           @relation(fields: [weddingId], references: [id], onDelete: Cascade)
+  candidates     Candidate[]
+  decisionRecord DecisionRecord?
+  timelineTask   TimelineTask?
+  budgetItems    BudgetItem[]
+  inspirations   InspirationItem[]
+  files          FileAsset[]
+}
+
+model Candidate {
+  id             String          @id @default(cuid())
+  decisionItemId String
+  name           String
+  type           String?
+  price          Decimal?        @db.Decimal(12, 2)
+  url            String?
+  socialUrl      String?
+  contact        String?
+  planDetail     String?
+  availableDate  DateTime?
+  location       String?
+  transportation String?
+  pros           String?
+  cons           String?
+  note           String?
+  status         CandidateStatus @default(CANDIDATE)
+  rejectedReason String?
+  createdAt      DateTime        @default(now())
+  updatedAt      DateTime        @updatedAt
+
+  decisionItem   DecisionItem          @relation(fields: [decisionItemId], references: [id], onDelete: Cascade)
+  photos         CandidatePhoto[]
+  attachments    CandidateAttachment[]
+  ratings        CandidateRating[]
+  comments       CandidateComment[]
+  decisionRecord DecisionRecord?       @relation("ChosenCandidate")
+}
+
+model CandidatePhoto {
+  id          String   @id @default(cuid())
+  candidateId String
+  url         String
+  createdAt   DateTime @default(now())
+
+  candidate Candidate @relation(fields: [candidateId], references: [id], onDelete: Cascade)
+}
+
+model CandidateAttachment {
+  id          String   @id @default(cuid())
+  candidateId String
+  url         String
+  name        String?
+  createdAt   DateTime @default(now())
+
+  candidate Candidate @relation(fields: [candidateId], references: [id], onDelete: Cascade)
+}
+
+model CandidateRating {
+  id          String   @id @default(cuid())
+  candidateId String
+  userId      String
+  score       Int
+  createdAt   DateTime @default(now())
+
+  candidate Candidate @relation(fields: [candidateId], references: [id], onDelete: Cascade)
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([candidateId, userId])
+}
+
+model CandidateComment {
+  id          String   @id @default(cuid())
+  candidateId String
+  userId      String
+  content     String
+  createdAt   DateTime @default(now())
+
+  candidate Candidate @relation(fields: [candidateId], references: [id], onDelete: Cascade)
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model DecisionRecord {
+  id                String   @id @default(cuid())
+  decisionItemId    String   @unique
+  chosenCandidateId String   @unique
+  decidedById       String
+  decidedAt         DateTime @default(now())
+  reason            String?
+
+  decisionItem    DecisionItem @relation(fields: [decisionItemId], references: [id], onDelete: Cascade)
+  chosenCandidate Candidate    @relation("ChosenCandidate", fields: [chosenCandidateId], references: [id])
+  decidedBy       User         @relation("DecidedBy", fields: [decidedById], references: [id])
+}
+
+// ---------- Budget ----------
+
+enum PaymentStatus {
+  UNPAID
+  PARTIAL
+  PAID
+}
+
+model BudgetItem {
+  id             String        @id @default(cuid())
+  weddingId      String
+  decisionItemId String?
+  name           String
+  category       String
+  totalAmount    Decimal       @db.Decimal(12, 2)
+  depositAmount  Decimal?      @db.Decimal(12, 2)
+  finalAmount    Decimal?      @db.Decimal(12, 2)
+  dueDate        DateTime?
+  status         PaymentStatus @default(UNPAID)
+  note           String?
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+
+  wedding      Wedding       @relation(fields: [weddingId], references: [id], onDelete: Cascade)
+  decisionItem DecisionItem? @relation(fields: [decisionItemId], references: [id])
+  payments     Payment[]
+  files        FileAsset[]
+}
+
+model Payment {
+  id            String   @id @default(cuid())
+  budgetItemId  String
+  amount        Decimal  @db.Decimal(12, 2)
+  paidAt        DateTime @default(now())
+  payerId       String?
+  method        String?
+  attachmentUrl String?
+  note          String?
+
+  budgetItem BudgetItem @relation(fields: [budgetItemId], references: [id], onDelete: Cascade)
+  payer      User?      @relation(fields: [payerId], references: [id])
+}
+
+// ---------- Guest（資料結構預留） ----------
+
+enum GuestSide {
+  GROOM
+  BRIDE
+}
+
+enum InvitationStatus {
+  NOT_SENT
+  SENT
+  CONFIRMED
+}
+
+model Guest {
+  id               String           @id @default(cuid())
+  weddingId        String
+  name             String
+  side             GuestSide
+  relation         String?
+  phone            String?
+  address          String?
+  attending        Boolean?
+  plusOneCount     Int              @default(0)
+  vegetarian       Boolean          @default(false)
+  hasChild         Boolean          @default(false)
+  tableNumber      String?
+  invitationStatus InvitationStatus @default(NOT_SENT)
+  favorSentStatus  InvitationStatus @default(NOT_SENT)
+  giftAmount       Decimal?         @db.Decimal(12, 2)
+  note             String?
+  createdAt        DateTime         @default(now())
+
+  wedding Wedding @relation(fields: [weddingId], references: [id], onDelete: Cascade)
+}
+
+// ---------- Files（資料結構預留） ----------
+
+model FileAsset {
+  id             String   @id @default(cuid())
+  weddingId      String
+  decisionItemId String?
+  budgetItemId   String?
+  url            String
+  name           String
+  category       String?
+  createdAt      DateTime @default(now())
+
+  wedding      Wedding       @relation(fields: [weddingId], references: [id], onDelete: Cascade)
+  decisionItem DecisionItem? @relation(fields: [decisionItemId], references: [id])
+  budgetItem   BudgetItem?   @relation(fields: [budgetItemId], references: [id])
+}
+
+// ---------- Inspiration（資料結構預留） ----------
+
+model InspirationItem {
+  id             String   @id @default(cuid())
+  weddingId      String
+  decisionItemId String?
+  url            String?
+  imageUrl       String?
+  note           String?
+  category       String?
+  tags           String[]
+  createdAt      DateTime @default(now())
+
+  wedding      Wedding       @relation(fields: [weddingId], references: [id], onDelete: Cascade)
+  decisionItem DecisionItem? @relation(fields: [decisionItemId], references: [id])
+}
+
+// ---------- Wedding Day（資料結構預留） ----------
+
+enum WeddingDayEventStatus {
+  PENDING
+  IN_PROGRESS
+  DONE
+}
+
+model WeddingDayEvent {
+  id        String                @id @default(cuid())
+  weddingId String
+  time      DateTime
+  title     String
+  location  String?
+  ownerName String?
+  contact   String?
+  note      String?
+  status    WeddingDayEventStatus @default(PENDING)
+
+  wedding Wedding @relation(fields: [weddingId], references: [id], onDelete: Cascade)
+}
+
+// ---------- 動態紀錄（給 Dashboard 用） ----------
+
+model ActivityLog {
+  id        String   @id @default(cuid())
+  weddingId String
+  userId    String?
+  action    String
+  detail    String?
+  createdAt DateTime @default(now())
+
+  wedding Wedding @relation(fields: [weddingId], references: [id], onDelete: Cascade)
+  user    User?   @relation(fields: [userId], references: [id])
+}

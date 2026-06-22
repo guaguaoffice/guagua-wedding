@@ -1,0 +1,26 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm -v)",
+      "Read(//Users/allen/**)",
+      "Bash(command -v brew)",
+      "Bash(brew install *)",
+      "Bash(npx --yes create-next-app@latest . --ts --tailwind --eslint --app --src-dir --import-alias \"@/*\" --use-npm --no-turbopack)",
+      "Bash(npx --yes create-next-app@latest guagua-wedding-tmp --ts --tailwind --eslint --app --src-dir --import-alias \"@/*\" --use-npm --no-turbopack)",
+      "Bash(cp -a guagua-wedding-tmp/. Wedding/)",
+      "Bash(rm -rf guagua-wedding-tmp)",
+      "Bash(rm -f public/next.svg public/vercel.svg)",
+      "Bash(npm run *)",
+      "Bash(npm install *)",
+      "Bash(npm approve-scripts *)",
+      "Bash(npx prisma *)",
+      "Bash(mkdir -p \"/Users/allen/Desktop/Claude/Wedding/src/app/api/auth/[...nextauth]\")",
+      "Bash(pkill -f \"next dev\")",
+      "Bash(pkill -f \"next dev\" 2>&1; mkdir -p \"/Users/allen/Desktop/Claude/Wedding/.claude\"; ls \"/Users/allen/Desktop/Claude/Wedding/.claude\")",
+      "Bash(gh auth *)",
+      "Bash(command -v vercel)",
+      "Bash(git auth *)",
+      "Bash(git add *)"
+    ]
+  }
+}
