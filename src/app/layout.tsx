@@ -1,11 +1,18 @@
 import type { Metadata } from "next";
-import { Inter } from "next/font/google";
-import { Header } from "@/components/Header";
+import { Noto_Sans_TC, Fraunces } from "next/font/google";
+import { AppShell } from "@/components/AppShell";
 import "./globals.css";
 
-const inter = Inter({
-  variable: "--font-inter",
+const notoSansTC = Noto_Sans_TC({
+  variable: "--font-noto-sans-tc",
   subsets: ["latin"],
+  weight: ["400", "500", "700"],
+});
+
+const fraunces = Fraunces({
+  variable: "--font-fraunces",
+  subsets: ["latin"],
+  weight: ["400", "500", "600"],
 });
 
 export const metadata: Metadata = {
@@ -19,10 +26,12 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="zh-Hant" className={`${inter.variable} h-full antialiased`}>
-      <body className="min-h-full flex flex-col bg-bg text-text">
-        <Header />
-        <div className="flex-1 flex flex-col pt-16">{children}</div>
+    <html
+      lang="zh-Hant"
+      className={`${notoSansTC.variable} ${fraunces.variable} h-full antialiased`}
+    >
+      <body className="min-h-full bg-bg text-text">
+        <AppShell>{children}</AppShell>
       </body>
     </html>
   );

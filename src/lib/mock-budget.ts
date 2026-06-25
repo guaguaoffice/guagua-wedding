@@ -1,62 +1,72 @@
-export type PaymentStatus = "UNPAID" | "PARTIAL" | "PAID";
+import type { CategoryState } from "@/lib/mock-decisions";
 
-export type BudgetItem = {
+export type BudgetLine = {
   id: string;
   name: string;
-  category: string;
-  totalAmount: number;
-  depositAmount?: number;
-  finalAmount?: number;
-  paidAmount: number;
-  status: PaymentStatus;
-  dueDate?: string;
+  note: string;
+  amount: number;
+  state: CategoryState;
   decisionSlug?: string;
 };
 
-export const mockTotalBudget = 900000;
+export const mockBudgetSummary = {
+  totalBudget: 650000,
+  decidedSpend: 184000,
+  paid: 60000,
+};
 
-export const mockBudgetItems: BudgetItem[] = [
+export const mockBudgetLines: BudgetLine[] = [
   {
-    id: "b1",
-    name: "La Belle 婚紗",
-    category: "婚紗",
-    totalAmount: 88000,
-    depositAmount: 20000,
-    finalAmount: 68000,
-    paidAmount: 20000,
-    status: "PARTIAL",
-    dueDate: "2026-09-01",
+    id: "b-venue",
+    name: "婚宴場地 · 晶華酒店",
+    note: "1,280 / 桌 × 12 桌 · 已付訂金 60,000",
+    amount: 184000,
+    state: "done",
+    decisionSlug: "venue",
+  },
+  {
+    id: "b-planner",
+    name: "婚禮顧問",
+    note: "預估",
+    amount: 60000,
+    state: "overdue",
+    decisionSlug: "planner",
+  },
+  {
+    id: "b-dress",
+    name: "婚紗禮服",
+    note: "預估",
+    amount: 45000,
+    state: "due",
     decisionSlug: "dress",
   },
   {
-    id: "b2",
-    name: "光影紀錄工作室 婚攝訂金",
-    category: "婚攝",
-    totalAmount: 38000,
-    depositAmount: 10000,
-    paidAmount: 0,
-    status: "UNPAID",
-    dueDate: "2026-07-10",
-    decisionSlug: "photographer",
+    id: "b-photo",
+    name: "婚紗攝影",
+    note: "預估",
+    amount: 65000,
+    state: "due",
+    decisionSlug: "photo",
   },
   {
-    id: "b3",
-    name: "喜餅訂購",
-    category: "喜餅",
-    totalAmount: 45000,
-    paidAmount: 45000,
-    status: "PAID",
+    id: "b-other",
+    name: "新祕 · 婚錄 · 婚戒 · 其他",
+    note: "尚未估列",
+    amount: 0,
+    state: "idle",
   },
 ];
 
-export const STATUS_LABEL: Record<PaymentStatus, string> = {
-  UNPAID: "未付款",
-  PARTIAL: "部分付款",
-  PAID: "已付清",
+export const STATUS_LABEL: Record<CategoryState, string> = {
+  done: "已定",
+  due: "比較中",
+  overdue: "比較中",
+  idle: "未開始",
 };
 
-export const STATUS_STYLE: Record<PaymentStatus, string> = {
-  UNPAID: "bg-card-hover text-muted",
-  PARTIAL: "bg-accent-soft text-accent",
-  PAID: "bg-accent text-white",
+export const STATUS_CLASS: Record<CategoryState, string> = {
+  done: "status-done",
+  due: "status-due",
+  overdue: "status-overdue",
+  idle: "status-idle",
 };

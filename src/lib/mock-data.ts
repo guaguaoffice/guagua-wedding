@@ -1,36 +1,21 @@
 export const mockWedding = {
-  name: "Allen & Mia 的婚禮",
-  weddingDate: new Date("2026-12-25"),
-  overallProgress: 32,
+  name: "我的婚禮",
+  weddingDate: new Date("2027-04-24"),
+  venueName: "晶華酒店 · 宴會廳",
+  venueDetail: "12:00 午宴 · 預估 12 桌 / 120 人",
 };
 
-export const mockWeeklyTasks = [
-  { id: "1", title: "確認婚攝", done: false },
-  { id: "2", title: "預約婚紗試穿", done: false },
-];
+export const mockKeyStats = {
+  decisionsDecided: 2,
+  decisionsTotal: 10,
+  guestConfirmed: 0,
+  guestTotal: 120,
+};
 
-export const mockPendingDecisions = [
-  { id: "1", title: "婚宴場地", candidateCount: 3 },
-  { id: "2", title: "婚紗店", candidateCount: 4 },
-];
-
-export const mockPendingPayments = [
-  { id: "1", name: "婚攝訂金", amount: 10000, dueDate: "2026-07-10" },
-];
-
-export const mockActivities = [
-  { id: "1", actor: "媽媽", action: "新增 5 位親戚", time: "2 小時前" },
-  { id: "2", actor: "另一半", action: "新增 2 個婚紗候選", time: "5 小時前" },
-];
-
-export const mockMembers = [
-  { id: "1", name: "新娘", avatarColor: "#69ac90" },
-  { id: "2", name: "新郎", avatarColor: "#7a9e8e" },
-  { id: "3", name: "媽媽", avatarColor: "#c4d8ce" },
-];
-
-export const mockReminders = [
-  { id: "1", text: "喜帖印製需於 2 週前確認設計稿" },
+export const mockUpcomingPayments = [
+  { id: "p1", name: "婚禮顧問 · 訂金", note: "簽約後支付", amount: 20000, state: "overdue" as const },
+  { id: "p2", name: "婚宴場地 · 第二期", note: "晶華酒店", amount: 60000, state: "due" as const },
+  { id: "p3", name: "婚宴場地 · 訂金", note: "已付清", amount: 60000, state: "idle" as const },
 ];
 
 export function daysUntil(date: Date) {
