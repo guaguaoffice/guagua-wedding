@@ -19,6 +19,8 @@ export const getCurrentWedding = cache(async function getCurrentWedding() {
       data: {
         name: "我的婚禮",
         weddingDate: new Date("2027-04-24"),
+        venueName: "晶華酒店 · 宴會廳",
+        venueDetail: "12:00 午宴 · 預估 12 桌 / 120 人",
         totalBudget: 650000,
         members: { create: { userId, role: "OWNER" } },
       },

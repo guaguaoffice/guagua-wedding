@@ -77,6 +77,8 @@ model Wedding {
   id          String    @id @default(cuid())
   name        String
   weddingDate DateTime?
+  venueName   String?
+  venueDetail String?
   totalBudget Decimal?  @db.Decimal(12, 2)
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt

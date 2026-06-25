@@ -30,3 +30,11 @@ export async function getTasks(weddingId: string) {
     include: { decisionItem: { select: { title: true } } },
   });
 }
+
+export async function getWeddingMembers(weddingId: string) {
+  return prisma.weddingMember.findMany({
+    where: { weddingId },
+    orderBy: [{ role: "asc" }, { createdAt: "asc" }],
+    include: { user: { select: { id: true, name: true, email: true, image: true } } },
+  });
+}

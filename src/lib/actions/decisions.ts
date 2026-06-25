@@ -80,6 +80,34 @@ export async function addDecisionCategory(weddingId: string, formData: FormData)
   revalidatePath("/plan");
 }
 
+export async function addVendorToCandidates(
+  weddingId: string,
+  vendor: { decisionTitle: string; category: string; name: string; type: string; priceLabel: string }
+) {
+  let item = await prisma.decisionItem.findFirst({
+    where: { weddingId, title: vendor.decisionTitle },
+  });
+  if (!item) {
+    const count = await prisma.decisionItem.count({ where: { weddingId } });
+    item = await prisma.decisionItem.create({
+      data: { weddingId, title: vendor.decisionTitle, category: vendor.category, order: count },
+    });
+  }
+
+  await prisma.candidate.create({
+    data: {
+      decisionItemId: item.id,
+      name: vendor.name,
+      type: vendor.type,
+      note: vendor.priceLabel,
+    },
+  });
+
+  revalidatePath("/plan");
+  revalidatePath("/");
+  return { ok: true, decisionItemId: item.id };
+}
+
 export async function removeDecisionCategory(decisionItemId: string) {
   await prisma.$transaction(async (tx) => {
     await tx.timelineTask.updateMany({

@@ -89,6 +89,14 @@ export default async function HomePage() {
               })}
             </small>
           </div>
+          {wedding.venueName && (
+            <div className="flex-1 min-w-[180px]">
+              <div className="font-bold text-[15px]">{wedding.venueName}</div>
+              {wedding.venueDetail && (
+                <div className="text-text-soft text-[13px] mt-0.5">{wedding.venueDetail}</div>
+              )}
+            </div>
+          )}
         </div>
       )}
 
