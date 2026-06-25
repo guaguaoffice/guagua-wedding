@@ -79,7 +79,7 @@ export function AppShell({
         )}
       </header>
 
-      <main className="md:col-start-2 px-4 py-5 pb-10 md:px-9 md:py-7 md:pb-14 min-w-0">
+      <main className="md:col-start-2 md:self-start px-4 py-5 pb-10 md:px-9 md:py-7 md:pb-14 min-w-0">
         {children}
       </main>
 
