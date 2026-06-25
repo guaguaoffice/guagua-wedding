@@ -2,6 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
+import { createPortal } from "react-dom";
 import {
   addCandidate,
   lockCandidate,
@@ -88,7 +89,7 @@ export function DecisionSheet({
     });
   }
 
-  return (
+  return createPortal(
     <>
       <div className="scrim show" onClick={onClose} />
       <div className="sheet show" role="dialog" aria-modal="true">
@@ -300,6 +301,7 @@ export function DecisionSheet({
           )}
         </div>
       </div>
-    </>
+    </>,
+    document.body
   );
 }
