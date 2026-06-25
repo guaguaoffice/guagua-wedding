@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { Noto_Sans_TC, Fraunces } from "next/font/google";
 import { AppShell } from "@/components/AppShell";
-import { getMembership } from "@/lib/wedding";
+import { getMembership, getMemberships } from "@/lib/wedding";
 import "./globals.css";
 
 const notoSansTC = Noto_Sans_TC({
@@ -27,6 +27,7 @@ export default async function RootLayout({
   children: React.ReactNode;
 }>) {
   const current = await getMembership();
+  const memberships = current ? await getMemberships() : [];
 
   return (
     <html
@@ -38,6 +39,12 @@ export default async function RootLayout({
           <AppShell
             weddingName={current.wedding.name}
             weddingDate={current.wedding.weddingDate}
+            activeWeddingId={current.wedding.id}
+            memberships={memberships.map((m) => ({
+              weddingId: m.weddingId,
+              name: m.wedding.name,
+              role: m.role,
+            }))}
           >
             {children}
           </AppShell>

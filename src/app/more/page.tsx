@@ -1,7 +1,8 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { getCurrentWedding } from "@/lib/wedding";
+import { getCurrentWedding, getMemberships } from "@/lib/wedding";
 import { auth, signOut } from "@/lib/auth";
+import { WeddingListSwitcher } from "@/app/more/WeddingListSwitcher";
 
 const ITEMS = [
   { title: "活動資訊", desc: "名稱 · 日期 · 場地 · 預算", href: "/more/event" },
@@ -12,7 +13,7 @@ const ITEMS = [
 export default async function MorePage() {
   const current = await getCurrentWedding();
   if (!current) redirect("/login");
-  const session = await auth();
+  const [session, memberships] = await Promise.all([auth(), getMemberships()]);
 
   return (
     <div className="animate-fade-in">
@@ -23,7 +24,20 @@ export default async function MorePage() {
         更多功能
       </h1>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5 mt-4">
+      {memberships.length > 1 && (
+        <div className="mb-3.5">
+          <WeddingListSwitcher
+            activeWeddingId={current.wedding.id}
+            memberships={memberships.map((m) => ({
+              weddingId: m.weddingId,
+              name: m.wedding.name,
+              role: m.role,
+            }))}
+          />
+        </div>
+      )}
+
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
         {ITEMS.map((item) => (
           <Link key={item.title} href={item.href} className="panel text-left card-interactive">
             <div className="font-bold text-[15px]">{item.title}</div>

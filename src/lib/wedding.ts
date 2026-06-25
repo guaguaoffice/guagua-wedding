@@ -1,22 +1,33 @@
 import { cache } from "react";
+import { cookies } from "next/headers";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { seedDefaultWeddingData } from "@/lib/seed-wedding";
 
-/** Read-only: returns the user's membership if one already exists, without creating anything. */
-export const getMembership = cache(async function getMembership() {
-  const session = await auth();
-  if (!session?.user?.id) return null;
-  const userId = session.user.id;
+export const ACTIVE_WEDDING_COOKIE = "activeWeddingId";
 
-  const member = await prisma.weddingMember.findFirst({
-    where: { userId },
+/** All weddings the current user belongs to, oldest first. */
+export const getMemberships = cache(async function getMemberships() {
+  const session = await auth();
+  if (!session?.user?.id) return [];
+
+  return prisma.weddingMember.findMany({
+    where: { userId: session.user.id },
     include: { wedding: true },
     orderBy: { createdAt: "asc" },
   });
-  if (!member) return null;
+});
 
-  return { userId, wedding: member.wedding, role: member.role };
+/** Read-only: returns the user's active membership, without creating anything. */
+export const getMembership = cache(async function getMembership() {
+  const memberships = await getMemberships();
+  if (memberships.length === 0) return null;
+
+  const cookieStore = await cookies();
+  const activeId = cookieStore.get(ACTIVE_WEDDING_COOKIE)?.value;
+  const active = (activeId && memberships.find((m) => m.weddingId === activeId)) || memberships[0];
+
+  return { userId: active.userId, wedding: active.wedding, role: active.role };
 });
 
 /** Ensures the user has a wedding, auto-provisioning a starter one if they have none yet. */

@@ -5,15 +5,20 @@ import { usePathname } from "next/navigation";
 import { NAV_ITEMS, isActiveNav } from "@/components/nav-items";
 import { NavIcon } from "@/components/NavIcon";
 import { daysUntil } from "@/lib/decision-state";
+import { WeddingSwitcher, type SwitcherMembership } from "@/components/WeddingSwitcher";
 
 export function AppShell({
   children,
   weddingName,
   weddingDate,
+  activeWeddingId,
+  memberships,
 }: {
   children: React.ReactNode;
   weddingName: string;
   weddingDate: Date | null;
+  activeWeddingId: string;
+  memberships: SwitcherMembership[];
 }) {
   const pathname = usePathname();
   const days = weddingDate ? daysUntil(weddingDate) : null;
@@ -52,23 +57,12 @@ export function AppShell({
       </aside>
 
       <header className="md:col-start-2 sticky top-0 z-30 bg-bg/86 backdrop-blur-sm border-b border-border flex items-center justify-between px-[18px] h-[72px] flex-none">
-        <div className="flex items-center gap-2.5">
-          <div className="w-[30px] h-[30px] rounded-[9px] bg-gradient-to-br from-accent to-accent-hover grid place-items-center text-white font-display font-semibold text-[16px] shadow-[0_4px_10px_rgba(79,146,116,0.3)]">
-            呱
-          </div>
-          <div>
-            <b className="text-[15px]">{weddingName}</b>
-            {weddingDate && (
-              <small className="block text-text-faint text-[11px] tracking-wider font-normal">
-                {weddingDate.toLocaleDateString("zh-Hant", {
-                  year: "numeric",
-                  month: "2-digit",
-                  day: "2-digit",
-                })}
-              </small>
-            )}
-          </div>
-        </div>
+        <WeddingSwitcher
+          weddingName={weddingName}
+          weddingDate={weddingDate}
+          activeWeddingId={activeWeddingId}
+          memberships={memberships}
+        />
         {days !== null && (
           <div className="flex items-baseline gap-1.5 bg-card border border-border rounded-full px-[13px] py-1.5 shadow-[var(--shadow)]">
             <span className="font-display font-semibold text-lg text-accent-hover leading-none">
