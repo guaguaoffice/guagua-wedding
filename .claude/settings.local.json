@@ -20,7 +20,11 @@
       "Bash(gh auth *)",
       "Bash(command -v vercel)",
       "Bash(git auth *)",
-      "Bash(git add *)"
+      "Bash(git add *)",
+      "Bash(git remote *)",
+      "Bash(git commit -m ' *)",
+      "Bash(git branch *)",
+      "Bash(git push *)"
     ]
   }
 }
