@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { Noto_Sans_TC, Fraunces } from "next/font/google";
 import { AppShell } from "@/components/AppShell";
-import { getCurrentWedding } from "@/lib/wedding";
+import { getMembership } from "@/lib/wedding";
 import "./globals.css";
 
 const notoSansTC = Noto_Sans_TC({
@@ -26,7 +26,7 @@ export default async function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const current = await getCurrentWedding();
+  const current = await getMembership();
 
   return (
     <html

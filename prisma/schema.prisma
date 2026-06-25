@@ -84,6 +84,7 @@ model Wedding {
   updatedAt   DateTime  @updatedAt
 
   members          WeddingMember[]
+  invites          WeddingInvite[]
   timelinePhases   TimelinePhase[]
   decisionItems    DecisionItem[]
   budgetItems      BudgetItem[]
@@ -105,6 +106,18 @@ model WeddingMember {
   user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([weddingId, userId])
+}
+
+model WeddingInvite {
+  id        String     @id @default(cuid())
+  weddingId String
+  token     String     @unique
+  role      MemberRole @default(COLLABORATOR)
+  createdAt DateTime   @default(now())
+
+  wedding Wedding @relation(fields: [weddingId], references: [id], onDelete: Cascade)
+
+  @@unique([weddingId, role])
 }
 
 // ---------- Timeline ----------

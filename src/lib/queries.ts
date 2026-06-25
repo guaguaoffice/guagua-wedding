@@ -38,3 +38,17 @@ export async function getWeddingMembers(weddingId: string) {
     include: { user: { select: { id: true, name: true, email: true, image: true } } },
   });
 }
+
+export async function ensureInviteLinks(weddingId: string) {
+  const roles = ["COLLABORATOR", "VIEWER"] as const;
+  await Promise.all(
+    roles.map((role) =>
+      prisma.weddingInvite.upsert({
+        where: { weddingId_role: { weddingId, role } },
+        update: {},
+        create: { weddingId, role, token: crypto.randomUUID() },
+      })
+    )
+  );
+  return prisma.weddingInvite.findMany({ where: { weddingId } });
+}

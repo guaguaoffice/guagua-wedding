@@ -2,11 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
-import {
-  inviteCollaborator,
-  removeMember,
-  updateMemberRole,
-} from "@/lib/actions/members";
+import { removeMember, updateMemberRole } from "@/lib/actions/members";
 
 const ROLE_LABEL: Record<string, string> = {
   OWNER: "主辦人",
@@ -21,25 +17,15 @@ export type Member = {
 };
 
 export function CollaboratorsClient({
-  weddingId,
   members,
   isOwner,
 }: {
-  weddingId: string;
   members: Member[];
   isOwner: boolean;
 }) {
   const router = useRouter();
   const [pending, startTransition] = useTransition();
   const [message, setMessage] = useState<{ ok: boolean; text: string } | null>(null);
-
-  function handleInvite(formData: FormData) {
-    startTransition(async () => {
-      const result = await inviteCollaborator(weddingId, formData);
-      setMessage({ ok: result.ok, text: result.message });
-      if (result.ok) router.refresh();
-    });
-  }
 
   function handleRoleChange(memberId: string, role: "COLLABORATOR" | "VIEWER") {
     startTransition(async () => {
@@ -105,36 +91,6 @@ export function CollaboratorsClient({
           </div>
         ))}
       </div>
-
-      {isOwner && (
-        <form action={handleInvite} className="panel flex flex-col gap-3">
-          <div className="text-xs font-bold text-text-soft">邀請協作者</div>
-          <div className="flex gap-2">
-            <input
-              name="email"
-              type="email"
-              placeholder="對方的 Email"
-              required
-              disabled={pending}
-              className="flex-1 border border-border rounded-[9px] px-3 py-2 text-sm bg-card"
-            />
-            <select
-              name="role"
-              disabled={pending}
-              className="border border-border rounded-[9px] px-2 py-2 text-sm bg-card"
-            >
-              <option value="COLLABORATOR">協作者</option>
-              <option value="VIEWER">檢視者</option>
-            </select>
-          </div>
-          <p className="text-xs text-text-soft">
-            對方需要先用 Google 帳號登入過呱呱婚禮一次，才能被邀請。
-          </p>
-          <button type="submit" disabled={pending} className="btn btn-primary self-start">
-            送出邀請
-          </button>
-        </form>
-      )}
 
       {message && (
         <div
