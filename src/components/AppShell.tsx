@@ -4,11 +4,19 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { NAV_ITEMS, isActiveNav } from "@/components/nav-items";
 import { NavIcon } from "@/components/NavIcon";
-import { daysUntil, mockWedding } from "@/lib/mock-data";
+import { daysUntil } from "@/lib/decision-state";
 
-export function AppShell({ children }: { children: React.ReactNode }) {
+export function AppShell({
+  children,
+  weddingName,
+  weddingDate,
+}: {
+  children: React.ReactNode;
+  weddingName: string;
+  weddingDate: Date | null;
+}) {
   const pathname = usePathname();
-  const days = daysUntil(mockWedding.weddingDate);
+  const days = weddingDate ? daysUntil(weddingDate) : null;
 
   return (
     <div className="max-w-[1180px] mx-auto md:grid md:grid-cols-[236px_1fr] md:min-h-screen">
@@ -49,22 +57,26 @@ export function AppShell({ children }: { children: React.ReactNode }) {
             呱
           </div>
           <div>
-            <b className="text-[15px]">{mockWedding.name}</b>
-            <small className="block text-text-faint text-[11px] tracking-wider font-normal">
-              {mockWedding.weddingDate.toLocaleDateString("zh-Hant", {
-                year: "numeric",
-                month: "2-digit",
-                day: "2-digit",
-              })}
-            </small>
+            <b className="text-[15px]">{weddingName}</b>
+            {weddingDate && (
+              <small className="block text-text-faint text-[11px] tracking-wider font-normal">
+                {weddingDate.toLocaleDateString("zh-Hant", {
+                  year: "numeric",
+                  month: "2-digit",
+                  day: "2-digit",
+                })}
+              </small>
+            )}
           </div>
         </div>
-        <div className="flex items-baseline gap-1.5 bg-card border border-border rounded-full px-[13px] py-1.5 shadow-[var(--shadow)]">
-          <span className="font-display font-semibold text-lg text-accent-hover leading-none">
-            {days}
-          </span>
-          <span className="text-[11px] text-text-soft">天後結婚</span>
-        </div>
+        {days !== null && (
+          <div className="flex items-baseline gap-1.5 bg-card border border-border rounded-full px-[13px] py-1.5 shadow-[var(--shadow)]">
+            <span className="font-display font-semibold text-lg text-accent-hover leading-none">
+              {days}
+            </span>
+            <span className="text-[11px] text-text-soft">天後結婚</span>
+          </div>
+        )}
       </header>
 
       <main className="md:col-start-2 px-4 py-5 pb-10 md:px-9 md:py-7 md:pb-14 min-w-0">

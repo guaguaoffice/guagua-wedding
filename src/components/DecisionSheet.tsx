@@ -1,83 +1,92 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
+import { useState, useTransition } from "react";
 import {
-  findDecisionItem,
-  type Availability,
-  type Candidate,
-} from "@/lib/mock-decisions";
+  addCandidate,
+  lockCandidate,
+  rejectCandidate,
+} from "@/lib/actions/decisions";
+import { computeDecisionState, STATUS_TEXT } from "@/lib/decision-state";
 
-const STATE_STATUS_TEXT: Record<string, string> = {
-  done: "已定",
-  due: "本月該定",
-  overdue: "逾期 · 比較中",
-  idle: "未開始",
+type Availability = "OK" | "WAIT" | "CONFLICT" | null;
+type CandidateStatus = "CANDIDATE" | "REJECTED" | "DECIDED";
+
+export type SheetCandidate = {
+  id: string;
+  name: string;
+  type: string | null;
+  price: number | null;
+  note: string | null;
+  pros: string | null;
+  cons: string | null;
+  tag: string | null;
+  availability: Availability;
+  status: CandidateStatus;
+  rejectedReason: string | null;
 };
 
-function availabilityLabel(a?: Availability) {
-  if (a === "ok") return <span className="text-accent-hover font-bold">可</span>;
-  if (a === "no") return <span className="text-coral font-bold">衝突</span>;
-  return <span className="text-amber font-bold">待確認</span>;
+export type SheetDecisionItem = {
+  id: string;
+  title: string;
+  suggestedDecideBy: Date | null;
+  decisionRecord: { id: string } | null;
+  candidates: SheetCandidate[];
+};
+
+function availabilityLabel(a: Availability) {
+  if (a === "OK") return <span className="text-accent-hover font-bold">可</span>;
+  if (a === "CONFLICT") return <span className="text-coral font-bold">衝突</span>;
+  if (a === "WAIT") return <span className="text-amber font-bold">待確認</span>;
+  return null;
 }
 
-function priceText(c: Candidate) {
-  if (c.priceLabel) return c.priceLabel;
-  if (c.price !== undefined) return `NT$ ${c.price.toLocaleString()}`;
+function priceText(c: SheetCandidate) {
+  if (c.note) return c.note;
+  if (c.price !== null) return `NT$ ${c.price.toLocaleString()}`;
   return "尚未報價";
 }
 
 export function DecisionSheet({
-  slug,
+  item,
   onClose,
 }: {
-  slug: string | null;
+  item: SheetDecisionItem | null;
   onClose: () => void;
 }) {
-  return <DecisionSheetContent key={slug} slug={slug} onClose={onClose} />;
-}
-
-function DecisionSheetContent({
-  slug,
-  onClose,
-}: {
-  slug: string | null;
-  onClose: () => void;
-}) {
-  const item = slug ? findDecisionItem(slug) : undefined;
+  const router = useRouter();
   const [segment, setSegment] = useState<"list" | "cmp" | "done">("list");
-  const [candidates, setCandidates] = useState<Candidate[]>(item?.candidates ?? []);
-
-  useEffect(() => {
-    document.body.style.overflow = slug ? "hidden" : "";
-    return () => {
-      document.body.style.overflow = "";
-    };
-  }, [slug]);
+  const [showAddForm, setShowAddForm] = useState(false);
+  const [pending, startTransition] = useTransition();
 
   if (!item) return null;
 
-  const lock = (id: string) => {
-    setCandidates((prev) =>
-      prev.map((c) =>
-        c.id === id
-          ? { ...c, status: "DECIDED" as const }
-          : c.status === "DECIDED"
-            ? { ...c, status: "CANDIDATE" as const }
-            : c
-      )
-    );
-  };
-
-  const reject = (id: string) => {
-    setCandidates((prev) =>
-      prev.map((c) => (c.id === id ? { ...c, status: "REJECTED" as const } : c))
-    );
-  };
-
-  const locked = candidates.filter((c) => c.status === "DECIDED");
-  const visible =
-    segment === "done" ? locked : candidates.filter((c) => c.status !== "REJECTED" || true);
+  const state = computeDecisionState(item.suggestedDecideBy, !!item.decisionRecord);
+  const locked = item.candidates.filter((c) => c.status === "DECIDED");
+  const visible = item.candidates;
   const showCompareNote = segment === "cmp";
+
+  function handleLock(candidateId: string) {
+    startTransition(async () => {
+      await lockCandidate(item!.id, candidateId);
+      router.refresh();
+    });
+  }
+
+  function handleReject(candidateId: string) {
+    startTransition(async () => {
+      await rejectCandidate(candidateId);
+      router.refresh();
+    });
+  }
+
+  function handleAddCandidate(formData: FormData) {
+    startTransition(async () => {
+      await addCandidate(item!.id, formData);
+      router.refresh();
+      setShowAddForm(false);
+    });
+  }
 
   return (
     <>
@@ -87,7 +96,7 @@ function DecisionSheetContent({
         <div className="sticky top-0 bg-bg px-5 pt-4 pb-3 flex items-start justify-between gap-3 border-b border-border z-10">
           <div>
             <div className="text-[11px] tracking-[0.16em] uppercase text-accent-hover font-bold">
-              {STATE_STATUS_TEXT[item.state]}
+              {STATUS_TEXT[state]}
             </div>
             <div className="text-xl font-bold">{item.title}</div>
           </div>
@@ -153,7 +162,9 @@ function DecisionSheetContent({
               <p className="text-[13.5px] max-w-[330px] mx-auto mb-4">
                 把考慮中的廠商加進來——貼上 IG 或網站連結最快，報價、檔期、風格之後再補。
               </p>
-              <button className="btn btn-primary">＋ 新增備選</button>
+              <button className="btn btn-primary" onClick={() => setShowAddForm(true)}>
+                ＋ 新增備選
+              </button>
             </div>
           )}
 
@@ -183,9 +194,7 @@ function DecisionSheetContent({
                   </div>
                 </div>
                 <div className="flex flex-wrap gap-x-3.5 gap-y-1.5 text-[12.5px] text-text-soft mb-2.5">
-                  {c.availability && (
-                    <span>檔期 {availabilityLabel(c.availability)}</span>
-                  )}
+                  {c.availability && <span>檔期 {availabilityLabel(c.availability)}</span>}
                   {c.type && (
                     <span>
                       風格 <b className="text-text font-semibold">{c.type}</b>
@@ -215,17 +224,16 @@ function DecisionSheetContent({
                 )}
                 {c.status === "CANDIDATE" && (
                   <div className="flex gap-2">
-                    <button className="btn btn-secondary flex-1 text-[12.5px] py-2">
-                      詳情
-                    </button>
                     <button
-                      onClick={() => reject(c.id)}
+                      disabled={pending}
+                      onClick={() => handleReject(c.id)}
                       className="btn btn-secondary flex-1 text-[12.5px] py-2"
                     >
                       淘汰
                     </button>
                     <button
-                      onClick={() => lock(c.id)}
+                      disabled={pending}
+                      onClick={() => handleLock(c.id)}
                       className="btn btn-primary flex-1 text-[12.5px] py-2"
                     >
                       標記已定
@@ -236,10 +244,59 @@ function DecisionSheetContent({
             ))}
           </div>
 
-          {segment !== "done" && visible.length > 0 && (
-            <button className="addcand w-full border-[1.5px] border-dashed border-border-2 text-text-soft rounded-[11px] py-3.5 font-semibold text-sm mt-2">
-              ＋ 新增備選
-            </button>
+          {segment !== "done" && (
+            <>
+              {showAddForm ? (
+                <form
+                  action={handleAddCandidate}
+                  className="candidate-card mt-2.5 flex flex-col gap-2"
+                >
+                  <input
+                    name="name"
+                    placeholder="廠商名稱"
+                    required
+                    className="w-full border border-border rounded-[9px] px-3 py-2 text-sm bg-card"
+                  />
+                  <div className="flex gap-2">
+                    <input
+                      name="type"
+                      placeholder="風格 / 類型"
+                      className="flex-1 border border-border rounded-[9px] px-3 py-2 text-sm bg-card"
+                    />
+                    <input
+                      name="price"
+                      placeholder="報價"
+                      className="flex-1 border border-border rounded-[9px] px-3 py-2 text-sm bg-card"
+                    />
+                  </div>
+                  <div className="flex gap-2">
+                    <button
+                      type="button"
+                      onClick={() => setShowAddForm(false)}
+                      className="btn btn-secondary flex-1 text-[12.5px] py-2"
+                    >
+                      取消
+                    </button>
+                    <button
+                      type="submit"
+                      disabled={pending}
+                      className="btn btn-primary flex-1 text-[12.5px] py-2"
+                    >
+                      新增
+                    </button>
+                  </div>
+                </form>
+              ) : (
+                visible.length > 0 && (
+                  <button
+                    onClick={() => setShowAddForm(true)}
+                    className="addcand w-full border-[1.5px] border-dashed border-border-2 text-text-soft rounded-[11px] py-3.5 font-semibold text-sm mt-2"
+                  >
+                    ＋ 新增備選
+                  </button>
+                )
+              )}
+            </>
           )}
         </div>
       </div>
