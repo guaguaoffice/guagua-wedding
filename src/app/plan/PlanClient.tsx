@@ -187,7 +187,7 @@ export function PlanClient({
             className={`w-3 h-3 rounded-full bg-card border-[2.5px] border-current relative z-10 ${NODE_TEXT_CLASS[state]}`}
           />
         </div>
-        <div className="flex-1 min-w-0 pb-1">
+        <div className="flex-1 min-w-0">
           <div className="text-[12px] text-text-faint mb-1 font-medium">{dateLabel}</div>
           <div className="card card-interactive p-4 flex items-center gap-2">
             <div
@@ -236,7 +236,7 @@ export function PlanClient({
         <div className="w-7 flex-none flex flex-col items-center pt-[7px]">
           <span className="w-[14px] h-[14px] rounded-full bg-accent animate-dot-pulse relative z-10" />
         </div>
-        <div className="flex-1 flex items-center gap-2.5 pb-1">
+        <div className="flex-1 flex items-center gap-2.5">
           <span className="bg-accent text-white font-bold text-xs px-3.5 py-1.5 rounded-full shadow-[0_6px_16px_rgba(105,172,144,0.4)]">
             今天
           </span>
@@ -297,7 +297,7 @@ export function PlanClient({
 
           <div className="relative">
             <div className="absolute left-[13px] top-2 bottom-2 w-0.5 bg-gradient-to-b from-border-2 via-accent to-border-2 rounded-full" />
-            <div className="flex flex-col gap-1">
+            <div className="flex flex-col gap-4">
               {beforeToday.map(renderTimelineNode)}
               {showTodayMarker && renderTodayMarker()}
               {afterToday.map(renderTimelineNode)}
