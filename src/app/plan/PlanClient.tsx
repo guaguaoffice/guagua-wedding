@@ -1,14 +1,18 @@
 "use client";
 
 import { useRouter, useSearchParams } from "next/navigation";
-import { useTransition } from "react";
+import { useState, useTransition } from "react";
 import { DecisionSheet, type SheetDecisionItem } from "@/components/DecisionSheet";
-import { addDecisionCategory } from "@/lib/actions/decisions";
+import {
+  addDecisionCategory,
+  removeDecisionCategory,
+} from "@/lib/actions/decisions";
 import { addTask, toggleTask } from "@/lib/actions/tasks";
 import { addBudgetItem } from "@/lib/actions/budget";
+import { DECISION_PRESETS } from "@/lib/decision-presets";
 import {
   computeDecisionState,
-  monthsBeforeLabel,
+  formatDecideByDate,
   STATUS_TEXT,
   type CategoryState,
 } from "@/lib/decision-state";
@@ -61,14 +65,12 @@ const TABS = [
 
 export function PlanClient({
   weddingId,
-  weddingDate,
   decisionItems,
   budgetItems,
   tasks,
   totalBudget,
 }: {
   weddingId: string;
-  weddingDate: Date | null;
   decisionItems: PlanDecisionItem[];
   budgetItems: PlanBudgetItem[];
   tasks: PlanTask[];
@@ -77,6 +79,7 @@ export function PlanClient({
   const router = useRouter();
   const searchParams = useSearchParams();
   const [pending, startTransition] = useTransition();
+  const [showAddPanel, setShowAddPanel] = useState(false);
   const tab = searchParams.get("tab") ?? "tl";
   const openId = searchParams.get("open");
 
@@ -100,9 +103,22 @@ export function PlanClient({
   }
 
   const openItem = decisionItems.find((d) => d.id === openId) ?? null;
-  const todayAfterId = decisionItems.find(
-    (d) => computeDecisionState(d.suggestedDecideBy, !!d.decisionRecord) === "overdue"
-  )?.id;
+  const [now] = useState(() => Date.now());
+
+  const sortedItems = [...decisionItems].sort((a, b) => {
+    const at = a.suggestedDecideBy?.getTime() ?? Infinity;
+    const bt = b.suggestedDecideBy?.getTime() ?? Infinity;
+    return at - bt;
+  });
+  const todaySplitIndex = sortedItems.findIndex(
+    (item) => !item.suggestedDecideBy || item.suggestedDecideBy.getTime() >= now
+  );
+  const showTodayMarker = todaySplitIndex > 0 && todaySplitIndex < sortedItems.length;
+  const beforeToday = showTodayMarker ? sortedItems.slice(0, todaySplitIndex) : sortedItems;
+  const afterToday = showTodayMarker ? sortedItems.slice(todaySplitIndex) : [];
+
+  const existingTitles = new Set(decisionItems.map((d) => d.title));
+  const availablePresets = DECISION_PRESETS.filter((p) => !existingTitles.has(p.title));
 
   const decidedSpend = budgetItems
     .filter((b) => b.decisionState?.decided)
@@ -132,6 +148,17 @@ export function PlanClient({
     startTransition(async () => {
       await addDecisionCategory(weddingId, formData);
       router.refresh();
+      setShowAddPanel(false);
+    });
+  }
+
+  function handleRemoveCategory(item: PlanDecisionItem) {
+    if (!window.confirm(`移除「${item.title}」這個決策類別？候選方案與相關資料都會一併刪除。`)) {
+      return;
+    }
+    startTransition(async () => {
+      await removeDecisionCategory(item.id);
+      router.refresh();
     });
   }
 
@@ -140,6 +167,83 @@ export function PlanClient({
       await addBudgetItem(weddingId, formData);
       router.refresh();
     });
+  }
+
+  function renderTimelineNode(item: PlanDecisionItem) {
+    const state = computeDecisionState(item.suggestedDecideBy, !!item.decisionRecord);
+    const dateLabel = formatDecideByDate(item.suggestedDecideBy);
+    const decided = item.candidates.find((c) => c.status === "DECIDED");
+    const activeCount = item.candidates.filter((c) => c.status === "CANDIDATE").length;
+    const meta = decided
+      ? `已定：${decided.name}`
+      : activeCount > 0
+        ? `備選 ${activeCount} 家`
+        : "點開新增第一家備選";
+
+    return (
+      <div key={item.id} className="flex gap-3 animate-slide-up">
+        <div className="w-7 flex-none flex flex-col items-center pt-[26px]">
+          <span
+            className={`w-3 h-3 rounded-full bg-card border-[2.5px] border-current relative z-10 ${NODE_TEXT_CLASS[state]}`}
+          />
+        </div>
+        <div className="flex-1 min-w-0 pb-1">
+          <div className="text-[12px] text-text-faint mb-1 font-medium">{dateLabel}</div>
+          <div className="card card-interactive p-4 flex items-center gap-2">
+            <div
+              className="flex-1 min-w-0 flex items-center gap-3.5 cursor-pointer"
+              onClick={() => openSheet(item.id)}
+            >
+              <div className="flex-1 min-w-0">
+                <div className="text-text font-bold text-[15.5px] flex items-center gap-2 flex-wrap">
+                  {item.title}
+                  <span className={`status ${STATUS_CLASS_BY_STATE[state]}`}>
+                    {STATUS_TEXT[state]}
+                  </span>
+                </div>
+                <div className="text-[12.5px] text-text-soft mt-0.5">{meta}</div>
+              </div>
+              <svg
+                viewBox="0 0 24 24"
+                className="w-[18px] h-[18px] stroke-text-faint fill-none flex-none"
+                strokeWidth={2}
+              >
+                <path d="M9 6l6 6-6 6" />
+              </svg>
+            </div>
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                handleRemoveCategory(item);
+              }}
+              disabled={pending}
+              aria-label="移除這個決策類別"
+              className="text-text-faint hover:text-coral p-1.5 flex-none rounded-md hover:bg-coral-tint"
+            >
+              <svg viewBox="0 0 24 24" className="w-4 h-4 stroke-current fill-none" strokeWidth={2}>
+                <path d="M6 6l12 12M18 6L6 18" />
+              </svg>
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  function renderTodayMarker() {
+    return (
+      <div key="today-marker" className="flex gap-3">
+        <div className="w-7 flex-none flex flex-col items-center pt-[7px]">
+          <span className="w-[14px] h-[14px] rounded-full bg-accent animate-dot-pulse relative z-10" />
+        </div>
+        <div className="flex-1 flex items-center gap-2.5 pb-1">
+          <span className="bg-accent text-white font-bold text-xs px-3.5 py-1.5 rounded-full shadow-[0_6px_16px_rgba(105,172,144,0.4)]">
+            今天
+          </span>
+          <span className="flex-1 h-px opacity-50 bg-[repeating-linear-gradient(90deg,var(--color-accent)_0_6px,transparent_6px_12px)]" />
+        </div>
+      </div>
+    );
   }
 
   return (
@@ -172,7 +276,7 @@ export function PlanClient({
 
       {tab === "tl" && (
         <div>
-          <div className="flex gap-3.5 flex-wrap mb-2">
+          <div className="flex gap-3.5 flex-wrap mb-3">
             <span className="inline-flex items-center gap-1.5 text-xs text-text-soft">
               <i className="dot dot-done" />
               已定
@@ -191,66 +295,73 @@ export function PlanClient({
             </span>
           </div>
 
-          <div className="relative mt-2 pl-[54px] md:pl-24">
-            <div className="absolute left-[26px] md:left-12 top-2 bottom-2 w-0.5 bg-gradient-to-b from-border-2 via-accent to-border-2 rounded-full" />
-            {decisionItems.map((item) => {
-              const state = computeDecisionState(item.suggestedDecideBy, !!item.decisionRecord);
-              const month = monthsBeforeLabel(weddingDate, item.suggestedDecideBy);
-              const decided = item.candidates.find((c) => c.status === "DECIDED");
-              const activeCount = item.candidates.filter((c) => c.status === "CANDIDATE").length;
-              const meta = decided
-                ? `已定：${decided.name}`
-                : activeCount > 0
-                  ? `備選 ${activeCount} 家`
-                  : "點開新增第一家備選";
-
-              return (
-                <div key={item.id}>
-                  <div className={`relative mb-3.5 animate-slide-up ${NODE_TEXT_CLASS[state]}`}>
-                    <span className="absolute -left-[33px] md:-left-[51px] top-[22px] w-3 h-3 rounded-full bg-card border-[2.5px] border-current" />
-                    <div className="absolute -left-[54px] md:-left-24 top-0 w-12 md:w-[70px] text-right font-display text-[13px] md:text-[15px] text-text-faint">
-                      {month}
-                    </div>
-                    <button
-                      onClick={() => openSheet(item.id)}
-                      className="card card-interactive w-full p-4 flex items-center gap-3.5 text-left"
-                    >
-                      <div className="flex-1 min-w-0">
-                        <div className="text-text font-bold text-[15.5px] flex items-center gap-2 flex-wrap">
-                          {item.title}
-                          <span className={`status ${STATUS_CLASS_BY_STATE[state]}`}>
-                            {STATUS_TEXT[state]}
-                          </span>
-                        </div>
-                        <div className="text-[12.5px] text-text-soft mt-0.5">{meta}</div>
-                      </div>
-                      <svg viewBox="0 0 24 24" className="w-[18px] h-[18px] stroke-text-faint fill-none flex-none" strokeWidth={2}>
-                        <path d="M9 6l6 6-6 6" />
-                      </svg>
-                    </button>
-                  </div>
-                  {item.id === todayAfterId && (
-                    <div className="relative -ml-[54px] md:-ml-24 pl-[54px] md:pl-24 mb-[22px] flex items-center gap-2.5">
-                      <span className="relative z-[2] bg-accent text-white font-bold text-xs px-3.5 py-1.5 rounded-full shadow-[0_6px_16px_rgba(105,172,144,0.4)]">
-                        今天
-                      </span>
-                      <span className="absolute left-[18px] md:left-10 w-[18px] h-[18px] rounded-full bg-accent animate-dot-pulse" />
-                      <span className="flex-1 h-px opacity-50 bg-[repeating-linear-gradient(90deg,var(--color-accent)_0_6px,transparent_6px_12px)]" />
-                    </div>
-                  )}
-                </div>
-              );
-            })}
+          <div className="relative">
+            <div className="absolute left-[13px] top-2 bottom-2 w-0.5 bg-gradient-to-b from-border-2 via-accent to-border-2 rounded-full" />
+            <div className="flex flex-col gap-1">
+              {beforeToday.map(renderTimelineNode)}
+              {showTodayMarker && renderTodayMarker()}
+              {afterToday.map(renderTimelineNode)}
+            </div>
           </div>
-          <div className="-ml-[54px] md:-ml-24 pl-[54px] md:pl-24 mt-1">
-            <form action={handleAddCategory}>
-              <input
-                name="title"
-                placeholder="新類別名稱，按 Enter 新增"
-                disabled={pending}
-                className="w-full border-[1.5px] border-dashed border-border-2 bg-transparent text-text-soft rounded-2xl py-3.5 px-4 font-semibold text-[13.5px] placeholder:text-text-faint focus:border-accent focus:text-text"
-              />
-            </form>
+
+          <div className="mt-3">
+            {showAddPanel ? (
+              <div className="card p-4 flex flex-col gap-3">
+                <div className="text-xs font-bold text-text-soft">快速加入常見項目</div>
+                {availablePresets.length > 0 && (
+                  <div className="flex flex-wrap gap-2">
+                    {availablePresets.map((p) => (
+                      <form
+                        key={p.title}
+                        action={(formData) => {
+                          startTransition(async () => {
+                            await addDecisionCategory(weddingId, formData);
+                            router.refresh();
+                          });
+                        }}
+                      >
+                        <input type="hidden" name="title" value={p.title} />
+                        <input type="hidden" name="category" value={p.category} />
+                        <input type="hidden" name="months" value={p.months} />
+                        <button
+                          type="submit"
+                          disabled={pending}
+                          className="px-3 py-1.5 rounded-full border border-border text-sm hover:border-accent hover:text-accent-hover"
+                        >
+                          ＋ {p.title}
+                        </button>
+                      </form>
+                    ))}
+                  </div>
+                )}
+                <form action={handleAddCategory} className="flex gap-2">
+                  <input
+                    name="title"
+                    placeholder="或輸入自訂項目名稱"
+                    required
+                    disabled={pending}
+                    className="flex-1 border border-border rounded-[9px] px-3 py-2 text-sm bg-card"
+                  />
+                  <button type="submit" disabled={pending} className="btn btn-primary">
+                    新增
+                  </button>
+                </form>
+                <button
+                  type="button"
+                  onClick={() => setShowAddPanel(false)}
+                  className="text-xs text-text-soft self-start"
+                >
+                  收起
+                </button>
+              </div>
+            ) : (
+              <button
+                onClick={() => setShowAddPanel(true)}
+                className="w-full border-[1.5px] border-dashed border-border-2 text-text-soft rounded-2xl py-3.5 font-semibold text-[13.5px] hover:border-accent hover:text-accent-hover"
+              >
+                ＋ 新增決策類別
+              </button>
+            )}
           </div>
         </div>
       )}

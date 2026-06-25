@@ -59,9 +59,47 @@ export async function addCandidate(decisionItemId: string, formData: FormData) {
 export async function addDecisionCategory(weddingId: string, formData: FormData) {
   const title = String(formData.get("title") || "").trim();
   if (!title) return;
+  const category = String(formData.get("category") || "").trim() || null;
+  const monthsRaw = String(formData.get("months") || "").trim();
+
+  let suggestedDecideBy: Date | null = null;
+  if (monthsRaw) {
+    const months = Number(monthsRaw);
+    const current = await getCurrentWedding();
+    if (!Number.isNaN(months) && current?.wedding.weddingDate) {
+      suggestedDecideBy = new Date(
+        current.wedding.weddingDate.getTime() - months * 30.4 * 1000 * 60 * 60 * 24
+      );
+    }
+  }
+
   const count = await prisma.decisionItem.count({ where: { weddingId } });
   await prisma.decisionItem.create({
-    data: { weddingId, title, order: count },
+    data: { weddingId, title, category, order: count, suggestedDecideBy },
   });
   revalidatePath("/plan");
+}
+
+export async function removeDecisionCategory(decisionItemId: string) {
+  await prisma.$transaction(async (tx) => {
+    await tx.timelineTask.updateMany({
+      where: { decisionItemId },
+      data: { decisionItemId: null },
+    });
+    await tx.budgetItem.updateMany({
+      where: { decisionItemId },
+      data: { decisionItemId: null },
+    });
+    await tx.fileAsset.updateMany({
+      where: { decisionItemId },
+      data: { decisionItemId: null },
+    });
+    await tx.inspirationItem.updateMany({
+      where: { decisionItemId },
+      data: { decisionItemId: null },
+    });
+    await tx.decisionItem.delete({ where: { id: decisionItemId } });
+  });
+  revalidatePath("/plan");
+  revalidatePath("/");
 }

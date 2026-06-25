@@ -15,13 +15,14 @@ export function computeDecisionState(
   return "idle";
 }
 
-export function monthsBeforeLabel(weddingDate: Date | null, decideBy: Date | null) {
-  if (!weddingDate || !decideBy) return "未排定";
-  const months = Math.max(
-    0,
-    Math.round((weddingDate.getTime() - decideBy.getTime()) / (MS_PER_DAY * 30.4))
-  );
-  return `${months}月前`;
+export function formatDecideByDate(date: Date | null) {
+  if (!date) return "未排定日期";
+  const sameYear = date.getFullYear() === new Date().getFullYear();
+  return date.toLocaleDateString("zh-Hant", {
+    year: sameYear ? undefined : "numeric",
+    month: "long",
+    day: "numeric",
+  });
 }
 
 export const STATUS_TEXT: Record<CategoryState, string> = {

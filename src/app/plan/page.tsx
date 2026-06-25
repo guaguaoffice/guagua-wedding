@@ -61,7 +61,6 @@ export default async function PlanPage() {
     <Suspense>
       <PlanClient
         weddingId={current.wedding.id}
-        weddingDate={current.wedding.weddingDate}
         decisionItems={decisionItems}
         budgetItems={budgetItems}
         tasks={tasks}
