@@ -51,7 +51,7 @@ export function AppShell({
         })}
       </aside>
 
-      <header className="md:col-start-2 sticky top-0 z-30 bg-bg/86 backdrop-blur-sm border-b border-border flex items-center justify-between px-[18px] py-3.5">
+      <header className="md:col-start-2 sticky top-0 z-30 bg-bg/86 backdrop-blur-sm border-b border-border flex items-center justify-between px-[18px] h-[72px] flex-none">
         <div className="flex items-center gap-2.5">
           <div className="w-[30px] h-[30px] rounded-[9px] bg-gradient-to-br from-accent to-accent-hover grid place-items-center text-white font-display font-semibold text-[16px] shadow-[0_4px_10px_rgba(79,146,116,0.3)]">
             呱
