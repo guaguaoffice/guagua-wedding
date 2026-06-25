@@ -2,9 +2,28 @@
 
 import { revalidatePath } from "next/cache";
 import { cookies } from "next/headers";
+import { redirect } from "next/navigation";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { ACTIVE_WEDDING_COOKIE, getCurrentWedding } from "@/lib/wedding";
+
+async function switchToAnotherMembershipOrClear(userId: string) {
+  const remaining = await prisma.weddingMember.findFirst({
+    where: { userId },
+    orderBy: { createdAt: "asc" },
+  });
+  const cookieStore = await cookies();
+  if (remaining) {
+    cookieStore.set(ACTIVE_WEDDING_COOKIE, remaining.weddingId, {
+      httpOnly: true,
+      sameSite: "lax",
+      path: "/",
+      maxAge: 60 * 60 * 24 * 365,
+    });
+  } else {
+    cookieStore.delete(ACTIVE_WEDDING_COOKIE);
+  }
+}
 
 export async function setActiveWedding(weddingId: string) {
   const session = await auth();
@@ -54,6 +73,61 @@ export async function updateWeddingInfo(weddingId: string, formData: FormData) {
 
   revalidatePath("/");
   revalidatePath("/plan");
-  revalidatePath("/more/event");
+  revalidatePath("/more");
   return { ok: true, message: "已更新婚禮資訊" };
+}
+
+export async function transferOwnership(weddingId: string, newOwnerUserId: string) {
+  const current = await getCurrentWedding();
+  if (!current || current.wedding.id !== weddingId || current.role !== "OWNER") {
+    return { ok: false, message: "只有主辦人可以轉移主辦權" };
+  }
+  if (newOwnerUserId === current.userId) {
+    return { ok: false, message: "對方已經是主辦人" };
+  }
+
+  const target = await prisma.weddingMember.findUnique({
+    where: { weddingId_userId: { weddingId, userId: newOwnerUserId } },
+  });
+  if (!target) return { ok: false, message: "對方不是這場婚禮的成員" };
+
+  await prisma.$transaction([
+    prisma.weddingMember.update({ where: { id: target.id }, data: { role: "OWNER" } }),
+    prisma.weddingMember.update({
+      where: { weddingId_userId: { weddingId, userId: current.userId } },
+      data: { role: "COLLABORATOR" },
+    }),
+  ]);
+
+  revalidatePath("/more");
+  return { ok: true, message: "已轉移主辦權" };
+}
+
+export async function leaveWedding(weddingId: string) {
+  const current = await getCurrentWedding();
+  if (!current || current.wedding.id !== weddingId) {
+    return { ok: false, message: "你不是這場婚禮的成員" };
+  }
+  if (current.role === "OWNER") {
+    return { ok: false, message: "主辦人無法直接離開，請先轉移主辦權或刪除婚禮" };
+  }
+
+  await prisma.weddingMember.delete({
+    where: { weddingId_userId: { weddingId, userId: current.userId } },
+  });
+  await switchToAnotherMembershipOrClear(current.userId);
+
+  redirect("/");
+}
+
+export async function deleteWedding(weddingId: string) {
+  const current = await getCurrentWedding();
+  if (!current || current.wedding.id !== weddingId || current.role !== "OWNER") {
+    return { ok: false, message: "只有主辦人可以刪除婚禮" };
+  }
+
+  await prisma.wedding.delete({ where: { id: weddingId } });
+  await switchToAnotherMembershipOrClear(current.userId);
+
+  redirect("/");
 }

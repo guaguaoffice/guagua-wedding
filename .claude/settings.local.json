@@ -29,7 +29,11 @@
       "Bash(curl -s -o /dev/null -w \"%{http_code}\\\\n\" \"https://guagua-wedding.vercel.app\")",
       "Bash(curl -s -D - -o /dev/null \"https://guagua-wedding.vercel.app\")",
       "mcp__Claude_Preview__preview_start",
-      "Bash(npx tsx *)"
+      "Bash(npx tsx *)",
+      "Bash(mkdir -p src/app/more)",
+      "Bash(git mv *)",
+      "Bash(mv src/app/more/event/EventForm.tsx src/app/more/EventForm.tsx)",
+      "Bash(rm -rf src/app/more/event)"
     ]
   }
 }
