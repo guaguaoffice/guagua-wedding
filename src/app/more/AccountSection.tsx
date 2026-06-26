@@ -79,7 +79,7 @@ export function AccountSection({
               value={selectedUserId}
               onChange={(e) => setSelectedUserId(e.target.value)}
               disabled={pending}
-              className="flex-1 border border-border rounded-[9px] px-3 py-2 text-sm bg-card"
+              className="flex-1 min-w-0 border border-border rounded-[9px] px-3 py-2 text-sm bg-card"
             >
               {otherMembers.map((m) => (
                 <option key={m.userId} value={m.userId}>

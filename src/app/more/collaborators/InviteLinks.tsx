@@ -65,7 +65,7 @@ function InviteLinkRow({
         <input
           readOnly
           value={link}
-          className="flex-1 border border-border rounded-[9px] px-3 py-2 text-xs bg-card-hover text-text-soft"
+          className="flex-1 min-w-0 border border-border rounded-[9px] px-3 py-2 text-xs bg-card-hover text-text-soft"
         />
         <button onClick={handleCopy} className="btn btn-secondary text-sm">
           {copied ? "已複製 ✓" : "複製連結"}

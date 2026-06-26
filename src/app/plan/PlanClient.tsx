@@ -375,7 +375,7 @@ export function PlanClient({
                     placeholder="或輸入自訂項目名稱"
                     required
                     disabled={pending}
-                    className="flex-1 border border-border rounded-[9px] px-3 py-2 text-sm bg-card"
+                    className="flex-1 min-w-0 border border-border rounded-[9px] px-3 py-2 text-sm bg-card"
                   />
                   <input
                     type="date"
@@ -501,7 +501,7 @@ export function PlanClient({
               placeholder="項目名稱"
               required
               disabled={pending}
-              className="flex-1 border border-border rounded-[9px] px-3 py-2 text-sm bg-card"
+              className="flex-1 min-w-0 border border-border rounded-[9px] px-3 py-2 text-sm bg-card"
             />
             <input
               name="amount"
@@ -573,7 +573,7 @@ export function PlanClient({
               placeholder="新增待辦事項"
               required
               disabled={pending}
-              className="flex-1 border border-border rounded-[9px] px-3 py-2 text-sm bg-card"
+              className="flex-1 min-w-0 border border-border rounded-[9px] px-3 py-2 text-sm bg-card"
             />
             <button type="submit" disabled={pending} className="btn btn-primary">
               ＋ 新增

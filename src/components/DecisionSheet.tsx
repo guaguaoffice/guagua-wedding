@@ -94,13 +94,13 @@ function CandidateForm({
           name="type"
           placeholder="風格 / 類型"
           defaultValue={initial?.type ?? ""}
-          className="flex-1 border border-border rounded-[9px] px-3 py-2 text-sm bg-card"
+          className="flex-1 min-w-0 border border-border rounded-[9px] px-3 py-2 text-sm bg-card"
         />
         <input
           name="price"
           placeholder="報價（數字）"
           defaultValue={initial?.price ?? ""}
-          className="flex-1 border border-border rounded-[9px] px-3 py-2 text-sm bg-card"
+          className="flex-1 min-w-0 border border-border rounded-[9px] px-3 py-2 text-sm bg-card"
         />
       </div>
 
