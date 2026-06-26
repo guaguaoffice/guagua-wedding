@@ -60,10 +60,11 @@ export async function addDecisionCategory(weddingId: string, formData: FormData)
   const title = String(formData.get("title") || "").trim();
   if (!title) return;
   const category = String(formData.get("category") || "").trim() || null;
+  const decideByRaw = String(formData.get("decideBy") || "").trim();
   const monthsRaw = String(formData.get("months") || "").trim();
 
-  let suggestedDecideBy: Date | null = null;
-  if (monthsRaw) {
+  let suggestedDecideBy: Date | null = decideByRaw ? new Date(decideByRaw) : null;
+  if (!suggestedDecideBy && monthsRaw) {
     const months = Number(monthsRaw);
     const current = await getCurrentWedding();
     if (!Number.isNaN(months) && current?.wedding.weddingDate) {
@@ -78,6 +79,16 @@ export async function addDecisionCategory(weddingId: string, formData: FormData)
     data: { weddingId, title, category, order: count, suggestedDecideBy },
   });
   revalidatePath("/plan");
+}
+
+export async function updateDecisionDate(decisionItemId: string, decideByRaw: string) {
+  await prisma.decisionItem.update({
+    where: { id: decisionItemId },
+    data: { suggestedDecideBy: decideByRaw ? new Date(decideByRaw) : null },
+  });
+  revalidatePath("/plan");
+  revalidatePath("/");
+  return { ok: true };
 }
 
 export async function removeDecisionCategory(decisionItemId: string) {

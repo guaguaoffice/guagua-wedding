@@ -6,6 +6,7 @@ import { DecisionSheet, type SheetDecisionItem } from "@/components/DecisionShee
 import {
   addDecisionCategory,
   removeDecisionCategory,
+  updateDecisionDate,
 } from "@/lib/actions/decisions";
 import { addTask, toggleTask } from "@/lib/actions/tasks";
 import { addBudgetItem } from "@/lib/actions/budget";
@@ -63,6 +64,11 @@ const TABS = [
   { key: "task", label: "待辦" },
 ] as const;
 
+function toDateInputValue(date: Date | null) {
+  if (!date) return "";
+  return date.toISOString().slice(0, 10);
+}
+
 export function PlanClient({
   weddingId,
   decisionItems,
@@ -80,6 +86,7 @@ export function PlanClient({
   const searchParams = useSearchParams();
   const [pending, startTransition] = useTransition();
   const [showAddPanel, setShowAddPanel] = useState(false);
+  const [editingDateId, setEditingDateId] = useState<string | null>(null);
   const tab = searchParams.get("tab") ?? "tl";
   const openId = searchParams.get("open");
 
@@ -162,6 +169,14 @@ export function PlanClient({
     });
   }
 
+  function handleDateChange(itemId: string, value: string) {
+    setEditingDateId(null);
+    startTransition(async () => {
+      await updateDecisionDate(itemId, value);
+      router.refresh();
+    });
+  }
+
   function handleAddBudgetItem(formData: FormData) {
     startTransition(async () => {
       await addBudgetItem(weddingId, formData);
@@ -188,7 +203,27 @@ export function PlanClient({
           />
         </div>
         <div className="flex-1 min-w-0">
-          <div className="text-[12px] text-text-faint mb-1 font-medium">{dateLabel}</div>
+          {editingDateId === item.id ? (
+            <input
+              type="date"
+              autoFocus
+              defaultValue={toDateInputValue(item.suggestedDecideBy)}
+              disabled={pending}
+              onBlur={(e) => handleDateChange(item.id, e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") handleDateChange(item.id, e.currentTarget.value);
+                if (e.key === "Escape") setEditingDateId(null);
+              }}
+              className="text-[12px] mb-1 border border-border rounded-md px-1.5 py-0.5 bg-card"
+            />
+          ) : (
+            <button
+              onClick={() => setEditingDateId(item.id)}
+              className="block text-[12px] text-text-faint mb-1 font-medium hover:text-accent-hover hover:underline"
+            >
+              {dateLabel}
+            </button>
+          )}
           <div className="card card-interactive p-4 flex items-center gap-2">
             <div
               className="flex-1 min-w-0 flex items-center gap-3.5 cursor-pointer"
@@ -341,6 +376,12 @@ export function PlanClient({
                     required
                     disabled={pending}
                     className="flex-1 border border-border rounded-[9px] px-3 py-2 text-sm bg-card"
+                  />
+                  <input
+                    type="date"
+                    name="decideBy"
+                    disabled={pending}
+                    className="border border-border rounded-[9px] px-3 py-2 text-sm bg-card text-text-soft"
                   />
                   <button type="submit" disabled={pending} className="btn btn-primary">
                     新增
