@@ -32,16 +32,18 @@ export default async function MorePage() {
         更多功能
       </h1>
 
-      <div className="flex flex-col gap-6 max-w-lg">
+      <div className="flex flex-col gap-6">
         {memberships.length > 1 && (
-          <WeddingListSwitcher
-            activeWeddingId={current.wedding.id}
-            memberships={memberships.map((m) => ({
-              weddingId: m.weddingId,
-              name: m.wedding.name,
-              role: m.role,
-            }))}
-          />
+          <div className="max-w-lg">
+            <WeddingListSwitcher
+              activeWeddingId={current.wedding.id}
+              memberships={memberships.map((m) => ({
+                weddingId: m.weddingId,
+                name: m.wedding.name,
+                role: m.role,
+              }))}
+            />
+          </div>
         )}
 
         <div>
@@ -58,12 +60,15 @@ export default async function MorePage() {
           />
         </div>
 
-        <Link href="/more/collaborators" className="panel text-left card-interactive">
+        <Link
+          href="/more/collaborators"
+          className="panel text-left card-interactive max-w-lg"
+        >
           <div className="font-bold text-[15px]">協作者管理</div>
           <div className="text-text-soft text-sm mt-0.5">邀請家人或婚顧一起規劃</div>
         </Link>
 
-        <div>
+        <div className="max-w-lg">
           <div className="font-bold text-[15px] mb-2">帳號</div>
           <div className="panel mb-3.5">
             <div className="text-sm font-medium">{session?.user?.email ?? "目前帳號"}</div>
