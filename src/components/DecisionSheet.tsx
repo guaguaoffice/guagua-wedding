@@ -14,6 +14,8 @@ import { computeDecisionState, STATUS_TEXT } from "@/lib/decision-state";
 type Availability = "OK" | "WAIT" | "CONFLICT" | null;
 type CandidateStatus = "CANDIDATE" | "REJECTED" | "DECIDED";
 
+const TAG_PRESETS = ["最喜歡", "備選中", "觀察中"];
+
 export type SheetCandidate = {
   id: string;
   name: string;
@@ -66,9 +68,20 @@ function CandidateForm({
     initial?.note || initial?.availability || initial?.tag || initial?.pros || initial?.cons
   );
   const [showMore, setShowMore] = useState(hasAdvancedValues);
+  const [availability, setAvailability] = useState<Availability>(initial?.availability ?? null);
+  const [tag, setTag] = useState(initial?.tag ?? "");
+  const [showCustomTag, setShowCustomTag] = useState(
+    Boolean(initial?.tag) && !TAG_PRESETS.includes(initial?.tag ?? "")
+  );
+
+  const AVAILABILITY_OPTIONS: { value: Availability; label: string; cls: string }[] = [
+    { value: "OK", label: "檔期可", cls: "status-done" },
+    { value: "WAIT", label: "待確認", cls: "status-due" },
+    { value: "CONFLICT", label: "衝突", cls: "status-overdue" },
+  ];
 
   return (
-    <form action={onSubmit} className="candidate-card flex flex-col gap-2">
+    <form action={onSubmit} className="candidate-card flex flex-col gap-3">
       <input
         name="name"
         placeholder="廠商名稱"
@@ -92,44 +105,104 @@ function CandidateForm({
       </div>
 
       {showMore ? (
-        <>
+        <div className="flex flex-col gap-3 animate-slide-up">
           <input
             name="note"
             placeholder="報價說明（例如：套組 38,000 / 面議，會取代上面的數字顯示）"
             defaultValue={initial?.note ?? ""}
             className="w-full border border-border rounded-[9px] px-3 py-2 text-sm bg-card"
           />
-          <div className="flex gap-2">
-            <select
-              name="availability"
-              defaultValue={initial?.availability ?? ""}
-              className="flex-1 border border-border rounded-[9px] px-3 py-2 text-sm bg-card"
-            >
-              <option value="">檔期未填</option>
-              <option value="OK">檔期可</option>
-              <option value="WAIT">檔期待確認</option>
-              <option value="CONFLICT">檔期衝突</option>
-            </select>
-            <input
-              name="tag"
-              placeholder="標籤（例如：最喜歡）"
-              defaultValue={initial?.tag ?? ""}
-              className="flex-1 border border-border rounded-[9px] px-3 py-2 text-sm bg-card"
-            />
+
+          <div>
+            <div className="text-[11px] text-text-soft font-semibold mb-1.5">檔期</div>
+            <input type="hidden" name="availability" value={availability ?? ""} />
+            <div className="flex gap-1.5">
+              {AVAILABILITY_OPTIONS.map((opt) => (
+                <button
+                  key={opt.value}
+                  type="button"
+                  onClick={() => setAvailability(availability === opt.value ? null : opt.value)}
+                  className={`status ${
+                    availability === opt.value ? opt.cls : "status-idle opacity-60"
+                  }`}
+                >
+                  {opt.label}
+                </button>
+              ))}
+            </div>
           </div>
-          <input
-            name="pros"
-            placeholder="優點"
-            defaultValue={initial?.pros ?? ""}
-            className="w-full border border-border rounded-[9px] px-3 py-2 text-sm bg-card"
-          />
-          <input
-            name="cons"
-            placeholder="缺點"
-            defaultValue={initial?.cons ?? ""}
-            className="w-full border border-border rounded-[9px] px-3 py-2 text-sm bg-card"
-          />
-        </>
+
+          <div>
+            <div className="text-[11px] text-text-soft font-semibold mb-1.5">標籤</div>
+            <input type="hidden" name="tag" value={tag} />
+            <div className="flex gap-1.5 flex-wrap">
+              {TAG_PRESETS.map((preset) => (
+                <button
+                  key={preset}
+                  type="button"
+                  onClick={() => {
+                    setShowCustomTag(false);
+                    setTag(tag === preset ? "" : preset);
+                  }}
+                  className={`text-[11px] font-semibold px-2.5 py-1 rounded-full ${
+                    tag === preset
+                      ? "bg-accent-soft text-accent-hover"
+                      : "bg-card-hover text-text-soft"
+                  }`}
+                >
+                  {preset}
+                </button>
+              ))}
+              <button
+                type="button"
+                onClick={() => {
+                  setShowCustomTag(true);
+                  setTag("");
+                }}
+                className={`text-[11px] font-semibold px-2.5 py-1 rounded-full ${
+                  showCustomTag ? "bg-accent-soft text-accent-hover" : "bg-card-hover text-text-soft"
+                }`}
+              >
+                其他…
+              </button>
+            </div>
+            {showCustomTag && (
+              <input
+                placeholder="自訂標籤"
+                value={tag}
+                onChange={(e) => setTag(e.target.value)}
+                className="w-full border border-border rounded-[9px] px-3 py-2 text-sm bg-card mt-1.5"
+              />
+            )}
+          </div>
+
+          <div className="grid grid-cols-2 gap-2">
+            <label className="flex flex-col gap-1">
+              <span className="text-[11px] font-semibold text-accent-hover">👍 優點</span>
+              <input
+                name="pros"
+                defaultValue={initial?.pros ?? ""}
+                className="border border-border rounded-[9px] px-3 py-2 text-sm bg-card"
+              />
+            </label>
+            <label className="flex flex-col gap-1">
+              <span className="text-[11px] font-semibold text-coral">👎 缺點</span>
+              <input
+                name="cons"
+                defaultValue={initial?.cons ?? ""}
+                className="border border-border rounded-[9px] px-3 py-2 text-sm bg-card"
+              />
+            </label>
+          </div>
+
+          <button
+            type="button"
+            onClick={() => setShowMore(false)}
+            className="text-text-soft text-xs font-semibold self-start"
+          >
+            收起欄位
+          </button>
+        </div>
       ) : (
         <button
           type="button"
