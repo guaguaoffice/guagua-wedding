@@ -58,10 +58,22 @@ export default async function MorePage() {
           />
         </div>
 
-        <Link href="/more/collaborators" className="panel text-left card-interactive">
-          <div className="font-bold text-[15px]">協作者管理</div>
-          <div className="text-text-soft text-sm mt-0.5">邀請家人或婚顧一起規劃</div>
-        </Link>
+        <div>
+          <div className="font-bold text-[15px] mb-2">協作者管理</div>
+          <Link
+            href="/more/collaborators"
+            className="panel card-interactive flex items-center justify-between gap-3"
+          >
+            <div className="text-sm font-medium">邀請家人或婚顧一起規劃</div>
+            <svg
+              viewBox="0 0 24 24"
+              className="w-[18px] h-[18px] stroke-text-faint fill-none flex-none"
+              strokeWidth={2}
+            >
+              <path d="M9 6l6 6-6 6" />
+            </svg>
+          </Link>
+        </div>
 
         <div>
           <div className="font-bold text-[15px] mb-2">帳號</div>
