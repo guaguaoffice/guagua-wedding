@@ -45,7 +45,7 @@ export function CollaboratorsClient({
   }
 
   return (
-    <div className="flex flex-col gap-4 max-w-lg">
+    <div className="flex flex-col gap-4">
       <div className="panel">
         {members.map((m) => (
           <div key={m.id} className="lrow">

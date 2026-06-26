@@ -26,7 +26,7 @@ export default async function CollaboratorsPage() {
       </h1>
       <p className="text-text-soft text-sm mb-4">邀請家人或婚顧一起規劃這場婚禮。</p>
 
-      <div className="flex flex-col gap-6 max-w-lg">
+      <div className="flex flex-col gap-6">
         {isOwner && (
           <InviteLinks
             weddingId={current.wedding.id}

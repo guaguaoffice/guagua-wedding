@@ -35,7 +35,7 @@ export function EventForm({
   }
 
   return (
-    <form action={handleSubmit} className="panel flex flex-col gap-4 max-w-lg">
+    <form action={handleSubmit} className="panel flex flex-col gap-4">
       <label className="flex flex-col gap-1.5">
         <span className="text-xs font-semibold text-text-soft">婚禮名稱</span>
         <input
