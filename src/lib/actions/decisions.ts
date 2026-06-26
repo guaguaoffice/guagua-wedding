@@ -52,6 +52,9 @@ function parseCandidateFields(formData: FormData) {
   return {
     type: String(formData.get("type") || "").trim() || null,
     price: price !== null && !Number.isNaN(price) ? price : null,
+    url: String(formData.get("url") || "").trim() || null,
+    socialUrl: String(formData.get("socialUrl") || "").trim() || null,
+    contact: String(formData.get("contact") || "").trim() || null,
     note: String(formData.get("note") || "").trim() || null,
     tag: String(formData.get("tag") || "").trim() || null,
     pros: String(formData.get("pros") || "").trim() || null,

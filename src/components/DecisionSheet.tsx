@@ -21,6 +21,9 @@ export type SheetCandidate = {
   name: string;
   type: string | null;
   price: number | null;
+  url: string | null;
+  socialUrl: string | null;
+  contact: string | null;
   note: string | null;
   pros: string | null;
   cons: string | null;
@@ -103,6 +106,28 @@ function CandidateForm({
           className="flex-1 min-w-0 border border-border rounded-[9px] px-3 py-2 text-sm bg-card"
         />
       </div>
+      <div className="flex gap-2">
+        <input
+          name="url"
+          type="url"
+          placeholder="網站 / 作品集連結"
+          defaultValue={initial?.url ?? ""}
+          className="flex-1 min-w-0 border border-border rounded-[9px] px-3 py-2 text-sm bg-card"
+        />
+        <input
+          name="socialUrl"
+          type="url"
+          placeholder="IG / FB 連結"
+          defaultValue={initial?.socialUrl ?? ""}
+          className="flex-1 min-w-0 border border-border rounded-[9px] px-3 py-2 text-sm bg-card"
+        />
+      </div>
+      <input
+        name="contact"
+        placeholder="聯絡方式（電話 / LINE / Email）"
+        defaultValue={initial?.contact ?? ""}
+        className="w-full border border-border rounded-[9px] px-3 py-2 text-sm bg-card"
+      />
 
       {showMore ? (
         <div className="flex flex-col gap-3 animate-slide-up">
@@ -420,7 +445,34 @@ export function DecisionSheet({
                         風格 <b className="text-text font-semibold">{c.type}</b>
                       </span>
                     )}
+                    {c.contact && <span>聯絡 {c.contact}</span>}
                   </div>
+                  {(c.url || c.socialUrl) && (
+                    <div className="flex flex-wrap gap-3 text-[12.5px] mb-2.5">
+                      {c.url && (
+                        <a
+                          href={c.url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-accent-hover font-semibold underline underline-offset-2"
+                          onClick={(e) => e.stopPropagation()}
+                        >
+                          🔗 網站
+                        </a>
+                      )}
+                      {c.socialUrl && (
+                        <a
+                          href={c.socialUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-accent-hover font-semibold underline underline-offset-2"
+                          onClick={(e) => e.stopPropagation()}
+                        >
+                          🔗 IG / FB
+                        </a>
+                      )}
+                    </div>
+                  )}
                   {(c.pros || c.cons) && (
                     <div className="text-[12.5px] text-text-soft mb-2.5 flex flex-col gap-1">
                       {c.pros && (
