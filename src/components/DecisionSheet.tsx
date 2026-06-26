@@ -62,6 +62,11 @@ function CandidateForm({
   onSubmit: (formData: FormData) => void;
   submitLabel: string;
 }) {
+  const hasAdvancedValues = Boolean(
+    initial?.note || initial?.availability || initial?.tag || initial?.pros || initial?.cons
+  );
+  const [showMore, setShowMore] = useState(hasAdvancedValues);
+
   return (
     <form action={onSubmit} className="candidate-card flex flex-col gap-2">
       <input
@@ -85,42 +90,56 @@ function CandidateForm({
           className="flex-1 border border-border rounded-[9px] px-3 py-2 text-sm bg-card"
         />
       </div>
-      <input
-        name="note"
-        placeholder="報價說明（例如：套組 38,000 / 面議，會取代上面的數字顯示）"
-        defaultValue={initial?.note ?? ""}
-        className="w-full border border-border rounded-[9px] px-3 py-2 text-sm bg-card"
-      />
-      <div className="flex gap-2">
-        <select
-          name="availability"
-          defaultValue={initial?.availability ?? ""}
-          className="flex-1 border border-border rounded-[9px] px-3 py-2 text-sm bg-card"
+
+      {showMore ? (
+        <>
+          <input
+            name="note"
+            placeholder="報價說明（例如：套組 38,000 / 面議，會取代上面的數字顯示）"
+            defaultValue={initial?.note ?? ""}
+            className="w-full border border-border rounded-[9px] px-3 py-2 text-sm bg-card"
+          />
+          <div className="flex gap-2">
+            <select
+              name="availability"
+              defaultValue={initial?.availability ?? ""}
+              className="flex-1 border border-border rounded-[9px] px-3 py-2 text-sm bg-card"
+            >
+              <option value="">檔期未填</option>
+              <option value="OK">檔期可</option>
+              <option value="WAIT">檔期待確認</option>
+              <option value="CONFLICT">檔期衝突</option>
+            </select>
+            <input
+              name="tag"
+              placeholder="標籤（例如：最喜歡）"
+              defaultValue={initial?.tag ?? ""}
+              className="flex-1 border border-border rounded-[9px] px-3 py-2 text-sm bg-card"
+            />
+          </div>
+          <input
+            name="pros"
+            placeholder="優點"
+            defaultValue={initial?.pros ?? ""}
+            className="w-full border border-border rounded-[9px] px-3 py-2 text-sm bg-card"
+          />
+          <input
+            name="cons"
+            placeholder="缺點"
+            defaultValue={initial?.cons ?? ""}
+            className="w-full border border-border rounded-[9px] px-3 py-2 text-sm bg-card"
+          />
+        </>
+      ) : (
+        <button
+          type="button"
+          onClick={() => setShowMore(true)}
+          className="text-accent-hover text-xs font-semibold self-start"
         >
-          <option value="">檔期未填</option>
-          <option value="OK">檔期可</option>
-          <option value="WAIT">檔期待確認</option>
-          <option value="CONFLICT">檔期衝突</option>
-        </select>
-        <input
-          name="tag"
-          placeholder="標籤（例如：最喜歡）"
-          defaultValue={initial?.tag ?? ""}
-          className="flex-1 border border-border rounded-[9px] px-3 py-2 text-sm bg-card"
-        />
-      </div>
-      <input
-        name="pros"
-        placeholder="優點"
-        defaultValue={initial?.pros ?? ""}
-        className="w-full border border-border rounded-[9px] px-3 py-2 text-sm bg-card"
-      />
-      <input
-        name="cons"
-        placeholder="缺點"
-        defaultValue={initial?.cons ?? ""}
-        className="w-full border border-border rounded-[9px] px-3 py-2 text-sm bg-card"
-      />
+          ＋ 顯示更多欄位（檔期、標籤、優缺點）
+        </button>
+      )}
+
       <div className="flex gap-2 mt-1">
         <button
           type="button"
