@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { NAV_ITEMS, isActiveNav } from "@/components/nav-items";
@@ -27,9 +28,13 @@ export function AppShell({
     <div className="max-w-[1180px] mx-auto md:grid md:grid-cols-[236px_1fr] md:grid-rows-[72px_1fr] md:min-h-screen">
       <aside className="hidden md:flex md:flex-col md:gap-1 md:p-[20px_14px] md:row-span-2 md:border-r md:border-border md:bg-bg md:sticky md:top-0 md:h-screen">
         <div className="flex items-center gap-2.5 px-2.5 pb-[18px]">
-          <div className="w-[34px] h-[34px] rounded-[10px] bg-gradient-to-br from-accent to-accent-hover grid place-items-center text-white font-display font-semibold text-lg">
-            呱
-          </div>
+          <Image
+            src="/logo.png"
+            alt="呱呱婚禮"
+            width={34}
+            height={34}
+            className="w-[34px] h-[34px] rounded-[10px] object-cover flex-none"
+          />
           <div>
             <b className="text-[16px]">呱呱婚禮</b>
             <small className="block text-text-faint text-[11px] tracking-wider">
