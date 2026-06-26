@@ -14,7 +14,7 @@ export async function lockCandidate(decisionItemId: string, candidateId: string)
       where: { decisionItemId, status: "DECIDED" },
       data: { status: "CANDIDATE" },
     });
-    await tx.candidate.update({
+    const candidate = await tx.candidate.update({
       where: { id: candidateId },
       data: { status: "DECIDED" },
     });
@@ -26,6 +26,22 @@ export async function lockCandidate(decisionItemId: string, candidateId: string)
         decidedById: current.userId,
       },
     });
+
+    if (candidate.price !== null) {
+      const existingBudgetItem = await tx.budgetItem.findFirst({ where: { decisionItemId } });
+      if (!existingBudgetItem) {
+        const decisionItem = await tx.decisionItem.findUnique({ where: { id: decisionItemId } });
+        await tx.budgetItem.create({
+          data: {
+            weddingId: current.wedding.id,
+            decisionItemId,
+            name: candidate.name,
+            category: decisionItem?.category || "其他",
+            totalAmount: candidate.price,
+          },
+        });
+      }
+    }
   });
 
   revalidatePath("/plan");
