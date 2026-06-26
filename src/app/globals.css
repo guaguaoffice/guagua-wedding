@@ -109,6 +109,15 @@ body {
   box-shadow: var(--shadow);
 }
 
+/* Same look as .card, but without the whole-block hover —
+   for containers whose children (e.g. rows) handle their own hover. */
+.list-card {
+  background: var(--color-card);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+}
+
 /* ---------- buttons ---------- */
 
 .btn {

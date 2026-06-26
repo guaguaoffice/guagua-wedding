@@ -101,7 +101,7 @@ export default async function HomePage() {
       )}
 
       {focusItems.length > 0 && (
-        <div className="panel mt-3.5 overflow-hidden p-0">
+        <div className="list-card mt-3.5 overflow-hidden">
           <div className="flex items-center gap-2.5 px-4 pt-3.5 pb-2 font-bold text-sm">
             需要你決定
             {overdueCount > 0 && (
