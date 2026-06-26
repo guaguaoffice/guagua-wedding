@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/prisma";
 import { getCurrentWedding } from "@/lib/wedding";
+import type { CandidateAvailability } from "@/generated/prisma/enums";
 
 export async function lockCandidate(decisionItemId: string, candidateId: string) {
   const current = await getCurrentWedding();
@@ -39,19 +40,43 @@ export async function rejectCandidate(candidateId: string, reason?: string) {
   revalidatePath("/plan");
 }
 
+function parseCandidateFields(formData: FormData) {
+  const priceRaw = String(formData.get("price") || "").trim();
+  const price = priceRaw ? Number(priceRaw.replace(/[^0-9.]/g, "")) : null;
+  const availabilityRaw = String(formData.get("availability") || "").trim();
+  const availability: CandidateAvailability | null =
+    availabilityRaw === "OK" || availabilityRaw === "WAIT" || availabilityRaw === "CONFLICT"
+      ? availabilityRaw
+      : null;
+
+  return {
+    type: String(formData.get("type") || "").trim() || null,
+    price: price !== null && !Number.isNaN(price) ? price : null,
+    note: String(formData.get("note") || "").trim() || null,
+    tag: String(formData.get("tag") || "").trim() || null,
+    pros: String(formData.get("pros") || "").trim() || null,
+    cons: String(formData.get("cons") || "").trim() || null,
+    availability,
+  };
+}
+
 export async function addCandidate(decisionItemId: string, formData: FormData) {
   const name = String(formData.get("name") || "").trim();
   if (!name) return;
-  const priceRaw = String(formData.get("price") || "").trim();
-  const price = priceRaw ? Number(priceRaw.replace(/[^0-9.]/g, "")) : undefined;
 
   await prisma.candidate.create({
-    data: {
-      decisionItemId,
-      name,
-      price: price && !Number.isNaN(price) ? price : undefined,
-      type: String(formData.get("type") || "").trim() || undefined,
-    },
+    data: { decisionItemId, name, ...parseCandidateFields(formData) },
+  });
+  revalidatePath("/plan");
+}
+
+export async function updateCandidate(candidateId: string, formData: FormData) {
+  const name = String(formData.get("name") || "").trim();
+  if (!name) return;
+
+  await prisma.candidate.update({
+    where: { id: candidateId },
+    data: { name, ...parseCandidateFields(formData) },
   });
   revalidatePath("/plan");
 }
