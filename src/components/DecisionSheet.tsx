@@ -550,11 +550,11 @@ export function DecisionSheet({
                     </form>
                   )}
                   {c.status === "CANDIDATE" && rejectingId !== c.id && (
-                    <div className="flex items-center gap-3">
+                    <div className="flex items-center gap-2">
                       <button
                         disabled={pending}
                         onClick={() => setRejectingId(c.id)}
-                        className="text-text-faint hover:text-coral text-[12.5px] font-semibold"
+                        className="btn btn-secondary flex-1 text-[12.5px] py-2"
                       >
                         淘汰
                       </button>
