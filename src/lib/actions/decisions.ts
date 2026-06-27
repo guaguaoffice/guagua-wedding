@@ -56,6 +56,26 @@ export async function rejectCandidate(candidateId: string, reason?: string) {
   revalidatePath("/plan");
 }
 
+export async function restoreCandidate(candidateId: string) {
+  await prisma.candidate.update({
+    where: { id: candidateId },
+    data: { status: "CANDIDATE", rejectedReason: null },
+  });
+  revalidatePath("/plan");
+}
+
+export async function unlockCandidate(decisionItemId: string, candidateId: string) {
+  await prisma.$transaction(async (tx) => {
+    await tx.candidate.update({
+      where: { id: candidateId },
+      data: { status: "CANDIDATE" },
+    });
+    await tx.decisionRecord.deleteMany({ where: { decisionItemId } });
+  });
+  revalidatePath("/plan");
+  revalidatePath("/");
+}
+
 function parseCandidateFields(formData: FormData) {
   const priceRaw = String(formData.get("price") || "").trim();
   const price = priceRaw ? Number(priceRaw.replace(/[^0-9.]/g, "")) : null;

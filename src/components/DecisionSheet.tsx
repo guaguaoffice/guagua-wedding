@@ -7,6 +7,8 @@ import {
   addCandidate,
   lockCandidate,
   rejectCandidate,
+  restoreCandidate,
+  unlockCandidate,
   updateCandidate,
 } from "@/lib/actions/decisions";
 import { computeDecisionState, STATUS_TEXT } from "@/lib/decision-state";
@@ -272,12 +274,28 @@ export function DecisionSheet({
 
   const state = computeDecisionState(item.suggestedDecideBy, !!item.decisionRecord);
   const locked = item.candidates.filter((c) => c.status === "DECIDED");
-  const visible = item.candidates;
+  const visible = [...item.candidates].sort(
+    (a, b) => (a.status === "REJECTED" ? 1 : 0) - (b.status === "REJECTED" ? 1 : 0)
+  );
   const showCompareNote = segment === "cmp";
 
   function handleLock(candidateId: string) {
     startTransition(async () => {
       await lockCandidate(item!.id, candidateId);
+      router.refresh();
+    });
+  }
+
+  function handleUnlock(candidateId: string) {
+    startTransition(async () => {
+      await unlockCandidate(item!.id, candidateId);
+      router.refresh();
+    });
+  }
+
+  function handleRestore(candidateId: string) {
+    startTransition(async () => {
+      await restoreCandidate(candidateId);
       router.refresh();
     });
   }
@@ -404,15 +422,21 @@ export function DecisionSheet({
               return (
                 <div
                   key={c.id}
-                  className={`candidate-card ${c.status === "DECIDED" ? "locked" : ""}`}
+                  className={`candidate-card ${c.status === "DECIDED" ? "locked" : ""} ${
+                    c.status === "REJECTED" ? "opacity-55" : ""
+                  }`}
                 >
                   <div className="flex items-center justify-between gap-2.5 mb-2">
                     <div className="font-bold text-[15px] flex items-center gap-2 flex-wrap">
-                      {c.name}
+                      <span className={c.status === "REJECTED" ? "line-through" : ""}>
+                        {c.name}
+                      </span>
                       {c.status === "DECIDED" && (
-                        <span className="status status-done">已定</span>
+                        <span className="text-[11px] font-bold px-2.5 py-1 rounded-full bg-accent text-white inline-flex items-center gap-1">
+                          ✓ 已選定
+                        </span>
                       )}
-                      {c.status !== "DECIDED" && c.tag && (
+                      {c.status === "CANDIDATE" && c.tag && (
                         <span className="text-[11px] font-semibold px-2 py-0.5 rounded-full bg-accent-soft text-accent-hover">
                           {c.tag}
                         </span>
@@ -526,11 +550,11 @@ export function DecisionSheet({
                     </form>
                   )}
                   {c.status === "CANDIDATE" && rejectingId !== c.id && (
-                    <div className="flex gap-2">
+                    <div className="flex items-center gap-3">
                       <button
                         disabled={pending}
                         onClick={() => setRejectingId(c.id)}
-                        className="btn btn-secondary flex-1 text-[12.5px] py-2"
+                        className="text-text-faint hover:text-coral text-[12.5px] font-semibold"
                       >
                         淘汰
                       </button>
@@ -542,6 +566,24 @@ export function DecisionSheet({
                         標記已定
                       </button>
                     </div>
+                  )}
+                  {c.status === "DECIDED" && segment !== "done" && (
+                    <button
+                      disabled={pending}
+                      onClick={() => handleUnlock(c.id)}
+                      className="text-text-faint hover:text-coral text-[12.5px] font-semibold"
+                    >
+                      取消已定
+                    </button>
+                  )}
+                  {c.status === "REJECTED" && (
+                    <button
+                      disabled={pending}
+                      onClick={() => handleRestore(c.id)}
+                      className="btn btn-secondary text-[12.5px] py-2 px-4"
+                    >
+                      ↺ 復活
+                    </button>
                   )}
                 </div>
               );
