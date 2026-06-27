@@ -554,7 +554,11 @@ export function DecisionSheet({
                       <button
                         disabled={pending}
                         onClick={() => setRejectingId(c.id)}
-                        className="btn btn-secondary flex-1 text-[12.5px] py-2"
+                        className={`btn flex-1 text-[12.5px] py-2 ${
+                          locked.length > 0
+                            ? "bg-card-hover text-text-soft hover:bg-accent-soft hover:text-accent-hover"
+                            : "btn-primary"
+                        }`}
                       >
                         淘汰
                       </button>
