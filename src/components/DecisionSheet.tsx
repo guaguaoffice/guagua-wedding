@@ -561,7 +561,11 @@ export function DecisionSheet({
                       <button
                         disabled={pending}
                         onClick={() => handleLock(c.id)}
-                        className="btn btn-primary flex-1 text-[12.5px] py-2"
+                        className={`btn flex-1 text-[12.5px] py-2 ${
+                          locked.length > 0
+                            ? "bg-card-hover text-text-soft hover:bg-accent-soft hover:text-accent-hover"
+                            : "btn-primary"
+                        }`}
                       >
                         標記已定
                       </button>
@@ -571,9 +575,9 @@ export function DecisionSheet({
                     <button
                       disabled={pending}
                       onClick={() => handleUnlock(c.id)}
-                      className="text-text-faint hover:text-coral text-[12.5px] font-semibold"
+                      className="btn btn-primary flex-1 text-[12.5px] py-2"
                     >
-                      取消已定
+                      ✓ 已選定 · 點此取消
                     </button>
                   )}
                   {c.status === "REJECTED" && (
