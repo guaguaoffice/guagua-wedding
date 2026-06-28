@@ -95,41 +95,56 @@ function CandidateForm({
         className="w-full border border-border rounded-[9px] px-3 py-2 text-sm bg-card"
       />
       <div className="flex gap-2">
-        <input
-          name="type"
-          placeholder="風格 / 類型"
-          defaultValue={initial?.type ?? ""}
-          className="flex-1 min-w-0 border border-border rounded-[9px] px-3 py-2 text-sm bg-card"
-        />
-        <input
-          name="price"
-          placeholder="報價（數字）"
-          defaultValue={initial?.price ?? ""}
-          className="flex-1 min-w-0 border border-border rounded-[9px] px-3 py-2 text-sm bg-card"
-        />
+        <label className="flex-1 min-w-0 flex flex-col gap-1">
+          <span className="text-[11px] text-text-soft font-semibold">風格 / 類型</span>
+          <input
+            name="type"
+            placeholder="例如：宴會廳、戶外庭園"
+            defaultValue={initial?.type ?? ""}
+            className="w-full min-w-0 border border-border rounded-[9px] px-3 py-2 text-sm bg-card"
+          />
+        </label>
+        <label className="flex-1 min-w-0 flex flex-col gap-1">
+          <span className="text-[11px] text-text-soft font-semibold">報價</span>
+          <input
+            name="price"
+            placeholder="數字，例如：38000"
+            defaultValue={initial?.price ?? ""}
+            className="w-full min-w-0 border border-border rounded-[9px] px-3 py-2 text-sm bg-card"
+          />
+        </label>
       </div>
       <div className="flex gap-2">
-        <input
-          name="url"
-          type="url"
-          placeholder="網站 / 作品集連結"
-          defaultValue={initial?.url ?? ""}
-          className="flex-1 min-w-0 border border-border rounded-[9px] px-3 py-2 text-sm bg-card"
-        />
-        <input
-          name="socialUrl"
-          type="url"
-          placeholder="IG / FB 連結"
-          defaultValue={initial?.socialUrl ?? ""}
-          className="flex-1 min-w-0 border border-border rounded-[9px] px-3 py-2 text-sm bg-card"
-        />
+        <label className="flex-1 min-w-0 flex flex-col gap-1">
+          <span className="text-[11px] text-text-soft font-semibold">🔗 網站 / 作品集</span>
+          <input
+            name="url"
+            type="url"
+            placeholder="https://..."
+            defaultValue={initial?.url ?? ""}
+            className="w-full min-w-0 border border-border rounded-[9px] px-3 py-2 text-sm bg-card"
+          />
+        </label>
+        <label className="flex-1 min-w-0 flex flex-col gap-1">
+          <span className="text-[11px] text-text-soft font-semibold">🔗 IG / FB</span>
+          <input
+            name="socialUrl"
+            type="url"
+            placeholder="https://..."
+            defaultValue={initial?.socialUrl ?? ""}
+            className="w-full min-w-0 border border-border rounded-[9px] px-3 py-2 text-sm bg-card"
+          />
+        </label>
       </div>
-      <input
-        name="contact"
-        placeholder="聯絡方式（電話 / LINE / Email）"
-        defaultValue={initial?.contact ?? ""}
-        className="w-full border border-border rounded-[9px] px-3 py-2 text-sm bg-card"
-      />
+      <label className="flex flex-col gap-1">
+        <span className="text-[11px] text-text-soft font-semibold">聯絡方式</span>
+        <input
+          name="contact"
+          placeholder="電話 / LINE / Email"
+          defaultValue={initial?.contact ?? ""}
+          className="w-full border border-border rounded-[9px] px-3 py-2 text-sm bg-card"
+        />
+      </label>
 
       {showMore ? (
         <div className="flex flex-col gap-3 animate-slide-up">
