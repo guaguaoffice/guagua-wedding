@@ -79,6 +79,22 @@ function CandidateForm({
     Boolean(initial?.tag) && !TAG_PRESETS.includes(initial?.tag ?? "")
   );
 
+  type LinkField = "url" | "socialUrl";
+  const LINK_OPTIONS: { key: LinkField; label: string }[] = [
+    { key: "url", label: "網站" },
+    { key: "url", label: "作品集" },
+    { key: "socialUrl", label: "IG" },
+    { key: "socialUrl", label: "FB" },
+  ];
+  const [linkRows, setLinkRows] = useState<{ key: LinkField; label: string; value: string }[]>(
+    () => {
+      const rows: { key: LinkField; label: string; value: string }[] = [];
+      if (initial?.url) rows.push({ key: "url", label: "網站", value: initial.url });
+      if (initial?.socialUrl) rows.push({ key: "socialUrl", label: "IG", value: initial.socialUrl });
+      return rows;
+    }
+  );
+
   const AVAILABILITY_OPTIONS: { value: Availability; label: string; cls: string }[] = [
     { value: "OK", label: "檔期可", cls: "status-done" },
     { value: "WAIT", label: "待確認", cls: "status-due" },
@@ -117,27 +133,46 @@ function CandidateForm({
           />
         </label>
       </div>
-      <div className="flex gap-2">
-        <label className="flex-1 min-w-0 flex flex-col gap-1">
-          <span className="text-[11px] text-text-soft font-semibold">🔗 網站 / 作品集</span>
-          <input
-            name="url"
-            type="url"
-            placeholder="https://..."
-            defaultValue={initial?.url ?? ""}
-            className="w-full min-w-0 border border-border rounded-[9px] px-3 py-2 text-sm bg-card"
-          />
-        </label>
-        <label className="flex-1 min-w-0 flex flex-col gap-1">
-          <span className="text-[11px] text-text-soft font-semibold">🔗 IG / FB</span>
-          <input
-            name="socialUrl"
-            type="url"
-            placeholder="https://..."
-            defaultValue={initial?.socialUrl ?? ""}
-            className="w-full min-w-0 border border-border rounded-[9px] px-3 py-2 text-sm bg-card"
-          />
-        </label>
+      <div>
+        <div className="text-[11px] text-text-soft font-semibold mb-1.5">連結</div>
+        <div className="flex flex-col gap-2">
+          {linkRows.map((row, i) => (
+            <div key={i} className="flex items-center gap-2">
+              <span className="text-[12px] font-semibold text-text-soft w-[52px] flex-none">
+                🔗 {row.label}
+              </span>
+              <input
+                name={row.key}
+                type="url"
+                placeholder="https://..."
+                defaultValue={row.value}
+                className="flex-1 min-w-0 border border-border rounded-[9px] px-3 py-2 text-sm bg-card"
+              />
+              <button
+                type="button"
+                onClick={() => setLinkRows((prev) => prev.filter((_, idx) => idx !== i))}
+                aria-label="移除連結"
+                className="text-text-faint hover:text-coral p-1 flex-none"
+              >
+                ✕
+              </button>
+            </div>
+          ))}
+          <div className="flex gap-1.5 flex-wrap">
+            {LINK_OPTIONS.filter((opt) => !linkRows.some((r) => r.key === opt.key)).map((opt) => (
+              <button
+                key={opt.label}
+                type="button"
+                onClick={() =>
+                  setLinkRows((prev) => [...prev, { key: opt.key, label: opt.label, value: "" }])
+                }
+                className="text-[11px] font-semibold px-2.5 py-1 rounded-full bg-card-hover text-text-soft hover:bg-accent-soft hover:text-accent-hover"
+              >
+                ＋ {opt.label}
+              </button>
+            ))}
+          </div>
+        </div>
       </div>
       <label className="flex flex-col gap-1">
         <span className="text-[11px] text-text-soft font-semibold">聯絡方式</span>
