@@ -135,7 +135,7 @@ function CandidateForm({
         <div className="flex flex-col gap-3 animate-slide-up">
           <input
             name="note"
-            placeholder="報價說明（例如：套組 38,000 / 面議，會取代上面的數字顯示）"
+            placeholder="報價說明（例如：套組 38,000 / 面議）"
             defaultValue={initial?.note ?? ""}
             className="w-full border border-border rounded-[9px] px-3 py-2 text-sm bg-card"
           />
