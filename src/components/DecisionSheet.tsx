@@ -590,7 +590,7 @@ export function DecisionSheet({
                       onClick={() => handleRestore(c.id)}
                       className="btn btn-secondary text-[12.5px] py-2 px-4"
                     >
-                      ↺ 復活
+                      ↺ 重新考慮
                     </button>
                   )}
                 </div>
