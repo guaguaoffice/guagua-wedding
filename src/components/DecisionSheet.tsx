@@ -87,13 +87,16 @@ function CandidateForm({
 
   return (
     <form action={onSubmit} className="candidate-card flex flex-col gap-3">
-      <input
-        name="name"
-        placeholder="廠商名稱"
-        defaultValue={initial?.name ?? ""}
-        required
-        className="w-full border border-border rounded-[9px] px-3 py-2 text-sm bg-card"
-      />
+      <label className="flex flex-col gap-1">
+        <span className="text-[11px] text-text-soft font-semibold">廠商名稱</span>
+        <input
+          name="name"
+          placeholder="例如：晶華酒店"
+          defaultValue={initial?.name ?? ""}
+          required
+          className="w-full border border-border rounded-[9px] px-3 py-2 text-sm bg-card"
+        />
+      </label>
       <div className="flex gap-2">
         <label className="flex-1 min-w-0 flex flex-col gap-1">
           <span className="text-[11px] text-text-soft font-semibold">風格 / 類型</span>
@@ -148,12 +151,15 @@ function CandidateForm({
 
       {showMore ? (
         <div className="flex flex-col gap-3 animate-slide-up">
-          <input
-            name="note"
-            placeholder="報價說明（例如：套組 38,000 / 面議）"
-            defaultValue={initial?.note ?? ""}
-            className="w-full border border-border rounded-[9px] px-3 py-2 text-sm bg-card"
-          />
+          <label className="flex flex-col gap-1">
+            <span className="text-[11px] text-text-soft font-semibold">報價說明</span>
+            <input
+              name="note"
+              placeholder="例如：套組 38,000 / 面議"
+              defaultValue={initial?.note ?? ""}
+              className="w-full border border-border rounded-[9px] px-3 py-2 text-sm bg-card"
+            />
+          </label>
 
           <div>
             <div className="text-[11px] text-text-soft font-semibold mb-1.5">檔期</div>
