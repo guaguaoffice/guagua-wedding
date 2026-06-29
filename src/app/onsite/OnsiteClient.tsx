@@ -318,14 +318,24 @@ export function OnsiteClient({
           </form>
 
           {unassigned.length > 0 && (
-            <div className="panel mt-3.5 border-l-[3px] border-l-amber">
-              <div className="flex items-center gap-2 mb-2">
-                <span className="status status-due">待安排</span>
-                <span className="font-bold text-[15px]">尚未安排桌位（{unassigned.length}）</span>
+            <div className="rounded-[var(--radius-sm)] bg-accent-soft p-4 mt-3.5">
+              <div className="flex items-center gap-2 mb-2.5">
+                <div className="w-6 h-6 rounded-full bg-accent text-white grid place-items-center flex-none">
+                  <svg viewBox="0 0 24 24" className="w-3.5 h-3.5 stroke-current fill-none" strokeWidth={2.2}>
+                    <circle cx="12" cy="8" r="3.2" />
+                    <path d="M5 19a7 7 0 0114 0" />
+                  </svg>
+                </div>
+                <span className="font-bold text-[15px] text-accent-hover">
+                  尚未安排桌位（{unassigned.length}）
+                </span>
               </div>
               <div className="flex flex-col gap-1.5">
                 {unassigned.map((g) => (
-                  <div key={g.id} className="lrow">
+                  <div
+                    key={g.id}
+                    className="flex items-center gap-3 bg-card rounded-[10px] px-3 py-2.5"
+                  >
                     <div className="flex-1 min-w-0 font-medium text-sm">
                       {g.name}
                       {g.plusOneCount > 0 && ` +${g.plusOneCount}`}
