@@ -3,9 +3,14 @@ import { requireCurrentWedding, getMemberships } from "@/lib/wedding";
 import { getWeddingMembers } from "@/lib/queries";
 import { auth, signOut } from "@/lib/auth";
 import { toNumOrNull } from "@/lib/decimal";
-import { WeddingListSwitcher } from "@/app/more/WeddingListSwitcher";
 import { EventForm } from "@/app/more/EventForm";
 import { AccountSection } from "@/app/more/AccountSection";
+
+const ROLE_LABEL: Record<string, string> = {
+  OWNER: "主辦人",
+  COLLABORATOR: "協作者",
+  VIEWER: "檢視者",
+};
 
 export default async function MorePage() {
   const current = await requireCurrentWedding();
@@ -31,14 +36,28 @@ export default async function MorePage() {
       </h1>
 
       <div className="flex flex-col gap-6">
-        <WeddingListSwitcher
-          activeWeddingId={current.wedding.id}
-          memberships={memberships.map((m) => ({
-            weddingId: m.weddingId,
-            name: m.wedding.name,
-            role: m.role,
-          }))}
-        />
+        <div>
+          <div className="font-bold text-[15px] mb-2">我的婚禮</div>
+          <Link
+            href="/more/weddings"
+            className="panel card-interactive flex items-center justify-between gap-3"
+          >
+            <div>
+              <div className="text-sm font-medium">{current.wedding.name}</div>
+              <div className="text-xs text-text-soft mt-0.5">
+                目前顯示 · {ROLE_LABEL[current.role]}
+                {memberships.length > 1 && ` · 共 ${memberships.length} 場婚禮`}
+              </div>
+            </div>
+            <svg
+              viewBox="0 0 24 24"
+              className="w-[18px] h-[18px] stroke-text-faint fill-none flex-none"
+              strokeWidth={2}
+            >
+              <path d="M9 6l6 6-6 6" />
+            </svg>
+          </Link>
+        </div>
 
         <div>
           <div className="font-bold text-[15px] mb-2">活動資訊</div>

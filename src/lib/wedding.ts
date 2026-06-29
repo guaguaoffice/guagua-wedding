@@ -70,5 +70,13 @@ export async function createOwnWedding() {
   });
   await seedDefaultWeddingData(wedding.id, userId);
 
+  const cookieStore = await cookies();
+  cookieStore.set(ACTIVE_WEDDING_COOKIE, wedding.id, {
+    httpOnly: true,
+    sameSite: "lax",
+    path: "/",
+    maxAge: 60 * 60 * 24 * 365,
+  });
+
   redirect("/");
 }
