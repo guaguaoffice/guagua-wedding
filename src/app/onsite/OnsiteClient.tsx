@@ -334,7 +334,7 @@ export function OnsiteClient({
                 {unassigned.map((g) => (
                   <div
                     key={g.id}
-                    className="flex items-center gap-3 bg-card rounded-[10px] px-3 py-2.5"
+                    className="flex items-center gap-3 bg-card border-l-[3px] border-l-accent rounded-[10px] px-3 py-2.5"
                   >
                     <div className="flex-1 min-w-0 font-medium text-sm">
                       {g.name}
