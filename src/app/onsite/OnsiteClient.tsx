@@ -2,13 +2,13 @@
 
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-import { useTransition } from "react";
+import { useState, useTransition } from "react";
 import {
   addWeddingDayEvent,
   cycleWeddingDayEventStatus,
   deleteWeddingDayEvent,
 } from "@/lib/actions/onsite";
-import { addTable, assignGuestTable, deleteTable } from "@/lib/actions/tables";
+import { addTable, assignGuestTable, deleteTable, updateTable } from "@/lib/actions/tables";
 
 const TABS = [
   { key: "table", label: "桌位" },
@@ -99,6 +99,7 @@ export function OnsiteClient({
   const searchParams = useSearchParams();
   const tab = searchParams.get("tab") ?? "table";
   const [pending, startTransition] = useTransition();
+  const [editingTableId, setEditingTableId] = useState<string | null>(null);
 
   function setTab(next: string) {
     router.replace(`/onsite?tab=${next}`, { scroll: false });
@@ -107,6 +108,14 @@ export function OnsiteClient({
   function handleAddTable(formData: FormData) {
     startTransition(async () => {
       await addTable(weddingId, formData);
+      router.refresh();
+    });
+  }
+
+  function handleUpdateTable(tableId: string, formData: FormData) {
+    startTransition(async () => {
+      await updateTable(tableId, formData);
+      setEditingTableId(null);
       router.refresh();
     });
   }
@@ -191,22 +200,74 @@ export function OnsiteClient({
                 const seats = members.reduce((s, g) => s + 1 + g.plusOneCount, 0);
                 return (
                   <div key={t.id} className="panel">
-                    <div className="flex items-center justify-between mb-2">
-                      <div className="font-bold text-[15px]">{t.name}</div>
-                      <div className="flex items-center gap-2">
-                        <div className="text-xs text-text-soft">
-                          {seats}
-                          {t.capacity ? ` / ${t.capacity}` : ""} 位
-                        </div>
+                    {editingTableId === t.id ? (
+                      <form
+                        action={(formData) => handleUpdateTable(t.id, formData)}
+                        className="flex items-center gap-2 mb-2"
+                      >
+                        <input
+                          name="name"
+                          defaultValue={t.name}
+                          required
+                          autoFocus
+                          disabled={pending}
+                          className="flex-1 min-w-0 border border-border rounded-[9px] px-2.5 py-1.5 text-sm bg-card"
+                        />
+                        <input
+                          name="capacity"
+                          type="number"
+                          min={1}
+                          defaultValue={t.capacity ?? ""}
+                          placeholder="人數"
+                          disabled={pending}
+                          className="w-16 border border-border rounded-[9px] px-2.5 py-1.5 text-sm bg-card"
+                        />
                         <button
-                          onClick={() => handleDeleteTable(t.id)}
-                          aria-label="刪除桌次"
-                          className="text-text-faint hover:text-coral p-1"
+                          type="button"
+                          onClick={() => setEditingTableId(null)}
+                          disabled={pending}
+                          className="text-text-faint hover:text-coral text-xs font-semibold px-2"
                         >
-                          ✕
+                          取消
                         </button>
+                        <button
+                          type="submit"
+                          disabled={pending}
+                          className="btn btn-primary text-xs px-3 py-1.5"
+                        >
+                          儲存
+                        </button>
+                      </form>
+                    ) : (
+                      <div className="flex items-center justify-between mb-2">
+                        <button
+                          onClick={() => setEditingTableId(t.id)}
+                          className="font-bold text-[15px] flex items-center gap-1.5 hover:text-accent-hover"
+                        >
+                          {t.name}
+                          <svg
+                            viewBox="0 0 24 24"
+                            className="w-3.5 h-3.5 stroke-text-faint fill-none"
+                            strokeWidth={2}
+                          >
+                            <path d="M16.5 3.5l4 4L7 21l-4 1 1-4z" />
+                          </svg>
+                        </button>
+                        <div className="flex items-center gap-2">
+                          <div className="text-xs text-text-soft">
+                            {seats}
+                            {t.capacity ? ` / ${t.capacity}` : ""} 位
+                          </div>
+                          <button
+                            onClick={() => handleDeleteTable(t.id)}
+                            aria-label="刪除桌次"
+                            className="text-text-faint hover:text-coral p-1"
+                          >
+                            ✕
+                          </button>
+                        </div>
                       </div>
-                    </div>
+                    )}
                     <div className="flex flex-wrap gap-1.5">
                       {members.length === 0 ? (
                         <span className="text-[12.5px] text-text-faint">還沒有人坐這桌</span>

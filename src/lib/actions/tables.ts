@@ -22,6 +22,20 @@ export async function addTable(weddingId: string, formData: FormData) {
   revalidatePath("/guest");
 }
 
+export async function updateTable(tableId: string, formData: FormData) {
+  const name = String(formData.get("name") || "").trim();
+  if (!name) return;
+  const capacityRaw = String(formData.get("capacity") || "").trim();
+  const capacity = capacityRaw ? Number(capacityRaw) : null;
+
+  await prisma.table.update({
+    where: { id: tableId },
+    data: { name, capacity: capacity !== null && !Number.isNaN(capacity) ? capacity : null },
+  });
+  revalidatePath("/onsite");
+  revalidatePath("/guest");
+}
+
 export async function deleteTable(tableId: string) {
   await prisma.table.delete({ where: { id: tableId } });
   revalidatePath("/onsite");
