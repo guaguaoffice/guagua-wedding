@@ -162,7 +162,7 @@ export function GuestClient({
 
       {tab === "list" && (
         <div>
-          <CollaboratorsPreview collaborators={collaborators} />
+          <CollaboratorsPreview collaborators={collaborators} tables={tables} />
 
           {tables.length === 0 && guests.length > 0 && (
             <div className="bg-card-hover rounded-[10px] px-3.5 py-2.5 mb-3.5 text-[12.5px] text-text-soft">

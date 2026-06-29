@@ -1,4 +1,9 @@
+"use client";
+
 import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { useTransition } from "react";
+import { assignMemberTable } from "@/lib/actions/tables";
 
 const ROLE_LABEL: Record<string, string> = {
   OWNER: "主辦人",
@@ -19,9 +24,26 @@ export type CollaboratorRow = {
   email: string | null;
   role: "OWNER" | "COLLABORATOR" | "VIEWER";
   identity: "GROOM" | "BRIDE" | "PARTNER" | "OTHER" | null;
+  tableId: string | null;
 };
 
-export function CollaboratorsPreview({ collaborators }: { collaborators: CollaboratorRow[] }) {
+export function CollaboratorsPreview({
+  collaborators,
+  tables,
+}: {
+  collaborators: CollaboratorRow[];
+  tables: { id: string; name: string }[];
+}) {
+  const router = useRouter();
+  const [pending, startTransition] = useTransition();
+
+  function handleAssign(memberId: string, tableId: string) {
+    startTransition(async () => {
+      await assignMemberTable(memberId, tableId);
+      router.refresh();
+    });
+  }
+
   return (
     <div className="panel mb-3.5">
       <div className="flex items-center justify-between mb-2">
@@ -30,20 +52,33 @@ export function CollaboratorsPreview({ collaborators }: { collaborators: Collabo
           管理
         </Link>
       </div>
-      <div className="flex flex-wrap gap-1.5">
+      <div className="flex flex-col gap-1.5">
         {collaborators.map((c) => (
-          <span
-            key={c.id}
-            className="text-[12px] font-medium pl-1 pr-2.5 py-1 rounded-full bg-card-hover text-text flex items-center gap-1.5"
-          >
-            <span className="w-5 h-5 rounded-full bg-accent-soft text-accent-hover text-[11px] font-bold grid place-items-center flex-none">
+          <div key={c.id} className="lrow flex-wrap gap-y-1.5">
+            <span className="w-6 h-6 rounded-full bg-accent-soft text-accent-hover text-[11px] font-bold grid place-items-center flex-none">
               {(c.name || c.email || "?").charAt(0)}
             </span>
-            {c.name || c.email || "未命名"}
-            <span className="text-text-faint">
-              · {c.identity ? IDENTITY_LABEL[c.identity] : ROLE_LABEL[c.role]}
-            </span>
-          </span>
+            <div className="flex-1 min-w-0 font-medium text-sm">
+              {c.name || c.email || "未命名"}
+              <span className="text-text-faint text-xs font-normal">
+                {" "}
+                · {c.identity ? IDENTITY_LABEL[c.identity] : ROLE_LABEL[c.role]}
+              </span>
+            </div>
+            <select
+              defaultValue={c.tableId ?? ""}
+              disabled={pending || tables.length === 0}
+              onChange={(e) => handleAssign(c.id, e.target.value)}
+              className="border border-border rounded-[9px] px-2 py-1 text-xs bg-card flex-none max-w-[110px]"
+            >
+              <option value="">未安排桌位</option>
+              {tables.map((t) => (
+                <option key={t.id} value={t.id}>
+                  {t.name}
+                </option>
+              ))}
+            </select>
+          </div>
         ))}
       </div>
     </div>

@@ -50,3 +50,13 @@ export async function assignGuestTable(guestId: string, tableId: string) {
   revalidatePath("/onsite");
   revalidatePath("/guest");
 }
+
+export async function assignMemberTable(memberId: string, tableId: string) {
+  await prisma.weddingMember.update({
+    where: { id: memberId },
+    data: { tableId: tableId || null },
+  });
+  revalidatePath("/onsite");
+  revalidatePath("/guest");
+  revalidatePath("/more/collaborators");
+}

@@ -31,6 +31,7 @@ export default async function GuestPage() {
     email: m.user.email,
     role: m.role,
     identity: m.identity,
+    tableId: m.tableId,
   }));
   const tables = tablesRaw.map((t) => ({ id: t.id, name: t.name }));
 

@@ -1,15 +1,16 @@
 import { Suspense } from "react";
 import { OnsiteClient } from "@/app/onsite/OnsiteClient";
 import { requireCurrentWedding } from "@/lib/wedding";
-import { getGuests, getTables, getWeddingDayEvents } from "@/lib/queries";
+import { getGuests, getTables, getWeddingDayEvents, getWeddingMembers } from "@/lib/queries";
 
 export default async function OnsitePage() {
   const current = await requireCurrentWedding();
 
-  const [eventsRaw, guestsRaw, tablesRaw] = await Promise.all([
+  const [eventsRaw, guestsRaw, tablesRaw, membersRaw] = await Promise.all([
     getWeddingDayEvents(current.wedding.id),
     getGuests(current.wedding.id),
     getTables(current.wedding.id),
+    getWeddingMembers(current.wedding.id),
   ]);
 
   const events = eventsRaw.map((e) => ({
@@ -26,6 +27,15 @@ export default async function OnsitePage() {
     name: g.name,
     tableId: g.tableId,
     plusOneCount: g.plusOneCount,
+    kind: "guest" as const,
+  }));
+
+  const members = membersRaw.map((m) => ({
+    id: m.id,
+    name: m.user.name ?? m.user.email,
+    tableId: m.tableId,
+    plusOneCount: 0,
+    kind: "member" as const,
   }));
 
   const tables = tablesRaw.map((t) => ({
@@ -39,7 +49,7 @@ export default async function OnsitePage() {
       <OnsiteClient
         weddingId={current.wedding.id}
         events={events}
-        guests={guests}
+        guests={[...guests, ...members]}
         tables={tables}
       />
     </Suspense>

@@ -8,7 +8,13 @@ import {
   cycleWeddingDayEventStatus,
   deleteWeddingDayEvent,
 } from "@/lib/actions/onsite";
-import { addTable, assignGuestTable, deleteTable, updateTable } from "@/lib/actions/tables";
+import {
+  addTable,
+  assignGuestTable,
+  assignMemberTable,
+  deleteTable,
+  updateTable,
+} from "@/lib/actions/tables";
 
 const TABS = [
   { key: "table", label: "桌位" },
@@ -32,6 +38,7 @@ export type OnsiteGuest = {
   name: string;
   tableId: string | null;
   plusOneCount: number;
+  kind: "guest" | "member";
 };
 
 export type OnsiteTable = {
@@ -128,9 +135,13 @@ export function OnsiteClient({
     });
   }
 
-  function handleAssignTable(guestId: string, tableId: string) {
+  function handleAssignTable(person: OnsiteGuest, tableId: string) {
     startTransition(async () => {
-      await assignGuestTable(guestId, tableId);
+      if (person.kind === "member") {
+        await assignMemberTable(person.id, tableId);
+      } else {
+        await assignGuestTable(person.id, tableId);
+      }
       router.refresh();
     });
   }
@@ -277,10 +288,13 @@ export function OnsiteClient({
                             key={g.id}
                             className="text-[12px] font-medium pl-2.5 pr-1 py-1 rounded-full bg-card-hover text-text flex items-center gap-1"
                           >
+                            {g.kind === "member" && (
+                              <span className="text-[10px] text-accent-hover font-bold">協</span>
+                            )}
                             {g.name}
                             {g.plusOneCount > 0 && ` +${g.plusOneCount}`}
                             <button
-                              onClick={() => handleAssignTable(g.id, "")}
+                              onClick={() => handleAssignTable(g, "")}
                               aria-label="移出這桌"
                               className="text-text-faint hover:text-coral"
                             >
@@ -337,13 +351,16 @@ export function OnsiteClient({
                     className="flex items-center gap-3 bg-card text-accent-hover font-bold shadow-[var(--shadow)] rounded-[10px] px-3 py-2.5"
                   >
                     <div className="flex-1 min-w-0 font-medium text-sm">
+                      {g.kind === "member" && (
+                        <span className="text-[10px] text-accent-hover font-bold mr-1">協</span>
+                      )}
                       {g.name}
                       {g.plusOneCount > 0 && ` +${g.plusOneCount}`}
                     </div>
                     <select
                       defaultValue=""
                       disabled={pending || tables.length === 0}
-                      onChange={(e) => handleAssignTable(g.id, e.target.value)}
+                      onChange={(e) => handleAssignTable(g, e.target.value)}
                       className="text-xs border border-border rounded-md px-2 py-1.5 bg-card"
                     >
                       <option value="" disabled>
