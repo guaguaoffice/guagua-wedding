@@ -73,6 +73,13 @@ enum MemberRole {
   VIEWER
 }
 
+enum WeddingIdentity {
+  GROOM
+  BRIDE
+  PARTNER
+  OTHER
+}
+
 model Wedding {
   id          String    @id @default(cuid())
   name        String
@@ -97,11 +104,12 @@ model Wedding {
 }
 
 model WeddingMember {
-  id        String     @id @default(cuid())
+  id        String           @id @default(cuid())
   weddingId String
   userId    String
-  role      MemberRole @default(COLLABORATOR)
-  createdAt DateTime   @default(now())
+  role      MemberRole       @default(COLLABORATOR)
+  identity  WeddingIdentity?
+  createdAt DateTime         @default(now())
 
   wedding Wedding @relation(fields: [weddingId], references: [id], onDelete: Cascade)
   user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)

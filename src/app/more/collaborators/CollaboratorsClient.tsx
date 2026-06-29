@@ -10,9 +10,17 @@ const ROLE_LABEL: Record<string, string> = {
   VIEWER: "檢視者",
 };
 
+const IDENTITY_LABEL: Record<string, string> = {
+  GROOM: "新郎",
+  BRIDE: "新娘",
+  PARTNER: "新人",
+  OTHER: "其他協助者",
+};
+
 export type Member = {
   id: string;
   role: "OWNER" | "COLLABORATOR" | "VIEWER";
+  identity: "GROOM" | "BRIDE" | "PARTNER" | "OTHER" | null;
   user: { id: string; name: string | null; email: string; image: string | null };
 };
 
@@ -58,7 +66,14 @@ export function CollaboratorsClient({
               )}
             </div>
             <div className="flex-1 min-w-0">
-              <div className="font-semibold text-sm">{m.user.name ?? m.user.email}</div>
+              <div className="font-semibold text-sm flex items-center gap-1.5 flex-wrap">
+                {m.user.name ?? m.user.email}
+                {m.identity && (
+                  <span className="text-[11px] font-semibold px-2 py-0.5 rounded-full bg-accent-soft text-accent-hover">
+                    {IDENTITY_LABEL[m.identity]}
+                  </span>
+                )}
+              </div>
               <div className="text-xs text-text-soft mt-0.5">{m.user.email}</div>
             </div>
             {isOwner && m.role !== "OWNER" ? (

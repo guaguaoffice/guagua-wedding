@@ -5,6 +5,7 @@ import { auth, signOut } from "@/lib/auth";
 import { toNumOrNull } from "@/lib/decimal";
 import { EventForm } from "@/app/more/EventForm";
 import { AccountSection } from "@/app/more/AccountSection";
+import { ProfileForm } from "@/app/more/ProfileForm";
 
 const ROLE_LABEL: Record<string, string> = {
   OWNER: "主辦人",
@@ -25,6 +26,7 @@ export default async function MorePage() {
   const otherMembers = members
     .filter((m) => m.user.id !== current.userId)
     .map((m) => ({ userId: m.user.id, name: m.user.name, email: m.user.email }));
+  const selfMember = members.find((m) => m.user.id === current.userId);
 
   return (
     <div className="animate-fade-in">
@@ -106,6 +108,12 @@ export default async function MorePage() {
               </button>
             </form>
           </div>
+
+          <ProfileForm
+            weddingId={current.wedding.id}
+            initialName={session?.user?.name ?? null}
+            initialIdentity={selfMember?.identity ?? null}
+          />
 
           <AccountSection
             weddingId={current.wedding.id}

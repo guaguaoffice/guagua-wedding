@@ -29,6 +29,7 @@ export default async function GuestPage() {
     name: m.user.name,
     email: m.user.email,
     role: m.role,
+    identity: m.identity,
   }));
 
   return (

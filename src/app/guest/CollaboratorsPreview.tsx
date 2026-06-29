@@ -6,11 +6,19 @@ const ROLE_LABEL: Record<string, string> = {
   VIEWER: "檢視者",
 };
 
+const IDENTITY_LABEL: Record<string, string> = {
+  GROOM: "新郎",
+  BRIDE: "新娘",
+  PARTNER: "新人",
+  OTHER: "其他協助者",
+};
+
 export type CollaboratorRow = {
   id: string;
   name: string | null;
   email: string | null;
   role: "OWNER" | "COLLABORATOR" | "VIEWER";
+  identity: "GROOM" | "BRIDE" | "PARTNER" | "OTHER" | null;
 };
 
 export function CollaboratorsPreview({ collaborators }: { collaborators: CollaboratorRow[] }) {
@@ -32,7 +40,9 @@ export function CollaboratorsPreview({ collaborators }: { collaborators: Collabo
               {(c.name || c.email || "?").charAt(0)}
             </span>
             {c.name || c.email || "未命名"}
-            <span className="text-text-faint">· {ROLE_LABEL[c.role]}</span>
+            <span className="text-text-faint">
+              · {c.identity ? IDENTITY_LABEL[c.identity] : ROLE_LABEL[c.role]}
+            </span>
           </span>
         ))}
       </div>
