@@ -31,6 +31,13 @@ export async function getTasks(weddingId: string) {
   });
 }
 
+export async function getGuests(weddingId: string) {
+  return prisma.guest.findMany({
+    where: { weddingId },
+    orderBy: { createdAt: "asc" },
+  });
+}
+
 export async function getWeddingMembers(weddingId: string) {
   return prisma.weddingMember.findMany({
     where: { weddingId },
