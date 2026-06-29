@@ -39,7 +39,26 @@ export type OnsiteGuest = {
   tableId: string | null;
   plusOneCount: number;
   kind: "guest" | "member";
+  side: "GROOM" | "BRIDE" | null;
+  identity: "GROOM" | "BRIDE" | "PARTNER" | "OTHER" | null;
 };
+
+const SIDE_LABEL: Record<string, string> = {
+  GROOM: "男方",
+  BRIDE: "女方",
+};
+
+const IDENTITY_LABEL: Record<string, string> = {
+  GROOM: "新郎",
+  BRIDE: "新娘",
+  PARTNER: "新人",
+  OTHER: "其他協助者",
+};
+
+function tagLabel(g: OnsiteGuest) {
+  if (g.kind === "member") return g.identity ? IDENTITY_LABEL[g.identity] : "其他協助者";
+  return g.side ? SIDE_LABEL[g.side] : null;
+}
 
 export type OnsiteTable = {
   id: string;
@@ -288,8 +307,10 @@ export function OnsiteClient({
                             key={g.id}
                             className="text-[12px] font-medium pl-2.5 pr-1 py-1 rounded-full bg-card-hover text-text flex items-center gap-1"
                           >
-                            {g.kind === "member" && (
-                              <span className="text-[10px] text-accent-hover font-bold">協</span>
+                            {tagLabel(g) && (
+                              <span className="text-[10px] text-accent-hover font-bold">
+                                {tagLabel(g)}
+                              </span>
                             )}
                             {g.name}
                             {g.plusOneCount > 0 && ` +${g.plusOneCount}`}
@@ -351,8 +372,10 @@ export function OnsiteClient({
                     className="flex items-center gap-3 bg-card text-accent-hover font-bold shadow-[var(--shadow)] rounded-[10px] px-3 py-2.5"
                   >
                     <div className="flex-1 min-w-0 font-medium text-sm">
-                      {g.kind === "member" && (
-                        <span className="text-[10px] text-accent-hover font-bold mr-1">協</span>
+                      {tagLabel(g) && (
+                        <span className="text-[11px] font-semibold px-1.5 py-0.5 rounded-full bg-accent-soft text-accent-hover mr-1.5">
+                          {tagLabel(g)}
+                        </span>
                       )}
                       {g.name}
                       {g.plusOneCount > 0 && ` +${g.plusOneCount}`}

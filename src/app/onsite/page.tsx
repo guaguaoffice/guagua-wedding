@@ -28,6 +28,8 @@ export default async function OnsitePage() {
     tableId: g.tableId,
     plusOneCount: g.plusOneCount,
     kind: "guest" as const,
+    side: g.side,
+    identity: null,
   }));
 
   const members = membersRaw.map((m) => ({
@@ -36,6 +38,8 @@ export default async function OnsitePage() {
     tableId: m.tableId,
     plusOneCount: 0,
     kind: "member" as const,
+    side: null,
+    identity: m.identity,
   }));
 
   const tables = tablesRaw.map((t) => ({
