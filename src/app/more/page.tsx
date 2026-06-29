@@ -94,26 +94,30 @@ export default async function MorePage() {
 
         <div>
           <div className="font-bold text-[15px] mb-2">帳號</div>
-          <div className="panel mb-3.5">
-            <div className="text-sm font-medium">{session?.user?.email ?? "目前帳號"}</div>
-            <form
-              action={async () => {
-                "use server";
-                await signOut({ redirectTo: "/login" });
-              }}
-              className="mt-3"
-            >
-              <button type="submit" className="btn btn-secondary">
-                登出
-              </button>
-            </form>
-          </div>
+          <div className="panel flex flex-col gap-3.5 mb-3.5">
+            <div>
+              <div className="text-sm font-medium">{session?.user?.email ?? "目前帳號"}</div>
+              <form
+                action={async () => {
+                  "use server";
+                  await signOut({ redirectTo: "/login" });
+                }}
+                className="mt-3"
+              >
+                <button type="submit" className="btn btn-secondary">
+                  登出
+                </button>
+              </form>
+            </div>
 
-          <ProfileForm
-            weddingId={current.wedding.id}
-            initialName={session?.user?.name ?? null}
-            initialIdentity={selfMember?.identity ?? null}
-          />
+            <hr className="border-border" />
+
+            <ProfileForm
+              weddingId={current.wedding.id}
+              initialName={session?.user?.name ?? null}
+              initialIdentity={selfMember?.identity ?? null}
+            />
+          </div>
 
           <AccountSection
             weddingId={current.wedding.id}

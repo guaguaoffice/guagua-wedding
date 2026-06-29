@@ -37,7 +37,7 @@ export function ProfileForm({
   }
 
   return (
-    <form action={handleSubmit} className="panel flex flex-col gap-3.5 mb-3.5">
+    <form action={handleSubmit} className="flex flex-col gap-3.5">
       <label className="flex flex-col gap-1">
         <span className="text-[11px] text-text-soft font-semibold">姓名</span>
         <input
