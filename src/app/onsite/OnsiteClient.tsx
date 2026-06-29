@@ -318,7 +318,7 @@ export function OnsiteClient({
           </form>
 
           {unassigned.length > 0 && (
-            <div className="rounded-[var(--radius-sm)] bg-accent-soft p-4 mt-3.5">
+            <div className="rounded-[var(--radius-sm)] bg-accent-tint p-4 mt-3.5">
               <div className="flex items-center gap-2 mb-2.5">
                 <div className="w-6 h-6 rounded-full bg-accent text-white grid place-items-center flex-none">
                   <svg viewBox="0 0 24 24" className="w-3.5 h-3.5 stroke-current fill-none" strokeWidth={2.2}>
@@ -334,7 +334,7 @@ export function OnsiteClient({
                 {unassigned.map((g) => (
                   <div
                     key={g.id}
-                    className="flex items-center gap-3 bg-card border-l-[3px] border-l-accent rounded-[10px] px-3 py-2.5"
+                    className="flex items-center gap-3 bg-[#f3f9f6] border-l-[3px] border-l-accent rounded-[10px] px-3 py-2.5"
                   >
                     <div className="flex-1 min-w-0 font-medium text-sm">
                       {g.name}
