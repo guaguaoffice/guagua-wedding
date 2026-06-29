@@ -10,6 +10,7 @@ import {
   setGuestTableNumber,
 } from "@/lib/actions/guests";
 import { RsvpLinkCard } from "@/app/guest/RsvpLinkCard";
+import { CollaboratorsPreview, type CollaboratorRow } from "@/app/guest/CollaboratorsPreview";
 
 const TABS = [
   { key: "list", label: "名冊" },
@@ -74,10 +75,12 @@ export function GuestClient({
   weddingId,
   guests,
   rsvpToken,
+  collaborators,
 }: {
   weddingId: string;
   guests: GuestRow[];
   rsvpToken: string;
+  collaborators: CollaboratorRow[];
 }) {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -154,6 +157,8 @@ export function GuestClient({
 
       {tab === "list" && (
         <div>
+          <CollaboratorsPreview collaborators={collaborators} />
+
           <div className="grid grid-cols-3 gap-3 mb-3.5">
             <div className="panel">
               <div className="text-xs text-text-soft">總賓客數</div>
