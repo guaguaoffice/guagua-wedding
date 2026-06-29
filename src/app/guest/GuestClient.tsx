@@ -9,6 +9,7 @@ import {
   setGuestGift,
   setGuestTableNumber,
 } from "@/lib/actions/guests";
+import { RsvpLinkCard } from "@/app/guest/RsvpLinkCard";
 
 const TABS = [
   { key: "list", label: "名冊" },
@@ -69,7 +70,15 @@ function AttendingBadge({
   );
 }
 
-export function GuestClient({ weddingId, guests }: { weddingId: string; guests: GuestRow[] }) {
+export function GuestClient({
+  weddingId,
+  guests,
+  rsvpToken,
+}: {
+  weddingId: string;
+  guests: GuestRow[];
+  rsvpToken: string;
+}) {
   const router = useRouter();
   const searchParams = useSearchParams();
   const tab = searchParams.get("tab") ?? "list";
@@ -246,19 +255,7 @@ export function GuestClient({ weddingId, guests }: { weddingId: string; guests: 
         </div>
       )}
 
-      {tab === "rsvp" && (
-        <EmptyState
-          icon={
-            <svg viewBox="0 0 24 24" className="w-6.5 h-6.5 stroke-accent-hover fill-none" strokeWidth={1.6}>
-              <path d="M4 6h16v12H4z" />
-              <path d="M4 8l8 5 8-5" />
-            </svg>
-          }
-          title="還沒建立出席調查"
-          description="做一份 RSVP 表單，產生公開連結傳給賓客；回覆會自動匯入名冊與桌位。"
-          cta="建立表單"
-        />
-      )}
+      {tab === "rsvp" && <RsvpLinkCard weddingId={weddingId} token={rsvpToken} />}
 
       {tab === "gift" && (
         <div>

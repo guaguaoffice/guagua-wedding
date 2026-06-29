@@ -80,6 +80,7 @@ model Wedding {
   venueName   String?
   venueDetail String?
   totalBudget Decimal?  @db.Decimal(12, 2)
+  rsvpToken   String?   @unique
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
 
