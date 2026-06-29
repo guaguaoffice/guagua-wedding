@@ -55,9 +55,26 @@ const IDENTITY_LABEL: Record<string, string> = {
   OTHER: "其他協助者",
 };
 
+const SIDE_TAG_CLASS: Record<string, string> = {
+  GROOM: "bg-blue-50 text-blue-500",
+  BRIDE: "bg-pink-50 text-pink-500",
+};
+
+const IDENTITY_TAG_CLASS: Record<string, string> = {
+  GROOM: "bg-blue-100 text-blue-700",
+  BRIDE: "bg-pink-100 text-pink-700",
+  PARTNER: "bg-purple-100 text-purple-700",
+  OTHER: "bg-gray-100 text-gray-600",
+};
+
 function tagLabel(g: OnsiteGuest) {
   if (g.kind === "member") return g.identity ? IDENTITY_LABEL[g.identity] : "其他協助者";
   return g.side ? SIDE_LABEL[g.side] : null;
+}
+
+function tagClass(g: OnsiteGuest) {
+  if (g.kind === "member") return IDENTITY_TAG_CLASS[g.identity ?? "OTHER"];
+  return g.side ? SIDE_TAG_CLASS[g.side] : "";
 }
 
 export type OnsiteTable = {
@@ -308,7 +325,9 @@ export function OnsiteClient({
                             className="text-[12px] font-medium pl-2.5 pr-1 py-1 rounded-full bg-card-hover text-text flex items-center gap-1"
                           >
                             {tagLabel(g) && (
-                              <span className="text-[10px] text-accent-hover font-bold">
+                              <span
+                                className={`text-[10px] font-bold px-1.5 py-0.5 rounded-full ${tagClass(g)}`}
+                              >
                                 {tagLabel(g)}
                               </span>
                             )}
@@ -373,7 +392,9 @@ export function OnsiteClient({
                   >
                     <div className="flex-1 min-w-0 font-medium text-sm">
                       {tagLabel(g) && (
-                        <span className="text-[11px] font-semibold px-1.5 py-0.5 rounded-full bg-accent-soft text-accent-hover mr-1.5">
+                        <span
+                          className={`text-[11px] font-semibold px-1.5 py-0.5 rounded-full mr-1.5 ${tagClass(g)}`}
+                        >
                           {tagLabel(g)}
                         </span>
                       )}
