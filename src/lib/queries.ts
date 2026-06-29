@@ -38,6 +38,13 @@ export async function getGuests(weddingId: string) {
   });
 }
 
+export async function getWeddingDayEvents(weddingId: string) {
+  return prisma.weddingDayEvent.findMany({
+    where: { weddingId },
+    orderBy: { time: "asc" },
+  });
+}
+
 export async function getWeddingMembers(weddingId: string) {
   return prisma.weddingMember.findMany({
     where: { weddingId },
