@@ -51,7 +51,6 @@ function availabilityLabel(a: Availability) {
 }
 
 function priceText(c: SheetCandidate) {
-  if (c.note) return c.note;
   if (c.price !== null) return `NT$ ${c.price.toLocaleString()}`;
   return "尚未報價";
 }
@@ -527,6 +526,9 @@ export function DecisionSheet({
                     )}
                     {c.contact && <span>聯絡 {c.contact}</span>}
                   </div>
+                  {c.note && (
+                    <p className="text-[12.5px] text-text-soft mb-2.5">報價說明：{c.note}</p>
+                  )}
                   {(c.url || c.socialUrl) && (
                     <div className="flex flex-wrap gap-3 text-[12.5px] mb-2.5">
                       {c.url && (
