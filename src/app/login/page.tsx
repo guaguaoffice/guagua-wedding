@@ -1,11 +1,14 @@
 import Image from "next/image";
 import { redirect } from "next/navigation";
-import { signIn } from "@/lib/auth";
-import { getCurrentWedding } from "@/lib/wedding";
+import { signIn, auth } from "@/lib/auth";
+import { getMembership } from "@/lib/wedding";
 
 export default async function LoginPage() {
-  const current = await getCurrentWedding();
-  if (current) redirect("/");
+  const session = await auth();
+  if (session?.user?.id) {
+    const current = await getMembership();
+    redirect(current ? "/" : "/welcome");
+  }
 
   return (
     <main className="flex-1 flex flex-col items-center justify-center gap-6 px-6 py-24 animate-fade-in min-h-screen">

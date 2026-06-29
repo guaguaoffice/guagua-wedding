@@ -31,7 +31,7 @@ export function WeddingListSwitcher({
 
   return (
     <div className="panel">
-      <div className="font-bold text-[15px] mb-2">我參加的婚禮</div>
+      <div className="font-bold text-[15px] mb-2">我的婚禮（主辦或協作）</div>
       <div className="flex flex-col gap-1">
         {memberships.map((m) => (
           <button

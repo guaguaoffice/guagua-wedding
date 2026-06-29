@@ -1,6 +1,5 @@
 import Link from "next/link";
-import { redirect } from "next/navigation";
-import { getCurrentWedding } from "@/lib/wedding";
+import { requireCurrentWedding } from "@/lib/wedding";
 import { getBudgetItems, getDecisionItems, getTasks } from "@/lib/queries";
 import { toNum, toNumOrNull } from "@/lib/decimal";
 import {
@@ -18,9 +17,7 @@ const STATE_CLASS: Record<CategoryState, string> = {
 };
 
 export default async function HomePage() {
-  const current = await getCurrentWedding();
-  if (!current) redirect("/login");
-
+  const current = await requireCurrentWedding();
   const wedding = current.wedding;
   const [decisionItems, budgetItems, tasks] = await Promise.all([
     getDecisionItems(wedding.id),

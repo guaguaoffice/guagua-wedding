@@ -1,12 +1,10 @@
 import { Suspense } from "react";
-import { redirect } from "next/navigation";
 import { OnsiteClient } from "@/app/onsite/OnsiteClient";
-import { getCurrentWedding } from "@/lib/wedding";
+import { requireCurrentWedding } from "@/lib/wedding";
 import { getGuests, getWeddingDayEvents } from "@/lib/queries";
 
 export default async function OnsitePage() {
-  const current = await getCurrentWedding();
-  if (!current) redirect("/login");
+  const current = await requireCurrentWedding();
 
   const [eventsRaw, guestsRaw] = await Promise.all([
     getWeddingDayEvents(current.wedding.id),

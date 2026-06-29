@@ -1,5 +1,6 @@
 import { cache } from "react";
 import { cookies } from "next/headers";
+import { redirect } from "next/navigation";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { seedDefaultWeddingData } from "@/lib/seed-wedding";
@@ -30,13 +31,31 @@ export const getMembership = cache(async function getMembership() {
   return { userId: active.userId, wedding: active.wedding, role: active.role };
 });
 
-/** Ensures the user has a wedding, auto-provisioning a starter one if they have none yet. */
-export const getCurrentWedding = cache(async function getCurrentWedding() {
+/**
+ * Alias for getMembership, kept for source compatibility with server actions
+ * that only need the current membership and already handle a null result.
+ * Does NOT auto-provision a wedding — see createOwnWedding for that.
+ */
+export const getCurrentWedding = getMembership;
+
+/**
+ * For page components: returns the current membership, or redirects.
+ * Logged-out users go to /login; logged-in users with no wedding yet go to
+ * /welcome to choose between creating their own wedding or using an invite link.
+ */
+export async function requireCurrentWedding() {
   const existing = await getMembership();
   if (existing) return existing;
 
   const session = await auth();
-  if (!session?.user?.id) return null;
+  if (!session?.user?.id) redirect("/login");
+  redirect("/welcome");
+}
+
+/** Creates a new starter wedding for the current user and makes them its owner. */
+export async function createOwnWedding() {
+  const session = await auth();
+  if (!session?.user?.id) redirect("/login");
   const userId = session.user.id;
 
   const wedding = await prisma.wedding.create({
@@ -51,5 +70,5 @@ export const getCurrentWedding = cache(async function getCurrentWedding() {
   });
   await seedDefaultWeddingData(wedding.id, userId);
 
-  return { userId, wedding, role: "OWNER" as const };
-});
+  redirect("/");
+}

@@ -1,13 +1,11 @@
 import { Suspense } from "react";
-import { redirect } from "next/navigation";
 import { PlanClient } from "@/app/plan/PlanClient";
-import { getCurrentWedding } from "@/lib/wedding";
+import { requireCurrentWedding } from "@/lib/wedding";
 import { getBudgetItems, getDecisionItems, getTasks } from "@/lib/queries";
 import { toNum, toNumOrNull } from "@/lib/decimal";
 
 export default async function PlanPage() {
-  const current = await getCurrentWedding();
-  if (!current) redirect("/login");
+  const current = await requireCurrentWedding();
 
   const [decisionItemsRaw, budgetItemsRaw, tasksRaw] = await Promise.all([
     getDecisionItems(current.wedding.id),

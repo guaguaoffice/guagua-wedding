@@ -1,14 +1,12 @@
 import { Suspense } from "react";
-import { redirect } from "next/navigation";
 import { GuestClient } from "@/app/guest/GuestClient";
-import { getCurrentWedding } from "@/lib/wedding";
+import { requireCurrentWedding } from "@/lib/wedding";
 import { getGuests } from "@/lib/queries";
 import { toNumOrNull } from "@/lib/decimal";
 import { ensureRsvpToken } from "@/lib/actions/rsvp";
 
 export default async function GuestPage() {
-  const current = await getCurrentWedding();
-  if (!current) redirect("/login");
+  const current = await requireCurrentWedding();
 
   const [guestsRaw, rsvpToken] = await Promise.all([
     getGuests(current.wedding.id),

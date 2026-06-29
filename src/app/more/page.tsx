@@ -1,6 +1,5 @@
 import Link from "next/link";
-import { redirect } from "next/navigation";
-import { getCurrentWedding, getMemberships } from "@/lib/wedding";
+import { requireCurrentWedding, getMemberships } from "@/lib/wedding";
 import { getWeddingMembers } from "@/lib/queries";
 import { auth, signOut } from "@/lib/auth";
 import { toNumOrNull } from "@/lib/decimal";
@@ -9,8 +8,7 @@ import { EventForm } from "@/app/more/EventForm";
 import { AccountSection } from "@/app/more/AccountSection";
 
 export default async function MorePage() {
-  const current = await getCurrentWedding();
-  if (!current) redirect("/login");
+  const current = await requireCurrentWedding();
 
   const isOwner = current.role === "OWNER";
   const [session, memberships, members] = await Promise.all([
@@ -33,16 +31,14 @@ export default async function MorePage() {
       </h1>
 
       <div className="flex flex-col gap-6">
-        {memberships.length > 1 && (
-          <WeddingListSwitcher
-            activeWeddingId={current.wedding.id}
-            memberships={memberships.map((m) => ({
-              weddingId: m.weddingId,
-              name: m.wedding.name,
-              role: m.role,
-            }))}
-          />
-        )}
+        <WeddingListSwitcher
+          activeWeddingId={current.wedding.id}
+          memberships={memberships.map((m) => ({
+            weddingId: m.weddingId,
+            name: m.wedding.name,
+            role: m.role,
+          }))}
+        />
 
         <div>
           <div className="font-bold text-[15px] mb-2">活動資訊</div>

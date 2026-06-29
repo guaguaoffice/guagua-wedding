@@ -1,13 +1,11 @@
-import { redirect } from "next/navigation";
-import { getCurrentWedding } from "@/lib/wedding";
+import { requireCurrentWedding } from "@/lib/wedding";
 import { ensureInviteLinks, getWeddingMembers } from "@/lib/queries";
 import { BackToMore } from "@/components/BackToMore";
 import { CollaboratorsClient } from "@/app/more/collaborators/CollaboratorsClient";
 import { InviteLinks } from "@/app/more/collaborators/InviteLinks";
 
 export default async function CollaboratorsPage() {
-  const current = await getCurrentWedding();
-  if (!current) redirect("/login");
+  const current = await requireCurrentWedding();
 
   const isOwner = current.role === "OWNER";
   const [members, invites] = await Promise.all([
