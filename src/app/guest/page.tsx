@@ -1,17 +1,18 @@
 import { Suspense } from "react";
 import { GuestClient } from "@/app/guest/GuestClient";
 import { requireCurrentWedding } from "@/lib/wedding";
-import { getGuests, getWeddingMembers } from "@/lib/queries";
+import { getGuests, getTables, getWeddingMembers } from "@/lib/queries";
 import { toNumOrNull } from "@/lib/decimal";
 import { ensureRsvpToken } from "@/lib/actions/rsvp";
 
 export default async function GuestPage() {
   const current = await requireCurrentWedding();
 
-  const [guestsRaw, rsvpToken, membersRaw] = await Promise.all([
+  const [guestsRaw, rsvpToken, membersRaw, tablesRaw] = await Promise.all([
     getGuests(current.wedding.id),
     ensureRsvpToken(current.wedding.id),
     getWeddingMembers(current.wedding.id),
+    getTables(current.wedding.id),
   ]);
   const guests = guestsRaw.map((g) => ({
     id: g.id,
@@ -21,7 +22,7 @@ export default async function GuestPage() {
     phone: g.phone,
     attending: g.attending,
     plusOneCount: g.plusOneCount,
-    tableNumber: g.tableNumber,
+    tableId: g.tableId,
     giftAmount: toNumOrNull(g.giftAmount),
   }));
   const collaborators = membersRaw.map((m) => ({
@@ -31,6 +32,7 @@ export default async function GuestPage() {
     role: m.role,
     identity: m.identity,
   }));
+  const tables = tablesRaw.map((t) => ({ id: t.id, name: t.name }));
 
   return (
     <Suspense>
@@ -39,6 +41,7 @@ export default async function GuestPage() {
         guests={guests}
         rsvpToken={rsvpToken}
         collaborators={collaborators}
+        tables={tables}
       />
     </Suspense>
   );

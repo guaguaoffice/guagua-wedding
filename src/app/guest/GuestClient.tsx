@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useTransition } from "react";
 import {
@@ -7,8 +8,8 @@ import {
   deleteGuest,
   setGuestAttending,
   setGuestGift,
-  setGuestTableNumber,
 } from "@/lib/actions/guests";
+import { assignGuestTable } from "@/lib/actions/tables";
 import { RsvpLinkCard } from "@/app/guest/RsvpLinkCard";
 import { CollaboratorsPreview, type CollaboratorRow } from "@/app/guest/CollaboratorsPreview";
 
@@ -26,9 +27,11 @@ export type GuestRow = {
   phone: string | null;
   attending: boolean | null;
   plusOneCount: number;
-  tableNumber: string | null;
+  tableId: string | null;
   giftAmount: number | null;
 };
+
+export type TableRow = { id: string; name: string };
 
 function EmptyState({
   icon,
@@ -76,11 +79,13 @@ export function GuestClient({
   guests,
   rsvpToken,
   collaborators,
+  tables,
 }: {
   weddingId: string;
   guests: GuestRow[];
   rsvpToken: string;
   collaborators: CollaboratorRow[];
+  tables: TableRow[];
 }) {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -114,9 +119,9 @@ export function GuestClient({
     });
   }
 
-  function handleTableBlur(guestId: string, value: string) {
+  function handleTableChange(guestId: string, tableId: string) {
     startTransition(async () => {
-      await setGuestTableNumber(guestId, value);
+      await assignGuestTable(guestId, tableId);
       router.refresh();
     });
   }
@@ -158,6 +163,16 @@ export function GuestClient({
       {tab === "list" && (
         <div>
           <CollaboratorsPreview collaborators={collaborators} />
+
+          {tables.length === 0 && guests.length > 0 && (
+            <div className="bg-card-hover rounded-[10px] px-3.5 py-2.5 mb-3.5 text-[12.5px] text-text-soft">
+              還沒有建立桌次，去{" "}
+              <Link href="/onsite?tab=table" className="text-accent-hover font-semibold">
+                現場 → 桌位
+              </Link>{" "}
+              建立桌次後，就能在這裡幫每位賓客分配座位。
+            </div>
+          )}
 
           <div className="grid grid-cols-3 gap-3 mb-3.5">
             <div className="panel">
@@ -207,12 +222,19 @@ export function GuestClient({
                       </div>
                     )}
                   </div>
-                  <input
-                    defaultValue={g.tableNumber ?? ""}
-                    placeholder="桌號"
-                    onBlur={(e) => handleTableBlur(g.id, e.target.value)}
-                    className="w-16 border border-border rounded-[9px] px-2 py-1 text-xs bg-card flex-none"
-                  />
+                  <select
+                    defaultValue={g.tableId ?? ""}
+                    disabled={pending || tables.length === 0}
+                    onChange={(e) => handleTableChange(g.id, e.target.value)}
+                    className="border border-border rounded-[9px] px-2 py-1 text-xs bg-card flex-none max-w-[110px]"
+                  >
+                    <option value="">未安排桌位</option>
+                    {tables.map((t) => (
+                      <option key={t.id} value={t.id}>
+                        {t.name}
+                      </option>
+                    ))}
+                  </select>
                   <AttendingBadge
                     attending={g.attending}
                     pending={pending}

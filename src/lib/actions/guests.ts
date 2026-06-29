@@ -27,14 +27,6 @@ export async function setGuestAttending(guestId: string, attending: boolean | nu
   revalidatePath("/guest");
 }
 
-export async function setGuestTableNumber(guestId: string, tableNumber: string) {
-  await prisma.guest.update({
-    where: { id: guestId },
-    data: { tableNumber: tableNumber.trim() || null },
-  });
-  revalidatePath("/guest");
-}
-
 export async function setGuestGift(guestId: string, amountRaw: string) {
   const amount = amountRaw.trim() ? Number(amountRaw.replace(/[^0-9.]/g, "")) : null;
   await prisma.guest.update({

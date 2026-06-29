@@ -8,6 +8,7 @@ import {
   cycleWeddingDayEventStatus,
   deleteWeddingDayEvent,
 } from "@/lib/actions/onsite";
+import { addTable, assignGuestTable, deleteTable } from "@/lib/actions/tables";
 
 const TABS = [
   { key: "table", label: "桌位" },
@@ -29,8 +30,14 @@ export type OnsiteEvent = {
 export type OnsiteGuest = {
   id: string;
   name: string;
-  tableNumber: string | null;
+  tableId: string | null;
   plusOneCount: number;
+};
+
+export type OnsiteTable = {
+  id: string;
+  name: string;
+  capacity: number | null;
 };
 
 function EmptyState({
@@ -81,10 +88,12 @@ export function OnsiteClient({
   weddingId,
   events,
   guests,
+  tables,
 }: {
   weddingId: string;
   events: OnsiteEvent[];
   guests: OnsiteGuest[];
+  tables: OnsiteTable[];
 }) {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -93,6 +102,28 @@ export function OnsiteClient({
 
   function setTab(next: string) {
     router.replace(`/onsite?tab=${next}`, { scroll: false });
+  }
+
+  function handleAddTable(formData: FormData) {
+    startTransition(async () => {
+      await addTable(weddingId, formData);
+      router.refresh();
+    });
+  }
+
+  function handleDeleteTable(tableId: string) {
+    if (!window.confirm("刪除這個桌次？桌上的賓客會變成尚未安排桌位。")) return;
+    startTransition(async () => {
+      await deleteTable(tableId);
+      router.refresh();
+    });
+  }
+
+  function handleAssignTable(guestId: string, tableId: string) {
+    startTransition(async () => {
+      await assignGuestTable(guestId, tableId);
+      router.refresh();
+    });
   }
 
   function handleAddEvent(formData: FormData) {
@@ -117,19 +148,7 @@ export function OnsiteClient({
     });
   }
 
-  const tableGroups = new Map<string, OnsiteGuest[]>();
-  const unassigned: OnsiteGuest[] = [];
-  for (const g of guests) {
-    if (g.tableNumber) {
-      if (!tableGroups.has(g.tableNumber)) tableGroups.set(g.tableNumber, []);
-      tableGroups.get(g.tableNumber)!.push(g);
-    } else {
-      unassigned.push(g);
-    }
-  }
-  const sortedTables = [...tableGroups.entries()].sort((a, b) =>
-    a[0].localeCompare(b[0], "zh-Hant")
-  );
+  const unassigned = guests.filter((g) => !g.tableId);
 
   return (
     <div className="animate-fade-in">
@@ -154,7 +173,7 @@ export function OnsiteClient({
 
       {tab === "table" && (
         <div>
-          {guests.length === 0 ? (
+          {tables.length === 0 ? (
             <EmptyState
               icon={
                 <svg viewBox="0 0 24 24" className="w-6.5 h-6.5 stroke-accent-hover fill-none" strokeWidth={1.6}>
@@ -162,63 +181,111 @@ export function OnsiteClient({
                   <circle cx="12" cy="12" r="3" />
                 </svg>
               }
-              title="還沒有賓客"
-              description="先到「賓客」頁新增名冊，再回來這裡安排桌位。"
-              cta="前往賓客名冊"
-              ctaHref="/guest"
-            />
-          ) : sortedTables.length === 0 ? (
-            <EmptyState
-              icon={
-                <svg viewBox="0 0 24 24" className="w-6.5 h-6.5 stroke-accent-hover fill-none" strokeWidth={1.6}>
-                  <circle cx="12" cy="12" r="8" />
-                  <circle cx="12" cy="12" r="3" />
-                </svg>
-              }
-              title="還沒有人安排桌號"
-              description="到「賓客」名冊幫每位賓客填上桌號，這裡就會自動依桌次分組顯示。"
-              cta="前往賓客名冊"
-              ctaHref="/guest"
+              title="還沒有桌次"
+              description="先在下面建立桌次（例如第 1 桌、新人桌），再把賓客分配進去。"
             />
           ) : (
             <div className="flex flex-col gap-3">
-              {sortedTables.map(([table, members]) => {
+              {tables.map((t) => {
+                const members = guests.filter((g) => g.tableId === t.id);
                 const seats = members.reduce((s, g) => s + 1 + g.plusOneCount, 0);
                 return (
-                  <div key={table} className="panel">
+                  <div key={t.id} className="panel">
                     <div className="flex items-center justify-between mb-2">
-                      <div className="font-bold text-[15px]">第 {table} 桌</div>
-                      <div className="text-xs text-text-soft">{seats} 位</div>
+                      <div className="font-bold text-[15px]">{t.name}</div>
+                      <div className="flex items-center gap-2">
+                        <div className="text-xs text-text-soft">
+                          {seats}
+                          {t.capacity ? ` / ${t.capacity}` : ""} 位
+                        </div>
+                        <button
+                          onClick={() => handleDeleteTable(t.id)}
+                          aria-label="刪除桌次"
+                          className="text-text-faint hover:text-coral p-1"
+                        >
+                          ✕
+                        </button>
+                      </div>
                     </div>
                     <div className="flex flex-wrap gap-1.5">
-                      {members.map((g) => (
-                        <span
-                          key={g.id}
-                          className="text-[12px] font-medium px-2.5 py-1 rounded-full bg-card-hover text-text"
-                        >
-                          {g.name}
-                          {g.plusOneCount > 0 && ` +${g.plusOneCount}`}
-                        </span>
-                      ))}
+                      {members.length === 0 ? (
+                        <span className="text-[12.5px] text-text-faint">還沒有人坐這桌</span>
+                      ) : (
+                        members.map((g) => (
+                          <span
+                            key={g.id}
+                            className="text-[12px] font-medium pl-2.5 pr-1 py-1 rounded-full bg-card-hover text-text flex items-center gap-1"
+                          >
+                            {g.name}
+                            {g.plusOneCount > 0 && ` +${g.plusOneCount}`}
+                            <button
+                              onClick={() => handleAssignTable(g.id, "")}
+                              aria-label="移出這桌"
+                              className="text-text-faint hover:text-coral"
+                            >
+                              ✕
+                            </button>
+                          </span>
+                        ))
+                      )}
                     </div>
                   </div>
                 );
               })}
-              {unassigned.length > 0 && (
-                <div className="panel">
-                  <div className="font-bold text-[15px] mb-2 text-text-soft">尚未安排桌位</div>
-                  <div className="flex flex-wrap gap-1.5">
-                    {unassigned.map((g) => (
-                      <span
-                        key={g.id}
-                        className="text-[12px] font-medium px-2.5 py-1 rounded-full bg-card-hover text-text-soft"
-                      >
-                        {g.name}
-                      </span>
-                    ))}
+            </div>
+          )}
+
+          <form action={handleAddTable} className="flex gap-2 mt-3.5">
+            <input
+              name="name"
+              placeholder="桌次名稱，例如：第 1 桌"
+              required
+              disabled={pending}
+              className="flex-1 min-w-0 border border-border rounded-[9px] px-3 py-2 text-sm bg-card"
+            />
+            <input
+              name="capacity"
+              type="number"
+              min={1}
+              placeholder="人數"
+              disabled={pending}
+              className="w-20 border border-border rounded-[9px] px-3 py-2 text-sm bg-card"
+            />
+            <button disabled={pending} className="btn btn-primary text-sm px-4">
+              新增桌次
+            </button>
+          </form>
+
+          {unassigned.length > 0 && (
+            <div className="panel mt-3.5">
+              <div className="font-bold text-[15px] mb-2 text-text-soft">
+                尚未安排桌位（{unassigned.length}）
+              </div>
+              <div className="flex flex-col gap-1.5">
+                {unassigned.map((g) => (
+                  <div key={g.id} className="lrow">
+                    <div className="flex-1 min-w-0 font-medium text-sm">
+                      {g.name}
+                      {g.plusOneCount > 0 && ` +${g.plusOneCount}`}
+                    </div>
+                    <select
+                      defaultValue=""
+                      disabled={pending || tables.length === 0}
+                      onChange={(e) => handleAssignTable(g.id, e.target.value)}
+                      className="text-xs border border-border rounded-md px-2 py-1.5 bg-card"
+                    >
+                      <option value="" disabled>
+                        選擇桌次
+                      </option>
+                      {tables.map((t) => (
+                        <option key={t.id} value={t.id}>
+                          {t.name}
+                        </option>
+                      ))}
+                    </select>
                   </div>
-                </div>
-              )}
+                ))}
+              </div>
             </div>
           )}
         </div>

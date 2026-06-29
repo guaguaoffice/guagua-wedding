@@ -97,6 +97,7 @@ model Wedding {
   decisionItems    DecisionItem[]
   budgetItems      BudgetItem[]
   guests           Guest[]
+  tables           Table[]
   files            FileAsset[]
   inspirations     InspirationItem[]
   weddingDayEvents WeddingDayEvent[]
@@ -334,6 +335,7 @@ enum InvitationStatus {
 model Guest {
   id               String           @id @default(cuid())
   weddingId        String
+  tableId          String?
   name             String
   side             GuestSide
   relation         String?
@@ -343,7 +345,6 @@ model Guest {
   plusOneCount     Int              @default(0)
   vegetarian       Boolean          @default(false)
   hasChild         Boolean          @default(false)
-  tableNumber      String?
   invitationStatus InvitationStatus @default(NOT_SENT)
   favorSentStatus  InvitationStatus @default(NOT_SENT)
   giftAmount       Decimal?         @db.Decimal(12, 2)
@@ -351,6 +352,19 @@ model Guest {
   createdAt        DateTime         @default(now())
 
   wedding Wedding @relation(fields: [weddingId], references: [id], onDelete: Cascade)
+  table   Table?  @relation(fields: [tableId], references: [id], onDelete: SetNull)
+}
+
+model Table {
+  id        String   @id @default(cuid())
+  weddingId String
+  name      String
+  capacity  Int?
+  order     Int      @default(0)
+  createdAt DateTime @default(now())
+
+  wedding Wedding @relation(fields: [weddingId], references: [id], onDelete: Cascade)
+  guests  Guest[]
 }
 
 // ---------- Files（資料結構預留） ----------
