@@ -185,7 +185,7 @@ export function GuestClient({
                 <div key={g.id} className="lrow flex-wrap gap-y-1.5">
                   <span
                     className={`text-[11px] font-semibold px-2 py-0.5 rounded-full flex-none ${
-                      g.side === "GROOM" ? "bg-accent-soft text-accent-hover" : "bg-coral-tint text-coral"
+                      g.side === "GROOM" ? "bg-[#e2eaf0] text-[#5b7a92]" : "bg-coral-tint text-coral"
                     }`}
                   >
                     {g.side === "GROOM" ? "男方" : "女方"}
