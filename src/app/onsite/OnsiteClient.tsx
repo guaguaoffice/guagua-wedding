@@ -56,15 +56,15 @@ const IDENTITY_LABEL: Record<string, string> = {
 };
 
 const SIDE_TAG_CLASS: Record<string, string> = {
-  GROOM: "bg-blue-50 text-blue-500",
-  BRIDE: "bg-pink-50 text-pink-500",
+  GROOM: "bg-[#eef2f3] text-[#7d92a0]",
+  BRIDE: "bg-[#f5eceb] text-[#b08883]",
 };
 
 const IDENTITY_TAG_CLASS: Record<string, string> = {
-  GROOM: "bg-blue-100 text-blue-700",
-  BRIDE: "bg-pink-100 text-pink-700",
-  PARTNER: "bg-purple-100 text-purple-700",
-  OTHER: "bg-gray-100 text-gray-600",
+  GROOM: "bg-[#dde3e6] text-[#5b7282]",
+  BRIDE: "bg-[#ecdfdd] text-[#9c6b66]",
+  PARTNER: "bg-[#e3dde6] text-[#7d6b8a]",
+  OTHER: "bg-[#e8e5e0] text-[#8a8478]",
 };
 
 function tagLabel(g: OnsiteGuest) {
