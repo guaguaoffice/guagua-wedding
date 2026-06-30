@@ -56,13 +56,13 @@ const IDENTITY_LABEL: Record<string, string> = {
 };
 
 const SIDE_TAG_CLASS: Record<string, string> = {
-  GROOM: "bg-[#eef2f3] text-[#7d92a0]",
-  BRIDE: "bg-[#f5eceb] text-[#b08883]",
+  GROOM: "bg-accent-soft text-accent-hover",
+  BRIDE: "bg-coral-tint text-coral",
 };
 
 const IDENTITY_TAG_CLASS: Record<string, string> = {
-  GROOM: "bg-[#dde3e6] text-[#5b7282]",
-  BRIDE: "bg-[#ecdfdd] text-[#9c6b66]",
+  GROOM: "bg-[#c9ddd1] text-[#3f6852]",
+  BRIDE: "bg-[#f0cfc9] text-[#a14a3d]",
   PARTNER: "bg-[#e3dde6] text-[#7d6b8a]",
   OTHER: "bg-[#e8e5e0] text-[#8a8478]",
 };
