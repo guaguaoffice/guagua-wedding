@@ -22,6 +22,9 @@ export default async function RsvpPage({ params }: { params: Promise<{ token: st
         token={token}
         weddingName={wedding.name}
         weddingDate={wedding.weddingDate}
+        cardTitle={wedding.rsvpCardTitle}
+        cardSubtitle={wedding.rsvpCardSubtitle}
+        cardImageUrl={wedding.rsvpCardImageUrl}
       />
     </main>
   );

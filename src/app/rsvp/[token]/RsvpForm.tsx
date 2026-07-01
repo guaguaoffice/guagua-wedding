@@ -4,14 +4,61 @@ import { useState, useTransition } from "react";
 import { submitRsvp } from "@/lib/actions/rsvp";
 import { QrCode } from "@/components/QrCode";
 
+function InvitationCard({
+  title,
+  subtitle,
+  imageUrl,
+  weddingName,
+  weddingDate,
+}: {
+  title: string | null;
+  subtitle: string | null;
+  imageUrl: string | null;
+  weddingName: string;
+  weddingDate: Date | null;
+}) {
+  const displayTitle = title || weddingName;
+  const displaySubtitle = subtitle || (weddingDate
+    ? new Date(weddingDate).toLocaleDateString("zh-TW", { year: "numeric", month: "long", day: "numeric" })
+    : null);
+
+  return (
+    <div className="w-full max-w-sm rounded-2xl overflow-hidden shadow-md bg-[#f5f0eb] mb-6">
+      {imageUrl ? (
+        // eslint-disable-next-line @next/next/no-img-element
+        <img src={imageUrl} alt="婚禮照片" className="w-full h-52 object-cover" />
+      ) : (
+        <div className="w-full h-40 bg-gradient-to-br from-accent-soft to-[#e8e0d8] flex items-center justify-center">
+          <svg viewBox="0 0 40 40" className="w-12 h-12 opacity-30" fill="none">
+            <path d="M20 8c0 0-8 6-8 13a8 8 0 0016 0c0-7-8-13-8-13z" stroke="#5a7a5a" strokeWidth="1.5" />
+          </svg>
+        </div>
+      )}
+      <div className="px-6 py-4 text-center">
+        <p className="text-[10px] tracking-[0.25em] text-text-soft/70 uppercase mb-1.5">Wedding Invitation</p>
+        <h1 className="text-[22px] font-bold tracking-wide leading-tight">{displayTitle}</h1>
+        {displaySubtitle && (
+          <p className="text-sm text-text-soft mt-1.5">{displaySubtitle}</p>
+        )}
+      </div>
+    </div>
+  );
+}
+
 export function RsvpForm({
   token,
   weddingName,
   weddingDate,
+  cardTitle,
+  cardSubtitle,
+  cardImageUrl,
 }: {
   token: string;
   weddingName: string;
   weddingDate: Date | null;
+  cardTitle: string | null;
+  cardSubtitle: string | null;
+  cardImageUrl: string | null;
 }) {
   const [pending, startTransition] = useTransition();
   const [attending, setAttending] = useState<"yes" | "no" | "">("");
@@ -36,48 +83,49 @@ export function RsvpForm({
   if (checkinToken !== null) {
     const checkinUrl = `${typeof window !== "undefined" ? window.location.origin : ""}/checkin/${checkinToken}`;
     return (
-      <div className="w-full max-w-sm text-center mt-8">
-        <div className="empty-icon mx-auto">
-          <svg viewBox="0 0 24 24" className="w-6.5 h-6.5 stroke-accent-hover fill-none" strokeWidth={1.6}>
-            <path d="M5 13l4 4L19 7" />
-          </svg>
-        </div>
-        <h1 className="text-xl font-bold mt-3">已收到你的回覆！</h1>
-        <p className="text-text-soft mt-2 text-sm">
-          {attendingResult
-            ? "謝謝你花時間回覆，期待婚禮當天見到你！"
-            : "謝謝你花時間回覆，祝你一切順心。"}
-        </p>
-        {attendingResult && (
-          <div className="mt-6 flex flex-col items-center gap-3">
-            <p className="text-sm font-semibold text-text">婚禮當天掃描 QR Code 即可快速報到</p>
-            <div className="bg-white p-3 rounded-2xl shadow-sm">
-              <QrCode url={checkinUrl} size={180} />
-            </div>
-            <p className="text-xs text-text-faint">請截圖或儲存此 QR Code</p>
+      <div className="w-full max-w-sm flex flex-col items-center">
+        <InvitationCard
+          title={cardTitle}
+          subtitle={cardSubtitle}
+          imageUrl={cardImageUrl}
+          weddingName={weddingName}
+          weddingDate={weddingDate}
+        />
+        <div className="text-center">
+          <div className="empty-icon mx-auto">
+            <svg viewBox="0 0 24 24" className="w-6.5 h-6.5 stroke-accent-hover fill-none" strokeWidth={1.6}>
+              <path d="M5 13l4 4L19 7" />
+            </svg>
           </div>
-        )}
+          <h2 className="text-xl font-bold mt-3">已收到你的回覆！</h2>
+          <p className="text-text-soft mt-2 text-sm">
+            {attendingResult
+              ? "謝謝你花時間回覆，期待婚禮當天見到你！"
+              : "謝謝你花時間回覆，祝你一切順心。"}
+          </p>
+          {attendingResult && (
+            <div className="mt-6 flex flex-col items-center gap-3">
+              <p className="text-sm font-semibold text-text">婚禮當天掃描 QR Code 即可快速報到</p>
+              <div className="bg-white p-3 rounded-2xl shadow-sm">
+                <QrCode url={checkinUrl} size={180} />
+              </div>
+              <p className="text-xs text-text-faint">請截圖或儲存此 QR Code</p>
+            </div>
+          )}
+        </div>
       </div>
     );
   }
 
   return (
     <div className="w-full max-w-sm">
-      <div className="text-center mb-6">
-        <div className="text-[11px] tracking-[0.16em] uppercase text-accent-hover font-bold">
-          出席回覆
-        </div>
-        <h1 className="text-2xl font-bold mt-1">{weddingName}</h1>
-        {weddingDate && (
-          <p className="text-text-soft mt-1">
-            {new Date(weddingDate).toLocaleDateString("zh-TW", {
-              year: "numeric",
-              month: "long",
-              day: "numeric",
-            })}
-          </p>
-        )}
-      </div>
+      <InvitationCard
+        title={cardTitle}
+        subtitle={cardSubtitle}
+        imageUrl={cardImageUrl}
+        weddingName={weddingName}
+        weddingDate={weddingDate}
+      />
 
       <form action={handleSubmit} className="candidate-card flex flex-col gap-3.5">
         <label className="flex flex-col gap-1">

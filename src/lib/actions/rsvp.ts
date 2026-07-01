@@ -20,6 +20,19 @@ export async function regenerateRsvpToken(weddingId: string) {
   return token;
 }
 
+export async function updateRsvpCard(
+  weddingId: string,
+  formData: FormData
+) {
+  const title = String(formData.get("title") || "").trim() || null;
+  const subtitle = String(formData.get("subtitle") || "").trim() || null;
+  await prisma.wedding.update({
+    where: { id: weddingId },
+    data: { rsvpCardTitle: title, rsvpCardSubtitle: subtitle },
+  });
+  revalidatePath("/guest");
+}
+
 export async function submitRsvp(token: string, formData: FormData) {
   const wedding = await prisma.wedding.findUnique({ where: { rsvpToken: token } });
   if (!wedding) return { ok: false as const, error: "找不到這場婚禮" };

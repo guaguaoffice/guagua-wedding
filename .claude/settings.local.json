@@ -37,7 +37,8 @@
       "Bash(xxd prisma/migrations/20260627000000_add_wedding_rsvp_token/migration.sql)",
       "Bash(tail -n +2 prisma/migrations/20260627000000_add_wedding_rsvp_token/migration.sql)",
       "Bash(mv /tmp/mig.sql prisma/migrations/20260627000000_add_wedding_rsvp_token/migration.sql)",
-      "Bash(npx tsc *)"
+      "Bash(npx tsc *)",
+      "Bash(grep -v \"^$\")"
     ]
   }
 }

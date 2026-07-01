@@ -78,11 +78,17 @@ export function GuestClient({
   guests,
   rsvpToken,
   tables,
+  rsvpCardTitle,
+  rsvpCardSubtitle,
+  rsvpCardImageUrl,
 }: {
   weddingId: string;
   guests: GuestRow[];
   rsvpToken: string;
   tables: TableRow[];
+  rsvpCardTitle: string | null;
+  rsvpCardSubtitle: string | null;
+  rsvpCardImageUrl: string | null;
 }) {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -280,7 +286,15 @@ export function GuestClient({
         </div>
       )}
 
-      {tab === "rsvp" && <RsvpLinkCard weddingId={weddingId} token={rsvpToken} />}
+      {tab === "rsvp" && (
+        <RsvpLinkCard
+          weddingId={weddingId}
+          token={rsvpToken}
+          cardTitle={rsvpCardTitle}
+          cardSubtitle={rsvpCardSubtitle}
+          cardImageUrl={rsvpCardImageUrl}
+        />
+      )}
 
       {tab === "gift" && (
         <div>

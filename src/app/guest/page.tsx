@@ -13,6 +13,8 @@ export default async function GuestPage() {
     ensureRsvpToken(current.wedding.id),
     getTables(current.wedding.id),
   ]);
+
+  const { rsvpCardTitle, rsvpCardSubtitle, rsvpCardImageUrl } = current.wedding;
   const guests = guestsRaw.map((g) => ({
     id: g.id,
     name: g.name,
@@ -34,6 +36,9 @@ export default async function GuestPage() {
         guests={guests}
         rsvpToken={rsvpToken}
         tables={tables}
+        rsvpCardTitle={rsvpCardTitle}
+        rsvpCardSubtitle={rsvpCardSubtitle}
+        rsvpCardImageUrl={rsvpCardImageUrl}
       />
     </Suspense>
   );

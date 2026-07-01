@@ -3,13 +3,26 @@
 import { useEffect, useRef, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import QRCode from "qrcode";
-import { regenerateRsvpToken } from "@/lib/actions/rsvp";
+import { regenerateRsvpToken, updateRsvpCard } from "@/lib/actions/rsvp";
 
-export function RsvpLinkCard({ weddingId, token }: { weddingId: string; token: string }) {
+export function RsvpLinkCard({
+  weddingId,
+  token,
+  cardTitle,
+  cardSubtitle,
+  cardImageUrl,
+}: {
+  weddingId: string;
+  token: string;
+  cardTitle: string | null;
+  cardSubtitle: string | null;
+  cardImageUrl: string | null;
+}) {
   const router = useRouter();
   const [pending, startTransition] = useTransition();
   const [copied, setCopied] = useState(false);
   const [showQr, setShowQr] = useState(false);
+  const [editing, setEditing] = useState(false);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [origin] = useState(() => (typeof window !== "undefined" ? window.location.origin : ""));
 
@@ -37,39 +50,133 @@ export function RsvpLinkCard({ weddingId, token }: { weddingId: string; token: s
     });
   }
 
+  function handleSaveCard(formData: FormData) {
+    startTransition(async () => {
+      await updateRsvpCard(weddingId, formData);
+      setEditing(false);
+      router.refresh();
+    });
+  }
+
+  const displayTitle = cardTitle || "敬邀出席";
+  const displaySubtitle = cardSubtitle || "期待與您共度這份喜悅";
+
   return (
-    <div className="panel">
-      <div className="flex items-center justify-between mb-2">
-        <div className="font-bold text-[15px]">出席回覆連結</div>
-        <button
-          onClick={handleRegenerate}
-          disabled={pending}
-          className="text-xs text-text-soft hover:text-coral"
-        >
-          重新產生
-        </button>
-      </div>
-      <p className="text-[12.5px] text-text-soft mb-3">
-        分享連結或讓賓客掃 QR Code，填寫的回覆會自動加進賓客名冊。
-      </p>
-      <div className="flex gap-2 mb-2">
-        <input
-          readOnly
-          value={link}
-          className="flex-1 min-w-0 border border-border rounded-[9px] px-3 py-2 text-xs bg-card-hover text-text-soft"
-        />
-        <button onClick={handleCopy} className="btn btn-secondary text-sm">
-          {copied ? "已複製 ✓" : "複製連結"}
-        </button>
-      </div>
-      <button onClick={() => setShowQr((v) => !v)} className="text-accent-hover text-xs font-semibold">
-        {showQr ? "收起 QR Code" : "顯示 QR Code"}
-      </button>
-      {showQr && (
-        <div className="mt-3 flex justify-center">
-          <canvas ref={canvasRef} />
+    <div className="flex flex-col gap-3.5">
+
+      {/* 卡片預覽 */}
+      <div className="panel overflow-hidden">
+        <div className="flex items-center justify-between mb-3">
+          <div className="font-bold text-[15px]">出席回覆卡片</div>
+          <button
+            onClick={() => setEditing((v) => !v)}
+            className="text-xs font-semibold text-accent-hover hover:underline"
+          >
+            {editing ? "取消" : "編輯文字"}
+          </button>
         </div>
-      )}
+
+        {/* 預覽 */}
+        <div className="rounded-xl overflow-hidden bg-[#f5f0eb] relative">
+          {cardImageUrl && (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img
+              src={cardImageUrl}
+              alt="卡片照片"
+              className="w-full h-48 object-cover"
+            />
+          )}
+          {!cardImageUrl && (
+            <div className="w-full h-36 bg-gradient-to-br from-accent-soft to-[#e8e0d8] flex items-center justify-center">
+              <svg viewBox="0 0 24 24" className="w-10 h-10 stroke-accent-hover/40 fill-none" strokeWidth={1.2}>
+                <rect x="3" y="3" width="18" height="18" rx="2" />
+                <circle cx="8.5" cy="8.5" r="1.5" />
+                <path d="M21 15l-5-5L5 21" />
+              </svg>
+            </div>
+          )}
+          <div className="px-5 py-4 text-center">
+            <p className="text-[11px] tracking-[0.2em] text-text-soft uppercase mb-1">Wedding Invitation</p>
+            <h2 className="text-xl font-bold tracking-wide">{displayTitle}</h2>
+            <p className="text-sm text-text-soft mt-1">{displaySubtitle}</p>
+          </div>
+        </div>
+
+        {/* 編輯區 */}
+        {editing && (
+          <form action={handleSaveCard} className="mt-3 flex flex-col gap-2.5">
+            <label className="flex flex-col gap-1">
+              <span className="text-[11px] text-text-soft font-semibold">主標題</span>
+              <input
+                name="title"
+                defaultValue={cardTitle ?? ""}
+                placeholder="敬邀出席"
+                disabled={pending}
+                className="border border-border rounded-[9px] px-3 py-2 text-sm bg-card"
+              />
+            </label>
+            <label className="flex flex-col gap-1">
+              <span className="text-[11px] text-text-soft font-semibold">副標題</span>
+              <input
+                name="subtitle"
+                defaultValue={cardSubtitle ?? ""}
+                placeholder="期待與您共度這份喜悅"
+                disabled={pending}
+                className="border border-border rounded-[9px] px-3 py-2 text-sm bg-card"
+              />
+            </label>
+            <button type="submit" disabled={pending} className="btn btn-primary text-sm">
+              儲存
+            </button>
+          </form>
+        )}
+
+        {/* 照片上傳（稍後完成） */}
+        {editing && (
+          <div className="mt-2 rounded-xl bg-card-hover px-4 py-3 text-[12.5px] text-text-soft flex items-center gap-2">
+            <svg viewBox="0 0 24 24" className="w-4 h-4 stroke-text-faint fill-none flex-none" strokeWidth={1.8}>
+              <circle cx="12" cy="12" r="9" />
+              <path d="M12 8v4M12 16h.01" />
+            </svg>
+            照片上傳功能設定中，完成後可在此上傳喜帖照片。
+          </div>
+        )}
+      </div>
+
+      {/* 分享連結 */}
+      <div className="panel">
+        <div className="flex items-center justify-between mb-2">
+          <div className="font-bold text-[15px]">分享連結</div>
+          <button
+            onClick={handleRegenerate}
+            disabled={pending}
+            className="text-xs text-text-soft hover:text-coral"
+          >
+            重新產生
+          </button>
+        </div>
+        <p className="text-[12.5px] text-text-soft mb-3">
+          分享連結或讓賓客掃 QR Code，填寫的回覆會自動加進賓客名冊。
+        </p>
+        <div className="flex gap-2 mb-2">
+          <input
+            readOnly
+            value={link}
+            className="flex-1 min-w-0 border border-border rounded-[9px] px-3 py-2 text-xs bg-card-hover text-text-soft"
+          />
+          <button onClick={handleCopy} className="btn btn-secondary text-sm">
+            {copied ? "已複製 ✓" : "複製連結"}
+          </button>
+        </div>
+        <button onClick={() => setShowQr((v) => !v)} className="text-accent-hover text-xs font-semibold">
+          {showQr ? "收起 QR Code" : "顯示 QR Code"}
+        </button>
+        {showQr && (
+          <div className="mt-3 flex justify-center">
+            <canvas ref={canvasRef} />
+          </div>
+        )}
+      </div>
     </div>
   );
 }
