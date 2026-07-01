@@ -4,6 +4,8 @@ import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useState, useTransition } from "react";
 import { QrCode } from "@/components/QrCode";
+import { QrScanner } from "@/components/QrScanner";
+import { checkInGuest } from "@/lib/actions/checkin";
 import {
   addWeddingDayEvent,
   cycleWeddingDayEventStatus,
@@ -90,10 +92,18 @@ function CheckinTab({ guests }: { guests: OnsiteGuest[] }) {
   const guestOnly = guests.filter((g) => g.kind === "guest");
   const checkedIn = guestOnly.filter((g) => g.checkedInAt);
   const [expandedId, setExpandedId] = useState<string | null>(null);
+  const [scanning, setScanning] = useState(false);
   const origin = typeof window !== "undefined" ? window.location.origin : "";
 
   return (
     <div>
+      {scanning && (
+        <QrScanner
+          onCheckin={checkInGuest}
+          onClose={() => setScanning(false)}
+        />
+      )}
+
       <div className="grid grid-cols-3 gap-3 mb-3.5">
         <div className="panel">
           <div className="text-xs text-text-soft">總賓客數</div>
@@ -108,6 +118,17 @@ function CheckinTab({ guests }: { guests: OnsiteGuest[] }) {
           <div className="font-display font-semibold text-[26px] mt-1">{guestOnly.length - checkedIn.length}</div>
         </div>
       </div>
+
+      <button
+        onClick={() => setScanning(true)}
+        className="btn btn-primary w-full mb-3.5 flex items-center justify-center gap-2"
+      >
+        <svg viewBox="0 0 24 24" className="w-4.5 h-4.5 stroke-current fill-none" strokeWidth={2}>
+          <path d="M3 7V5a2 2 0 012-2h2M17 3h2a2 2 0 012 2v2M21 17v2a2 2 0 01-2 2h-2M7 21H5a2 2 0 01-2-2v-2" />
+          <rect x="7" y="7" width="10" height="10" rx="1" />
+        </svg>
+        開始掃描報到
+      </button>
 
       {guestOnly.length === 0 ? (
         <div className="panel text-center py-6 text-text-soft text-sm">還沒有賓客</div>
