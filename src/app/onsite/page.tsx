@@ -30,6 +30,8 @@ export default async function OnsitePage() {
     kind: "guest" as const,
     side: g.side,
     identity: null,
+    checkinToken: g.checkinToken,
+    checkedInAt: g.checkedInAt,
   }));
 
   const members = membersRaw.map((m) => ({
@@ -40,6 +42,8 @@ export default async function OnsitePage() {
     kind: "member" as const,
     side: null,
     identity: m.identity,
+    checkinToken: null,
+    checkedInAt: null,
   }));
 
   const tables = tablesRaw.map((t) => ({

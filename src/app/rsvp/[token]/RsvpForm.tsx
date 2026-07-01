@@ -2,6 +2,7 @@
 
 import { useState, useTransition } from "react";
 import { submitRsvp } from "@/lib/actions/rsvp";
+import { QrCode } from "@/components/QrCode";
 
 export function RsvpForm({
   token,
@@ -14,7 +15,8 @@ export function RsvpForm({
 }) {
   const [pending, startTransition] = useTransition();
   const [attending, setAttending] = useState<"yes" | "no" | "">("");
-  const [done, setDone] = useState(false);
+  const [checkinToken, setCheckinToken] = useState<string | null>(null);
+  const [attendingResult, setAttendingResult] = useState<boolean | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   function handleSubmit(formData: FormData) {
@@ -22,23 +24,34 @@ export function RsvpForm({
     startTransition(async () => {
       const result = await submitRsvp(token, formData);
       if (result.ok) {
-        setDone(true);
+        setCheckinToken(result.checkinToken);
+        setAttendingResult(result.attending);
       } else {
         setError(result.error);
       }
     });
   }
 
-  if (done) {
+  if (checkinToken !== null) {
+    const checkinUrl = `${typeof window !== "undefined" ? window.location.origin : ""}/checkin/${checkinToken}`;
     return (
-      <div className="w-full max-w-sm text-center mt-12">
+      <div className="w-full max-w-sm text-center mt-8">
         <div className="empty-icon mx-auto">
           <svg viewBox="0 0 24 24" className="w-6.5 h-6.5 stroke-accent-hover fill-none" strokeWidth={1.6}>
             <path d="M5 13l4 4L19 7" />
           </svg>
         </div>
         <h1 className="text-xl font-bold mt-3">已收到你的回覆！</h1>
-        <p className="text-text-soft mt-2">謝謝你花時間回覆，期待婚禮當天見到你。</p>
+        <p className="text-text-soft mt-2 text-sm">謝謝你花時間回覆，期待婚禮當天見到你。</p>
+        {attendingResult && (
+          <div className="mt-6 flex flex-col items-center gap-3">
+            <p className="text-sm font-semibold text-text">婚禮當天掃描 QR Code 即可快速報到</p>
+            <div className="bg-white p-3 rounded-2xl shadow-sm">
+              <QrCode url={checkinUrl} size={180} />
+            </div>
+            <p className="text-xs text-text-faint">請截圖或儲存此 QR Code</p>
+          </div>
+        )}
       </div>
     );
   }

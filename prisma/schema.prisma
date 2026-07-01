@@ -351,6 +351,8 @@ model Guest {
   favorSentStatus  InvitationStatus @default(NOT_SENT)
   giftAmount       Decimal?         @db.Decimal(12, 2)
   note             String?
+  checkinToken     String?          @unique
+  checkedInAt      DateTime?
   createdAt        DateTime         @default(now())
 
   wedding Wedding @relation(fields: [weddingId], references: [id], onDelete: Cascade)

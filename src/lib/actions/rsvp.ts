@@ -37,6 +37,7 @@ export async function submitRsvp(token: string, formData: FormData) {
   const phone = String(formData.get("phone") || "").trim() || null;
   const note = String(formData.get("note") || "").trim() || null;
 
+  const checkinToken = crypto.randomUUID();
   await prisma.guest.create({
     data: {
       weddingId: wedding.id,
@@ -48,9 +49,10 @@ export async function submitRsvp(token: string, formData: FormData) {
       phone,
       note,
       invitationStatus: "CONFIRMED",
+      checkinToken,
     },
   });
 
   revalidatePath("/guest");
-  return { ok: true as const };
+  return { ok: true as const, checkinToken, attending };
 }

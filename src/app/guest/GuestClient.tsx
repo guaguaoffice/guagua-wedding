@@ -1,7 +1,8 @@
 "use client";
 
 import { useRouter, useSearchParams } from "next/navigation";
-import { useTransition } from "react";
+import { useState, useTransition } from "react";
+import { QrCode } from "@/components/QrCode";
 import {
   addGuest,
   deleteGuest,
@@ -26,6 +27,7 @@ export type GuestRow = {
   plusOneCount: number;
   tableId: string | null;
   giftAmount: number | null;
+  checkinToken: string | null;
 };
 
 export type TableRow = { id: string; name: string };
@@ -86,6 +88,8 @@ export function GuestClient({
   const searchParams = useSearchParams();
   const tab = searchParams.get("tab") ?? "list";
   const [pending, startTransition] = useTransition();
+  const [expandedQrId, setExpandedQrId] = useState<string | null>(null);
+  const origin = typeof window !== "undefined" ? window.location.origin : "";
 
   function setTab(next: string) {
     router.replace(`/guest?tab=${next}`, { scroll: false });
@@ -181,45 +185,69 @@ export function GuestClient({
             />
           ) : (
             <div className="panel flex flex-col gap-2">
-              {guests.map((g) => (
-                <div key={g.id} className="lrow flex-wrap gap-y-1.5">
-                  <span
-                    className={`text-[11px] font-semibold px-2 py-0.5 rounded-full flex-none ${
-                      g.side === "GROOM" ? "bg-[#e2eaf0] text-[#5b7a92]" : "bg-coral-tint text-coral"
-                    }`}
-                  >
-                    {g.side === "GROOM" ? "男方" : "女方"}
-                  </span>
-                  <div className="flex-1 min-w-0">
-                    <div className="font-semibold text-sm">{g.name}</div>
-                    {(g.relation || g.phone) && (
-                      <div className="text-xs text-text-soft mt-0.5">
-                        {[g.relation, g.phone].filter(Boolean).join(" · ")}
-                      </div>
+              {guests.map((g) => {
+                const isExpanded = expandedQrId === g.id;
+                const checkinUrl = g.checkinToken ? `${origin}/checkin/${g.checkinToken}` : null;
+                return (
+                <div key={g.id}>
+                  <div className="lrow flex-wrap gap-y-1.5">
+                    <span
+                      className={`text-[11px] font-semibold px-2 py-0.5 rounded-full flex-none ${
+                        g.side === "GROOM" ? "bg-[#e2eaf0] text-[#5b7a92]" : "bg-coral-tint text-coral"
+                      }`}
+                    >
+                      {g.side === "GROOM" ? "男方" : "女方"}
+                    </span>
+                    <div className="flex-1 min-w-0">
+                      <div className="font-semibold text-sm">{g.name}</div>
+                      {(g.relation || g.phone) && (
+                        <div className="text-xs text-text-soft mt-0.5">
+                          {[g.relation, g.phone].filter(Boolean).join(" · ")}
+                        </div>
+                      )}
+                    </div>
+                    <span
+                      className={`text-[11px] font-semibold px-2 py-1 rounded-full flex-none whitespace-nowrap ${
+                        g.tableId ? "bg-accent-soft text-accent-hover" : "bg-card-hover text-text-faint"
+                      }`}
+                    >
+                      {g.tableId ? tables.find((t) => t.id === g.tableId)?.name ?? "已安排" : "未安排桌位"}
+                    </span>
+                    <AttendingBadge
+                      attending={g.attending}
+                      pending={pending}
+                      onClick={() => cycleAttending(g)}
+                    />
+                    {checkinUrl && (
+                      <button
+                        onClick={() => setExpandedQrId(isExpanded ? null : g.id)}
+                        className={`text-[11px] font-semibold px-2 py-1 rounded-full flex-none ${
+                          isExpanded ? "bg-accent-soft text-accent-hover" : "bg-card-hover text-text-soft hover:text-accent-hover"
+                        }`}
+                      >
+                        QR
+                      </button>
                     )}
+                    <button
+                      disabled={pending}
+                      onClick={() => handleDelete(g.id)}
+                      aria-label="刪除賓客"
+                      className="text-text-faint hover:text-coral p-1 flex-none"
+                    >
+                      ✕
+                    </button>
                   </div>
-                  <span
-                    className={`text-[11px] font-semibold px-2 py-1 rounded-full flex-none whitespace-nowrap ${
-                      g.tableId ? "bg-accent-soft text-accent-hover" : "bg-card-hover text-text-faint"
-                    }`}
-                  >
-                    {g.tableId ? tables.find((t) => t.id === g.tableId)?.name ?? "已安排" : "未安排桌位"}
-                  </span>
-                  <AttendingBadge
-                    attending={g.attending}
-                    pending={pending}
-                    onClick={() => cycleAttending(g)}
-                  />
-                  <button
-                    disabled={pending}
-                    onClick={() => handleDelete(g.id)}
-                    aria-label="刪除賓客"
-                    className="text-text-faint hover:text-coral p-1 flex-none"
-                  >
-                    ✕
-                  </button>
+                  {isExpanded && checkinUrl && (
+                    <div className="mt-2 ml-2 flex flex-col items-start gap-1.5">
+                      <div className="bg-white p-2 rounded-xl shadow-sm">
+                        <QrCode url={checkinUrl} size={140} />
+                      </div>
+                      <p className="text-[11px] text-text-faint">截圖後傳給賓客，婚禮當天掃碼報到</p>
+                    </div>
+                  )}
                 </div>
-              ))}
+                );
+              })}
             </div>
           )}
 

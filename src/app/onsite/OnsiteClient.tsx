@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useState, useTransition } from "react";
+import { QrCode } from "@/components/QrCode";
 import {
   addWeddingDayEvent,
   cycleWeddingDayEventStatus,
@@ -41,6 +42,8 @@ export type OnsiteGuest = {
   kind: "guest" | "member";
   side: "GROOM" | "BRIDE" | null;
   identity: "GROOM" | "BRIDE" | "PARTNER" | "OTHER" | null;
+  checkinToken: string | null;
+  checkedInAt: Date | null;
 };
 
 const SIDE_LABEL: Record<string, string> = {
@@ -82,6 +85,81 @@ export type OnsiteTable = {
   name: string;
   capacity: number | null;
 };
+
+function CheckinTab({ guests }: { guests: OnsiteGuest[] }) {
+  const guestOnly = guests.filter((g) => g.kind === "guest");
+  const checkedIn = guestOnly.filter((g) => g.checkedInAt);
+  const [expandedId, setExpandedId] = useState<string | null>(null);
+  const origin = typeof window !== "undefined" ? window.location.origin : "";
+
+  return (
+    <div>
+      <div className="grid grid-cols-3 gap-3 mb-3.5">
+        <div className="panel">
+          <div className="text-xs text-text-soft">總賓客數</div>
+          <div className="font-display font-semibold text-[26px] mt-1">{guestOnly.length}</div>
+        </div>
+        <div className="panel">
+          <div className="text-xs text-text-soft">已報到</div>
+          <div className="font-display font-semibold text-[26px] mt-1 text-accent">{checkedIn.length}</div>
+        </div>
+        <div className="panel">
+          <div className="text-xs text-text-soft">未報到</div>
+          <div className="font-display font-semibold text-[26px] mt-1">{guestOnly.length - checkedIn.length}</div>
+        </div>
+      </div>
+
+      {guestOnly.length === 0 ? (
+        <div className="panel text-center py-6 text-text-soft text-sm">還沒有賓客</div>
+      ) : (
+        <div className="panel flex flex-col gap-2">
+          {guestOnly.map((g) => {
+            const isExpanded = expandedId === g.id;
+            const checkinUrl = g.checkinToken ? `${origin}/checkin/${g.checkinToken}` : null;
+            const timeStr = g.checkedInAt
+              ? new Date(g.checkedInAt).toLocaleTimeString("zh-TW", { hour: "2-digit", minute: "2-digit" })
+              : null;
+            return (
+              <div key={g.id}>
+                <div className="lrow flex-wrap gap-y-1.5">
+                  {g.side && (
+                    <span className={`text-[11px] font-semibold px-2 py-0.5 rounded-full flex-none ${SIDE_TAG_CLASS[g.side]}`}>
+                      {SIDE_LABEL[g.side]}
+                    </span>
+                  )}
+                  <div className="flex-1 min-w-0">
+                    <div className="font-semibold text-sm">{g.name}{g.plusOneCount > 0 && ` +${g.plusOneCount}`}</div>
+                  </div>
+                  {g.checkedInAt ? (
+                    <span className="status status-done text-[11px]">已報到 {timeStr}</span>
+                  ) : (
+                    <span className="status status-idle text-[11px]">未報到</span>
+                  )}
+                  {checkinUrl && (
+                    <button
+                      onClick={() => setExpandedId(isExpanded ? null : g.id)}
+                      className="text-[11px] font-semibold px-2 py-1 rounded-full bg-card-hover text-text-soft hover:text-accent-hover flex-none"
+                    >
+                      QR
+                    </button>
+                  )}
+                </div>
+                {isExpanded && checkinUrl && (
+                  <div className="mt-2 ml-2 flex flex-col items-start gap-2">
+                    <div className="bg-white p-2 rounded-xl shadow-sm">
+                      <QrCode url={checkinUrl} size={140} />
+                    </div>
+                    <p className="text-[11px] text-text-faint">掃碼即可完成報到</p>
+                  </div>
+                )}
+              </div>
+            );
+          })}
+        </div>
+      )}
+    </div>
+  );
+}
 
 function EmptyState({
   icon,
@@ -425,22 +503,7 @@ export function OnsiteClient({
       )}
 
       {tab === "checkin" && (
-        <div className="panel">
-          <div className="bg-card-hover rounded-xl px-4 py-4 text-[13.5px] text-text-soft flex gap-2.5 items-start">
-            <svg
-              viewBox="0 0 24 24"
-              className="w-5 h-5 stroke-accent-hover fill-none flex-none"
-              strokeWidth={1.7}
-            >
-              <circle cx="12" cy="12" r="9" />
-              <path d="M12 7v5l3 2" />
-            </svg>
-            <div>
-              報到在婚禮當天前開放。屆時每位賓客有專屬報到
-              QR，現場掃碼即報到、自動對到桌次，這裡會即時顯示已報到統計。
-            </div>
-          </div>
-        </div>
+        <CheckinTab guests={guests} />
       )}
 
       {tab === "run" && (

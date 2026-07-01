@@ -23,6 +23,7 @@ export default async function GuestPage() {
     plusOneCount: g.plusOneCount,
     tableId: g.tableId,
     giftAmount: toNumOrNull(g.giftAmount),
+    checkinToken: g.checkinToken,
   }));
   const tables = tablesRaw.map((t) => ({ id: t.id, name: t.name }));
 

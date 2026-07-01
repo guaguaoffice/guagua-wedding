@@ -12,7 +12,7 @@ export async function addGuest(weddingId: string, formData: FormData) {
   const relation = String(formData.get("relation") || "").trim() || null;
 
   await prisma.guest.create({
-    data: { weddingId, name, side, relation },
+    data: { weddingId, name, side, relation, checkinToken: crypto.randomUUID() },
   });
   revalidatePath("/guest");
 }
