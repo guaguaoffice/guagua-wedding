@@ -4,6 +4,7 @@ import { useEffect, useRef, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import QRCode from "qrcode";
 import { regenerateRsvpToken, updateRsvpCard } from "@/lib/actions/rsvp";
+import { uploadRsvpCardImage, removeRsvpCardImage } from "@/lib/actions/upload";
 
 export function RsvpLinkCard({
   weddingId,
@@ -23,6 +24,9 @@ export function RsvpLinkCard({
   const [copied, setCopied] = useState(false);
   const [showQr, setShowQr] = useState(false);
   const [editing, setEditing] = useState(false);
+  const [uploadError, setUploadError] = useState<string | null>(null);
+  const [uploading, setUploading] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [origin] = useState(() => (typeof window !== "undefined" ? window.location.origin : ""));
 
@@ -46,6 +50,26 @@ export function RsvpLinkCard({
     startTransition(async () => {
       await regenerateRsvpToken(weddingId);
       setShowQr(false);
+      router.refresh();
+    });
+  }
+
+  async function handleImageChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setUploadError(null);
+    setUploading(true);
+    const fd = new FormData();
+    fd.append("image", file);
+    const result = await uploadRsvpCardImage(fd);
+    setUploading(false);
+    if (!result.ok) setUploadError(result.error);
+    else router.refresh();
+  }
+
+  async function handleRemoveImage() {
+    startTransition(async () => {
+      await removeRsvpCardImage(weddingId);
       router.refresh();
     });
   }
@@ -131,14 +155,39 @@ export function RsvpLinkCard({
           </form>
         )}
 
-        {/* 照片上傳（稍後完成） */}
+        {/* 照片上傳 */}
         {editing && (
-          <div className="mt-2 rounded-xl bg-card-hover px-4 py-3 text-[12.5px] text-text-soft flex items-center gap-2">
-            <svg viewBox="0 0 24 24" className="w-4 h-4 stroke-text-faint fill-none flex-none" strokeWidth={1.8}>
-              <circle cx="12" cy="12" r="9" />
-              <path d="M12 8v4M12 16h.01" />
-            </svg>
-            照片上傳功能設定中，完成後可在此上傳喜帖照片。
+          <div className="mt-2 flex flex-col gap-2">
+            <span className="text-[11px] text-text-soft font-semibold">封面照片</span>
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="image/*"
+              className="hidden"
+              onChange={handleImageChange}
+            />
+            <div className="flex gap-2">
+              <button
+                type="button"
+                disabled={uploading}
+                onClick={() => fileInputRef.current?.click()}
+                className="btn btn-secondary text-sm flex-1"
+              >
+                {uploading ? "上傳中…" : cardImageUrl ? "更換照片" : "上傳照片"}
+              </button>
+              {cardImageUrl && (
+                <button
+                  type="button"
+                  disabled={pending}
+                  onClick={handleRemoveImage}
+                  className="text-xs text-coral hover:underline px-2"
+                >
+                  移除
+                </button>
+              )}
+            </div>
+            {uploadError && <p className="text-xs text-coral">{uploadError}</p>}
+            <p className="text-[11px] text-text-faint">支援 JPG、PNG，最大 5MB</p>
           </div>
         )}
       </div>
