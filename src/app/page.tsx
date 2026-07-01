@@ -186,7 +186,7 @@ export default async function HomePage() {
           )}
         </Link>
         <Link href="/guest" className="panel block animate-slide-up">
-          <div className="text-xs text-text-soft tracking-wide">賓客 RSVP</div>
+          <div className="text-xs text-text-soft tracking-wide">賓客出席回覆</div>
           <div className="font-display font-semibold text-[26px] mt-1 leading-none">
             0<small className="font-sans text-xs text-text-soft font-normal"> / 0</small>
           </div>

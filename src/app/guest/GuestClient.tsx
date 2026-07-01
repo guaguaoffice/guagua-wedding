@@ -13,7 +13,7 @@ import { RsvpLinkCard } from "@/app/guest/RsvpLinkCard";
 
 const TABS = [
   { key: "list", label: "名冊" },
-  { key: "rsvp", label: "邀請與 RSVP" },
+  { key: "rsvp", label: "邀請與出席回覆" },
   { key: "gift", label: "禮金簿" },
 ] as const;
 
@@ -180,7 +180,7 @@ export function GuestClient({
                 </svg>
               }
               title="還沒有賓客"
-              description="從草擬名單開始，或匯入 Excel／CSV；之後 RSVP 回覆也會自動進到這裡。"
+              description="從草擬名單開始，或匯入 Excel／CSV；之後出席回覆也會自動進到這裡。"
               cta="＋ 新增賓客"
             />
           ) : (
