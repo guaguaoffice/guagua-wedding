@@ -17,6 +17,7 @@ export function RsvpForm({
   const [attending, setAttending] = useState<"yes" | "no" | "">("");
   const [checkinToken, setCheckinToken] = useState<string | null>(null);
   const [attendingResult, setAttendingResult] = useState<boolean | null>(null);
+
   const [error, setError] = useState<string | null>(null);
 
   function handleSubmit(formData: FormData) {
@@ -42,7 +43,11 @@ export function RsvpForm({
           </svg>
         </div>
         <h1 className="text-xl font-bold mt-3">已收到你的回覆！</h1>
-        <p className="text-text-soft mt-2 text-sm">謝謝你花時間回覆，期待婚禮當天見到你。</p>
+        <p className="text-text-soft mt-2 text-sm">
+          {attendingResult
+            ? "謝謝你花時間回覆，期待婚禮當天見到你！"
+            : "謝謝你花時間回覆，祝你一切順心。"}
+        </p>
         {attendingResult && (
           <div className="mt-6 flex flex-col items-center gap-3">
             <p className="text-sm font-semibold text-text">婚禮當天掃描 QR Code 即可快速報到</p>
