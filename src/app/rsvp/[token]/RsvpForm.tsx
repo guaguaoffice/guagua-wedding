@@ -179,38 +179,43 @@ export function RsvpForm({
           {attending === "yes" && (
             <div className="flex flex-col gap-3.5 animate-slide-up">
               <label className="flex flex-col gap-1">
-                <span className="text-[11px] text-text-soft font-semibold">攜伴人數（不含自己）</span>
+                <span className="text-[11px] text-text-soft font-semibold">出席人數</span>
                 <input
-                  name="plusOneCount"
+                  name="attendeeCount"
                   type="number"
-                  min={0}
-                  defaultValue={0}
+                  min={1}
+                  defaultValue={1}
                   disabled={pending}
                   className="w-full border border-border rounded-[9px] px-3 py-2 text-sm bg-bg"
                 />
               </label>
-              <label className="flex items-center gap-2 text-sm">
-                <input type="checkbox" name="vegetarian" />
-                我（或同行親友）吃素
-              </label>
+              <div>
+                <div className="text-[11px] text-text-soft font-semibold mb-1.5">飲食習慣</div>
+                <div className="flex gap-1.5">
+                  <label className="flex-1">
+                    <input type="radio" name="dietary" value="meat" defaultChecked className="hidden peer" />
+                    <div className="peer-checked:bg-accent peer-checked:text-white text-center text-sm font-semibold py-2 rounded-[9px] bg-card-hover text-text-soft cursor-pointer transition-colors">
+                      葷食
+                    </div>
+                  </label>
+                  <label className="flex-1">
+                    <input type="radio" name="dietary" value="vegetarian" className="hidden peer" />
+                    <div className="peer-checked:bg-accent peer-checked:text-white text-center text-sm font-semibold py-2 rounded-[9px] bg-card-hover text-text-soft cursor-pointer transition-colors">
+                      素食
+                    </div>
+                  </label>
+                </div>
+              </div>
             </div>
           )}
 
           <label className="flex flex-col gap-1">
-            <span className="text-[11px] text-text-soft font-semibold">聯絡電話（選填）</span>
-            <input
-              name="phone"
-              disabled={pending}
-              className="w-full border border-border rounded-[9px] px-3 py-2 text-sm bg-bg"
-            />
-          </label>
-
-          <label className="flex flex-col gap-1">
             <span className="text-[11px] text-text-soft font-semibold">想說的話（選填）</span>
-            <input
+            <textarea
               name="note"
               disabled={pending}
-              className="w-full border border-border rounded-[9px] px-3 py-2 text-sm bg-bg"
+              rows={3}
+              className="w-full border border-border rounded-[9px] px-3 py-2 text-sm bg-bg resize-none"
             />
           </label>
 

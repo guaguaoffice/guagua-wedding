@@ -44,10 +44,9 @@ export async function submitRsvp(token: string, formData: FormData) {
   const side: GuestSide = sideRaw === "BRIDE" ? "BRIDE" : "GROOM";
   const attendingRaw = String(formData.get("attending") || "");
   const attending = attendingRaw === "yes" ? true : attendingRaw === "no" ? false : null;
-  const plusOneRaw = String(formData.get("plusOneCount") || "0").trim();
-  const plusOneCount = attending ? Math.max(0, Number(plusOneRaw) || 0) : 0;
-  const vegetarian = formData.get("vegetarian") === "on";
-  const phone = String(formData.get("phone") || "").trim() || null;
+  const attendeeRaw = String(formData.get("attendeeCount") || "1").trim();
+  const plusOneCount = attending ? Math.max(0, (Number(attendeeRaw) || 1) - 1) : 0;
+  const vegetarian = attending ? formData.get("dietary") === "vegetarian" : false;
   const note = String(formData.get("note") || "").trim() || null;
 
   const checkinToken = crypto.randomUUID();
@@ -59,7 +58,6 @@ export async function submitRsvp(token: string, formData: FormData) {
       attending,
       plusOneCount,
       vegetarian,
-      phone,
       note,
       invitationStatus: "CONFIRMED",
       checkinToken,
