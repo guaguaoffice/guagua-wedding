@@ -49,7 +49,7 @@ export function RsvpForm({
   }
 
   return (
-    <div className="w-full max-w-lg">
+    <div className="w-full max-w-lg" style={{ "--color-accent": accentColor } as React.CSSProperties}>
       {/* 喜帖卡片 + 表單合為一個容器 */}
       <div className="rounded-2xl overflow-hidden shadow-md">
         {/* 喜帖區 */}
