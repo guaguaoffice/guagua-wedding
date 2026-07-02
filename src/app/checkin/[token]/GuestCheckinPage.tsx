@@ -1,6 +1,7 @@
 "use client";
 
 import { QrCode } from "@/components/QrCode";
+import { getCardBg, getCardAccent } from "@/lib/cardColors";
 
 export function GuestCheckinPage({
   token,
@@ -27,7 +28,8 @@ export function GuestCheckinPage({
   cardImageUrl: string | null;
   cardColor: string | null;
 }) {
-  const bgColor = cardColor || "#e4f0ea";
+  const bgColor = getCardBg(cardColor);
+  const accentColor = getCardAccent(cardColor);
   const checkinUrl = typeof window !== "undefined"
     ? `${window.location.origin}/checkin/${token}`
     : `https://yourdomain.com/checkin/${token}`;
@@ -57,10 +59,10 @@ export function GuestCheckinPage({
             </div>
           )}
           <div className="px-5 py-4 text-center">
-            <p className="text-[10px] tracking-[0.25em] text-text-soft/70 uppercase mb-1">Wedding Invitation</p>
+            <p className="text-[10px] tracking-[0.25em] uppercase mb-1" style={{ color: accentColor + "99" }}>Wedding Invitation</p>
             <h1 className="text-[22px] font-bold tracking-wide leading-tight">{displayTitle}</h1>
             {displaySubtitle && (
-              <p className="text-sm text-text-soft mt-1.5 whitespace-pre-line">{displaySubtitle}</p>
+              <p className="text-sm mt-1.5 whitespace-pre-line" style={{ color: accentColor + "bb" }}>{displaySubtitle}</p>
             )}
             {venueName && (
               <p className="text-xs text-text-faint mt-1">{venueName}</p>

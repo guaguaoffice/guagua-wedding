@@ -3,6 +3,7 @@
 import { useState, useTransition } from "react";
 import { submitRsvp } from "@/lib/actions/rsvp";
 import { QrCode } from "@/components/QrCode";
+import { getCardBg, getCardAccent } from "@/lib/cardColors";
 
 export function RsvpForm({
   token,
@@ -20,14 +21,17 @@ export function RsvpForm({
   cardSubtitle: string | null;
   cardImageUrl: string | null;
   cardColor: string | null;
-}) {
+})
+ {
   const [pending, startTransition] = useTransition();
+  const [side, setSide] = useState<"GROOM" | "BRIDE">("GROOM");
   const [attending, setAttending] = useState<"yes" | "no" | "">("");
   const [checkinToken, setCheckinToken] = useState<string | null>(null);
   const [attendingResult, setAttendingResult] = useState<boolean | null>(null);
   const [error, setError] = useState<string | null>(null);
 
-  const bgColor = cardColor || "#e4f0ea";
+  const bgColor = getCardBg(cardColor);
+  const accentColor = getCardAccent(cardColor);
   const displayTitle = cardTitle || weddingName;
   const displaySubtitle = cardSubtitle || (weddingDate
     ? new Date(weddingDate).toLocaleDateString("zh-TW", { year: "numeric", month: "long", day: "numeric" })
@@ -56,10 +60,10 @@ export function RsvpForm({
             <img src={cardImageUrl} alt="婚禮照片" className="w-full h-auto" />
           )}
           <div className="px-6 py-5 text-center">
-            <p className="text-[10px] tracking-[0.25em] text-text-soft/70 uppercase mb-1">Wedding Invitation</p>
+            <p className="text-[10px] tracking-[0.25em] uppercase mb-1" style={{ color: accentColor + "99" }}>Wedding Invitation</p>
             <h1 className="text-[22px] font-bold tracking-wide leading-tight">{displayTitle}</h1>
             {displaySubtitle && (
-              <p className="text-sm text-text-soft mt-1.5 whitespace-pre-line">{displaySubtitle}</p>
+              <p className="text-sm mt-1.5 whitespace-pre-line" style={{ color: accentColor + "bb" }}>{displaySubtitle}</p>
             )}
           </div>
         </div>
@@ -85,7 +89,7 @@ export function RsvpForm({
                 <div className="bg-white p-3 rounded-2xl shadow-sm">
                   <QrCode url={checkinUrl} size={160} />
                 </div>
-                <a href={checkinUrl} className="btn btn-primary w-full text-sm text-center">
+                <a href={checkinUrl} className="w-full text-sm text-center py-2.5 rounded-[9px] font-semibold text-white" style={{ backgroundColor: accentColor }}>
                   開啟我的報到頁面
                 </a>
                 <p className="text-xs text-text-faint text-center">
@@ -116,10 +120,10 @@ export function RsvpForm({
             </div>
           )}
           <div className="px-6 py-5 text-center">
-            <p className="text-[10px] tracking-[0.25em] text-text-soft/70 uppercase mb-1">Wedding Invitation</p>
+            <p className="text-[10px] tracking-[0.25em] uppercase mb-1" style={{ color: accentColor + "99" }}>Wedding Invitation</p>
             <h1 className="text-[22px] font-bold tracking-wide leading-tight">{displayTitle}</h1>
             {displaySubtitle && (
-              <p className="text-sm text-text-soft mt-1.5 whitespace-pre-line">{displaySubtitle}</p>
+              <p className="text-sm mt-1.5 whitespace-pre-line" style={{ color: accentColor + "bb" }}>{displaySubtitle}</p>
             )}
           </div>
         </div>
@@ -127,7 +131,7 @@ export function RsvpForm({
         {/* 表單區 */}
         <form action={handleSubmit} className="flex flex-col gap-4 px-6 py-5" style={{ backgroundColor: bgColor }}>
           <label className="flex flex-col gap-1">
-            <span className="text-[11px] text-text-soft font-semibold">姓名</span>
+            <span className="text-[11px] font-semibold" style={{ color: accentColor }}>姓名</span>
             <input
               name="name"
               required
@@ -138,44 +142,49 @@ export function RsvpForm({
           </label>
 
           <div>
-            <div className="text-[11px] text-text-soft font-semibold mb-1.5">您是哪一方的賓客</div>
+            <div className="text-[11px] font-semibold mb-1.5" style={{ color: accentColor }}>您是哪一方的賓客</div>
+            <input type="hidden" name="side" value={side} />
             <div className="flex gap-1.5">
-              <label className="flex-1">
-                <input type="radio" name="side" value="GROOM" defaultChecked className="hidden peer" />
-                <div className="peer-checked:bg-accent peer-checked:text-white text-center text-sm font-semibold py-2 rounded-[9px] text-text-soft cursor-pointer transition-colors" style={{ backgroundColor: "rgba(255,255,255,0.5)" }}>
-                  新郎方
-                </div>
-              </label>
-              <label className="flex-1">
-                <input type="radio" name="side" value="BRIDE" className="hidden peer" />
-                <div className="peer-checked:bg-accent peer-checked:text-white text-center text-sm font-semibold py-2 rounded-[9px] text-text-soft cursor-pointer transition-colors" style={{ backgroundColor: "rgba(255,255,255,0.5)" }}>
-                  新娘方
-                </div>
-              </label>
+              {(["GROOM", "BRIDE"] as const).map((s) => (
+                <button
+                  key={s}
+                  type="button"
+                  onClick={() => setSide(s)}
+                  className="flex-1 text-sm font-semibold py-2 rounded-[9px] transition-colors"
+                  style={side === s
+                    ? { backgroundColor: accentColor, color: "#fff" }
+                    : { backgroundColor: "rgba(255,255,255,0.5)", color: accentColor }
+                  }
+                >
+                  {s === "GROOM" ? "新郎方" : "新娘方"}
+                </button>
+              ))}
             </div>
           </div>
 
           <div>
-            <div className="text-[11px] text-text-soft font-semibold mb-1.5">是否出席</div>
+            <div className="text-[11px] font-semibold mb-1.5" style={{ color: accentColor }}>是否出席</div>
             <input type="hidden" name="attending" value={attending} />
             <div className="flex gap-1.5">
               <button
                 type="button"
                 onClick={() => setAttending("yes")}
-                className={`flex-1 text-sm font-semibold py-2 rounded-[9px] transition-colors ${
-                  attending === "yes" ? "bg-accent text-white" : "text-text-soft"
-                }`}
-                style={attending !== "yes" ? { backgroundColor: "rgba(255,255,255,0.5)" } : undefined}
+                className="flex-1 text-sm font-semibold py-2 rounded-[9px] transition-colors"
+                style={attending === "yes"
+                  ? { backgroundColor: accentColor, color: "#fff" }
+                  : { backgroundColor: "rgba(255,255,255,0.5)", color: accentColor }
+                }
               >
                 出席
               </button>
               <button
                 type="button"
                 onClick={() => setAttending("no")}
-                className={`flex-1 text-sm font-semibold py-2 rounded-[9px] transition-colors ${
-                  attending === "no" ? "bg-coral text-white" : "text-text-soft"
-                }`}
-                style={attending !== "no" ? { backgroundColor: "rgba(255,255,255,0.5)" } : undefined}
+                className="flex-1 text-sm font-semibold py-2 rounded-[9px] transition-colors"
+                style={attending === "no"
+                  ? { backgroundColor: "#c0504d", color: "#fff" }
+                  : { backgroundColor: "rgba(255,255,255,0.5)", color: accentColor }
+                }
               >
                 無法出席
               </button>
@@ -185,7 +194,7 @@ export function RsvpForm({
           {attending === "yes" && (
             <div className="flex flex-col gap-3.5 animate-slide-up">
               <label className="flex flex-col gap-1">
-                <span className="text-[11px] text-text-soft font-semibold">出席人數</span>
+                <span className="text-[11px] font-semibold" style={{ color: accentColor }}>出席人數</span>
                 <input
                   name="attendeeCount"
                   type="number"
@@ -197,7 +206,7 @@ export function RsvpForm({
                 />
               </label>
               <label className="flex flex-col gap-1">
-                <span className="text-[11px] text-text-soft font-semibold">其中幾位吃素？</span>
+                <span className="text-[11px] font-semibold" style={{ color: accentColor }}>其中幾位吃素？</span>
                 <input
                   name="vegetarianCount"
                   type="number"
@@ -213,7 +222,7 @@ export function RsvpForm({
           )}
 
           <label className="flex flex-col gap-1">
-            <span className="text-[11px] text-text-soft font-semibold">想說的話（選填）</span>
+            <span className="text-[11px] font-semibold" style={{ color: accentColor }}>想說的話（選填）</span>
             <textarea
               name="note"
               disabled={pending}
@@ -228,7 +237,8 @@ export function RsvpForm({
           <button
             type="submit"
             disabled={pending || attending === ""}
-            className="btn btn-primary w-full text-sm py-2.5"
+            className="w-full text-sm py-2.5 rounded-[9px] font-semibold text-white transition-colors disabled:opacity-50"
+            style={{ backgroundColor: accentColor }}
           >
             送出回覆
           </button>

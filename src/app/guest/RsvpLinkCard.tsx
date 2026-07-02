@@ -5,18 +5,7 @@ import { useRouter } from "next/navigation";
 import QRCode from "qrcode";
 import { regenerateRsvpToken, updateRsvpCard } from "@/lib/actions/rsvp";
 import { uploadRsvpCardImage, removeRsvpCardImage } from "@/lib/actions/upload";
-
-const CARD_COLORS = [
-  { label: "米白", value: "#f5f0eb" },
-  { label: "紅", value: "#f5e8e8" },
-  { label: "橙", value: "#f5ede3" },
-  { label: "黃", value: "#f5f0de" },
-  { label: "綠", value: "#e4f0ea" },
-  { label: "藍", value: "#e8eef5" },
-  { label: "紫", value: "#ede8f5" },
-  { label: "灰", value: "#ececec" },
-  { label: "白", value: "#fafafa" },
-];
+import { CARD_COLORS, getCardBg, getCardAccent } from "@/lib/cardColors";
 
 export function RsvpLinkCard({
   weddingId,
@@ -103,7 +92,8 @@ export function RsvpLinkCard({
 
   const displayTitle = cardTitle || "敬邀出席";
   const displaySubtitle = cardSubtitle || "期待與您共度這份喜悅";
-  const bgColor = cardColor || "#e4f0ea";
+  const bgColor = getCardBg(cardColor);
+  const accentColor = getCardAccent(cardColor);
 
   return (
     <div className="flex flex-col gap-3.5">
@@ -140,9 +130,9 @@ export function RsvpLinkCard({
             </div>
           )}
           <div className="px-5 py-4 text-center">
-            <p className="text-[11px] tracking-[0.2em] text-text-soft uppercase mb-1">Wedding Invitation</p>
+            <p className="text-[11px] tracking-[0.2em] uppercase mb-1" style={{ color: accentColor + "99" }}>Wedding Invitation</p>
             <h2 className="text-xl font-bold tracking-wide">{displayTitle}</h2>
-            <p className="text-sm text-text-soft mt-1 whitespace-pre-line">{displaySubtitle}</p>
+            <p className="text-sm mt-1 whitespace-pre-line" style={{ color: accentColor + "bb" }}>{displaySubtitle}</p>
           </div>
         </div>
 
