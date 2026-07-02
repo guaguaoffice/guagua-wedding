@@ -6,18 +6,31 @@ import QRCode from "qrcode";
 import { regenerateRsvpToken, updateRsvpCard } from "@/lib/actions/rsvp";
 import { uploadRsvpCardImage, removeRsvpCardImage } from "@/lib/actions/upload";
 
+const CARD_COLORS = [
+  { label: "米白", value: "#f5f0eb" },
+  { label: "紅", value: "#f5e8e8" },
+  { label: "橙", value: "#f5ede3" },
+  { label: "黃", value: "#f5f0de" },
+  { label: "藍", value: "#e8eef5" },
+  { label: "紫", value: "#ede8f5" },
+  { label: "灰", value: "#ececec" },
+  { label: "白", value: "#fafafa" },
+];
+
 export function RsvpLinkCard({
   weddingId,
   token,
   cardTitle,
   cardSubtitle,
   cardImageUrl,
+  cardColor,
 }: {
   weddingId: string;
   token: string;
   cardTitle: string | null;
   cardSubtitle: string | null;
   cardImageUrl: string | null;
+  cardColor: string | null;
 }) {
   const router = useRouter();
   const [pending, startTransition] = useTransition();
@@ -89,6 +102,7 @@ export function RsvpLinkCard({
 
   const displayTitle = cardTitle || "敬邀出席";
   const displaySubtitle = cardSubtitle || "期待與您共度這份喜悅";
+  const bgColor = cardColor || "#f5f0eb";
 
   return (
     <div className="flex flex-col gap-3.5">
@@ -106,7 +120,7 @@ export function RsvpLinkCard({
         </div>
 
         {/* 預覽 */}
-        <div className="rounded-xl overflow-hidden bg-[#f5f0eb] relative">
+        <div className="rounded-xl overflow-hidden relative" style={{ backgroundColor: bgColor }}>
           {cardImageUrl && (
             // eslint-disable-next-line @next/next/no-img-element
             <img
@@ -134,6 +148,20 @@ export function RsvpLinkCard({
         {/* 編輯區 */}
         {editing && (
           <form action={handleSaveCard} className="mt-3 flex flex-col gap-2.5">
+            <div className="flex flex-col gap-1.5">
+              <span className="text-[11px] text-text-soft font-semibold">卡片顏色</span>
+              <div className="flex gap-2 flex-wrap">
+                {CARD_COLORS.map((c) => (
+                  <label key={c.value} title={c.label} className="cursor-pointer">
+                    <input type="radio" name="color" value={c.value} defaultChecked={bgColor === c.value} className="hidden peer" />
+                    <div
+                      className="w-7 h-7 rounded-full border-2 border-transparent peer-checked:border-accent-hover transition-all"
+                      style={{ backgroundColor: c.value, boxShadow: "0 0 0 1px #ccc" }}
+                    />
+                  </label>
+                ))}
+              </div>
+            </div>
             <label className="flex flex-col gap-1">
               <span className="text-[11px] text-text-soft font-semibold">主標題</span>
               <input

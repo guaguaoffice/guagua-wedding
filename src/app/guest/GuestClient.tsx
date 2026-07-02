@@ -81,6 +81,7 @@ export function GuestClient({
   rsvpCardTitle,
   rsvpCardSubtitle,
   rsvpCardImageUrl,
+  rsvpCardColor,
 }: {
   weddingId: string;
   guests: GuestRow[];
@@ -89,6 +90,7 @@ export function GuestClient({
   rsvpCardTitle: string | null;
   rsvpCardSubtitle: string | null;
   rsvpCardImageUrl: string | null;
+  rsvpCardColor: string | null;
 }) {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -293,6 +295,7 @@ export function GuestClient({
           cardTitle={rsvpCardTitle}
           cardSubtitle={rsvpCardSubtitle}
           cardImageUrl={rsvpCardImageUrl}
+          cardColor={rsvpCardColor}
         />
       )}
 

@@ -14,7 +14,7 @@ export default async function GuestPage() {
     getTables(current.wedding.id),
   ]);
 
-  const { rsvpCardTitle, rsvpCardSubtitle, rsvpCardImageUrl } = current.wedding;
+  const { rsvpCardTitle, rsvpCardSubtitle, rsvpCardImageUrl, rsvpCardColor } = current.wedding;
   const guests = guestsRaw.map((g) => ({
     id: g.id,
     name: g.name,
@@ -39,6 +39,7 @@ export default async function GuestPage() {
         rsvpCardTitle={rsvpCardTitle}
         rsvpCardSubtitle={rsvpCardSubtitle}
         rsvpCardImageUrl={rsvpCardImageUrl}
+        rsvpCardColor={rsvpCardColor}
       />
     </Suspense>
   );

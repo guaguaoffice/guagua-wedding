@@ -37,6 +37,7 @@ export default async function CheckinPage({
       cardTitle={guest.wedding.rsvpCardTitle}
       cardSubtitle={guest.wedding.rsvpCardSubtitle}
       cardImageUrl={guest.wedding.rsvpCardImageUrl}
+      cardColor={guest.wedding.rsvpCardColor}
     />
   );
 }

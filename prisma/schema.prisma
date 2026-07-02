@@ -91,6 +91,7 @@ model Wedding {
   rsvpCardTitle    String?
   rsvpCardSubtitle String?
   rsvpCardImageUrl String?
+  rsvpCardColor    String?
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
 

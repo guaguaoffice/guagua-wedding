@@ -26,9 +26,10 @@ export async function updateRsvpCard(
 ) {
   const title = String(formData.get("title") || "").trim() || null;
   const subtitle = String(formData.get("subtitle") || "").trim() || null;
+  const color = String(formData.get("color") || "").trim() || null;
   await prisma.wedding.update({
     where: { id: weddingId },
-    data: { rsvpCardTitle: title, rsvpCardSubtitle: subtitle },
+    data: { rsvpCardTitle: title, rsvpCardSubtitle: subtitle, rsvpCardColor: color },
   });
   revalidatePath("/guest");
 }

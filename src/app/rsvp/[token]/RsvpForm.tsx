@@ -11,6 +11,7 @@ export function RsvpForm({
   cardTitle,
   cardSubtitle,
   cardImageUrl,
+  cardColor,
 }: {
   token: string;
   weddingName: string;
@@ -18,6 +19,7 @@ export function RsvpForm({
   cardTitle: string | null;
   cardSubtitle: string | null;
   cardImageUrl: string | null;
+  cardColor: string | null;
 }) {
   const [pending, startTransition] = useTransition();
   const [attending, setAttending] = useState<"yes" | "no" | "">("");
@@ -25,6 +27,7 @@ export function RsvpForm({
   const [attendingResult, setAttendingResult] = useState<boolean | null>(null);
   const [error, setError] = useState<string | null>(null);
 
+  const bgColor = cardColor || "#f5f0eb";
   const displayTitle = cardTitle || weddingName;
   const displaySubtitle = cardSubtitle || (weddingDate
     ? new Date(weddingDate).toLocaleDateString("zh-TW", { year: "numeric", month: "long", day: "numeric" })
@@ -47,7 +50,7 @@ export function RsvpForm({
     const checkinUrl = `${typeof window !== "undefined" ? window.location.origin : ""}/checkin/${checkinToken}`;
     return (
       <div className="w-full max-w-lg">
-        <div className="rounded-2xl overflow-hidden shadow-md bg-[#f5f0eb]">
+        <div className="rounded-2xl overflow-hidden shadow-md" style={{ backgroundColor: bgColor }}>
           {cardImageUrl && (
             // eslint-disable-next-line @next/next/no-img-element
             <img src={cardImageUrl} alt="婚禮照片" className="w-full h-auto" />
@@ -101,7 +104,7 @@ export function RsvpForm({
       {/* 喜帖卡片 + 表單合為一個容器 */}
       <div className="rounded-2xl overflow-hidden shadow-md">
         {/* 喜帖區 */}
-        <div className="bg-[#f5f0eb]">
+        <div style={{ backgroundColor: bgColor }}>
           {cardImageUrl ? (
             // eslint-disable-next-line @next/next/no-img-element
             <img src={cardImageUrl} alt="婚禮照片" className="w-full h-auto" />

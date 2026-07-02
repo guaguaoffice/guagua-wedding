@@ -13,6 +13,7 @@ export function GuestCheckinPage({
   cardTitle,
   cardSubtitle,
   cardImageUrl,
+  cardColor,
 }: {
   token: string;
   guestName: string;
@@ -24,7 +25,9 @@ export function GuestCheckinPage({
   cardTitle: string | null;
   cardSubtitle: string | null;
   cardImageUrl: string | null;
+  cardColor: string | null;
 }) {
+  const bgColor = cardColor || "#f5f0eb";
   const checkinUrl = typeof window !== "undefined"
     ? `${window.location.origin}/checkin/${token}`
     : `https://yourdomain.com/checkin/${token}`;
@@ -42,7 +45,7 @@ export function GuestCheckinPage({
     <main className="min-h-screen bg-bg flex flex-col items-center pb-10">
       {/* 喜帖卡片 */}
       <div className="w-full max-w-sm">
-        <div className="overflow-hidden bg-[#f5f0eb]">
+        <div className="overflow-hidden" style={{ backgroundColor: bgColor }}>
           {cardImageUrl ? (
             // eslint-disable-next-line @next/next/no-img-element
             <img src={cardImageUrl} alt="婚禮照片" className="w-full h-auto" />
