@@ -104,12 +104,20 @@ export function RsvpForm({
               : "謝謝你花時間回覆，祝你一切順心。"}
           </p>
           {attendingResult && (
-            <div className="mt-6 flex flex-col items-center gap-3">
-              <p className="text-sm font-semibold text-text">婚禮當天掃描 QR Code 即可快速報到</p>
+            <div className="mt-6 flex flex-col items-center gap-3 w-full">
+              <p className="text-sm font-semibold text-text">你的專屬報到頁面</p>
               <div className="bg-white p-3 rounded-2xl shadow-sm">
-                <QrCode url={checkinUrl} size={180} />
+                <QrCode url={checkinUrl} size={160} />
               </div>
-              <p className="text-xs text-text-faint">請截圖或儲存此 QR Code</p>
+              <a
+                href={checkinUrl}
+                className="btn btn-primary w-full text-sm text-center"
+              >
+                開啟我的報到頁面
+              </a>
+              <p className="text-xs text-text-faint text-center">
+                將頁面加入書籤，婚禮當天直接開啟給工作人員掃描即可報到
+              </p>
             </div>
           )}
         </div>
