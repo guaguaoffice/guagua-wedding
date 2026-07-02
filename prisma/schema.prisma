@@ -348,7 +348,7 @@ model Guest {
   address          String?
   attending        Boolean?
   plusOneCount     Int              @default(0)
-  vegetarian       Boolean          @default(false)
+  vegetarianCount  Int              @default(0)
   hasChild         Boolean          @default(false)
   invitationStatus InvitationStatus @default(NOT_SENT)
   favorSentStatus  InvitationStatus @default(NOT_SENT)

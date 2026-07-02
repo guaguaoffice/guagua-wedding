@@ -189,23 +189,18 @@ export function RsvpForm({
                   className="w-full border border-border rounded-[9px] px-3 py-2 text-sm bg-bg"
                 />
               </label>
-              <div>
-                <div className="text-[11px] text-text-soft font-semibold mb-1.5">飲食習慣</div>
-                <div className="flex gap-1.5">
-                  <label className="flex-1">
-                    <input type="radio" name="dietary" value="meat" defaultChecked className="hidden peer" />
-                    <div className="peer-checked:bg-accent peer-checked:text-white text-center text-sm font-semibold py-2 rounded-[9px] bg-card-hover text-text-soft cursor-pointer transition-colors">
-                      葷食
-                    </div>
-                  </label>
-                  <label className="flex-1">
-                    <input type="radio" name="dietary" value="vegetarian" className="hidden peer" />
-                    <div className="peer-checked:bg-accent peer-checked:text-white text-center text-sm font-semibold py-2 rounded-[9px] bg-card-hover text-text-soft cursor-pointer transition-colors">
-                      素食
-                    </div>
-                  </label>
-                </div>
-              </div>
+              <label className="flex flex-col gap-1">
+                <span className="text-[11px] text-text-soft font-semibold">其中幾位吃素？</span>
+                <input
+                  name="vegetarianCount"
+                  type="number"
+                  min={0}
+                  defaultValue={0}
+                  disabled={pending}
+                  className="w-full border border-border rounded-[9px] px-3 py-2 text-sm bg-bg"
+                />
+                <span className="text-[11px] text-text-faint">填 0 表示全員葷食</span>
+              </label>
             </div>
           )}
 

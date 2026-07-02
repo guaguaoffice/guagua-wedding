@@ -45,8 +45,10 @@ export async function submitRsvp(token: string, formData: FormData) {
   const attendingRaw = String(formData.get("attending") || "");
   const attending = attendingRaw === "yes" ? true : attendingRaw === "no" ? false : null;
   const attendeeRaw = String(formData.get("attendeeCount") || "1").trim();
-  const plusOneCount = attending ? Math.max(0, (Number(attendeeRaw) || 1) - 1) : 0;
-  const vegetarian = attending ? formData.get("dietary") === "vegetarian" : false;
+  const attendeeCount = attending ? Math.max(1, Number(attendeeRaw) || 1) : 1;
+  const plusOneCount = attendeeCount - 1;
+  const vegetarianRaw = String(formData.get("vegetarianCount") || "0").trim();
+  const vegetarianCount = attending ? Math.min(Math.max(0, Number(vegetarianRaw) || 0), attendeeCount) : 0;
   const note = String(formData.get("note") || "").trim() || null;
 
   const checkinToken = crypto.randomUUID();
@@ -57,7 +59,7 @@ export async function submitRsvp(token: string, formData: FormData) {
       side,
       attending,
       plusOneCount,
-      vegetarian,
+      vegetarianCount,
       note,
       invitationStatus: "CONFIRMED",
       checkinToken,
