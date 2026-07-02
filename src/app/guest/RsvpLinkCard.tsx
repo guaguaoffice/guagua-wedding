@@ -103,7 +103,7 @@ export function RsvpLinkCard({
 
   const displayTitle = cardTitle || "敬邀出席";
   const displaySubtitle = cardSubtitle || "期待與您共度這份喜悅";
-  const bgColor = cardColor || "#f5f0eb";
+  const bgColor = cardColor || "#e4f0ea";
 
   return (
     <div className="flex flex-col gap-3.5">

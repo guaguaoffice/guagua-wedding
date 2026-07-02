@@ -27,7 +27,7 @@ export function GuestCheckinPage({
   cardImageUrl: string | null;
   cardColor: string | null;
 }) {
-  const bgColor = cardColor || "#f5f0eb";
+  const bgColor = cardColor || "#e4f0ea";
   const checkinUrl = typeof window !== "undefined"
     ? `${window.location.origin}/checkin/${token}`
     : `https://yourdomain.com/checkin/${token}`;

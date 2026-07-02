@@ -27,7 +27,7 @@ export function RsvpForm({
   const [attendingResult, setAttendingResult] = useState<boolean | null>(null);
   const [error, setError] = useState<string | null>(null);
 
-  const bgColor = cardColor || "#f5f0eb";
+  const bgColor = cardColor || "#e4f0ea";
   const displayTitle = cardTitle || weddingName;
   const displaySubtitle = cardSubtitle || (weddingDate
     ? new Date(weddingDate).toLocaleDateString("zh-TW", { year: "numeric", month: "long", day: "numeric" })
@@ -125,7 +125,7 @@ export function RsvpForm({
         </div>
 
         {/* 表單區 */}
-        <form action={handleSubmit} className="bg-card flex flex-col gap-4 px-6 py-5">
+        <form action={handleSubmit} className="flex flex-col gap-4 px-6 py-5" style={{ backgroundColor: bgColor }}>
           <label className="flex flex-col gap-1">
             <span className="text-[11px] text-text-soft font-semibold">姓名</span>
             <input
