@@ -31,7 +31,7 @@ export function WeddingSwitcher({
   const [open, setOpen] = useState(false);
   const [pending, startTransition] = useTransition();
   const containerRef = useRef<HTMLDivElement>(null);
-  const canSwitch = memberships.length > 1;
+  const canSwitch = true;
 
   useEffect(() => {
     if (!open) return;
@@ -109,6 +109,19 @@ export function WeddingSwitcher({
               <span className="status status-idle flex-none">{ROLE_LABEL[m.role]}</span>
             </button>
           ))}
+          <div className="border-t border-border mt-1 pt-1">
+            <a
+              href="/wedding/new"
+              onClick={() => setOpen(false)}
+              className="w-full flex items-center gap-2 px-3.5 py-2.5 text-sm text-accent-hover hover:bg-card-hover"
+            >
+              <svg viewBox="0 0 20 20" className="w-4 h-4 fill-none stroke-accent-hover" strokeWidth={1.8} strokeLinecap="round">
+                <line x1="10" y1="4" x2="10" y2="16" />
+                <line x1="4" y1="10" x2="16" y2="10" />
+              </svg>
+              新增活動
+            </a>
+          </div>
         </div>
       )}
     </div>

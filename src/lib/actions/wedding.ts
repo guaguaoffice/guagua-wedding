@@ -25,6 +25,33 @@ async function switchToAnotherMembershipOrClear(userId: string) {
   }
 }
 
+export async function createWedding(formData: FormData) {
+  const session = await auth();
+  if (!session?.user?.id) redirect("/login");
+
+  const name = String(formData.get("name") || "").trim();
+  if (!name) return { ok: false as const, message: "請輸入活動名稱" };
+
+  const wedding = await prisma.wedding.create({
+    data: {
+      name,
+      members: {
+        create: { userId: session.user.id, role: "OWNER" },
+      },
+    },
+  });
+
+  const cookieStore = await cookies();
+  cookieStore.set(ACTIVE_WEDDING_COOKIE, wedding.id, {
+    httpOnly: true,
+    sameSite: "lax",
+    path: "/",
+    maxAge: 60 * 60 * 24 * 365,
+  });
+
+  redirect("/");
+}
+
 export async function setActiveWedding(weddingId: string) {
   const session = await auth();
   if (!session?.user?.id) return { ok: false, message: "請先登入" };
