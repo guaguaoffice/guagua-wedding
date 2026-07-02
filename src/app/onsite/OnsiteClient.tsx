@@ -303,7 +303,7 @@ export function OnsiteClient({
     });
   }
 
-  const unassigned = guests.filter((g) => !g.tableId);
+  const unassigned = guests.filter((g) => !g.tableId && g.attending !== false);
 
   return (
     <div className="animate-fade-in">
