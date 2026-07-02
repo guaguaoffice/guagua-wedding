@@ -52,9 +52,9 @@ export function GuestCheckinPage({
             // eslint-disable-next-line @next/next/no-img-element
             <img src={cardImageUrl} alt="婚禮照片" className="w-full h-auto" />
           ) : (
-            <div className="w-full h-36 bg-gradient-to-br from-accent-soft to-[#e8e0d8] flex items-center justify-center">
-              <svg viewBox="0 0 40 40" className="w-10 h-10 opacity-20" fill="none">
-                <path d="M20 8c0 0-8 6-8 13a8 8 0 0016 0c0-7-8-13-8-13z" stroke="#5a7a5a" strokeWidth="1.5" />
+            <div className="w-full h-36 flex items-center justify-center" style={{ backgroundColor: accentColor + "22" }}>
+              <svg viewBox="0 0 40 40" className="w-10 h-10 opacity-40" fill="none">
+                <path d="M20 8c0 0-8 6-8 13a8 8 0 0016 0c0-7-8-13-8-13z" stroke={accentColor} strokeWidth="1.5" />
               </svg>
             </div>
           )}
@@ -89,7 +89,7 @@ export function GuestCheckinPage({
             </div>
             {tableName && (
               <div className="mt-2 pt-2 border-t border-border flex items-center gap-2">
-                <svg viewBox="0 0 24 24" className="w-3.5 h-3.5 stroke-accent-hover fill-none flex-none" strokeWidth={1.8}>
+                <svg viewBox="0 0 24 24" className="w-3.5 h-3.5 fill-none flex-none" style={{ stroke: accentColor }} strokeWidth={1.8}>
                   <circle cx="12" cy="12" r="8" />
                   <circle cx="12" cy="12" r="3" />
                 </svg>

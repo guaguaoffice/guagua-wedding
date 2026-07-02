@@ -58,9 +58,9 @@ export function RsvpForm({
             // eslint-disable-next-line @next/next/no-img-element
             <img src={cardImageUrl} alt="婚禮照片" className="w-full h-auto" />
           ) : (
-            <div className="w-full h-40 bg-gradient-to-br from-accent-soft to-[#e8e0d8] flex items-center justify-center">
-              <svg viewBox="0 0 40 40" className="w-12 h-12 opacity-30" fill="none">
-                <path d="M20 8c0 0-8 6-8 13a8 8 0 0016 0c0-7-8-13-8-13z" stroke="#5a7a5a" strokeWidth="1.5" />
+            <div className="w-full h-40 flex items-center justify-center" style={{ backgroundColor: accentColor + "22" }}>
+              <svg viewBox="0 0 40 40" className="w-12 h-12 opacity-40" fill="none">
+                <path d="M20 8c0 0-8 6-8 13a8 8 0 0016 0c0-7-8-13-8-13z" stroke={accentColor} strokeWidth="1.5" />
               </svg>
             </div>
           )}
