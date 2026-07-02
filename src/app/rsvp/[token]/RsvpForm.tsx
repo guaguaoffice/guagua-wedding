@@ -13,6 +13,8 @@ export function RsvpForm({
   cardSubtitle,
   cardImageUrl,
   cardColor,
+  venueName,
+  venueDetail,
 }: {
   token: string;
   weddingName: string;
@@ -21,6 +23,8 @@ export function RsvpForm({
   cardSubtitle: string | null;
   cardImageUrl: string | null;
   cardColor: string | null;
+  venueName: string | null;
+  venueDetail: string | null;
 })
  {
   const router = useRouter();
@@ -69,6 +73,20 @@ export function RsvpForm({
             <h1 className="text-[22px] font-bold tracking-wide leading-tight">{displayTitle}</h1>
             {displaySubtitle && (
               <p className="text-sm mt-1.5 whitespace-pre-line" style={{ color: accentColor + "bb" }}>{displaySubtitle}</p>
+            )}
+            {(weddingDate || venueName) && (
+              <div className="mt-3 pt-3 flex flex-col gap-1" style={{ borderTop: `1px solid ${accentColor}33` }}>
+                {weddingDate && (
+                  <p className="text-xs" style={{ color: accentColor }}>
+                    📅 {new Date(weddingDate).toLocaleDateString("zh-TW", { year: "numeric", month: "long", day: "numeric", weekday: "long" })}
+                  </p>
+                )}
+                {venueName && (
+                  <p className="text-xs" style={{ color: accentColor }}>
+                    📍 {venueName}{venueDetail ? `・${venueDetail}` : ""}
+                  </p>
+                )}
+              </div>
             )}
           </div>
         </div>

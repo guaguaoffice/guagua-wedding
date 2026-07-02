@@ -64,8 +64,19 @@ export function GuestCheckinPage({
             {displaySubtitle && (
               <p className="text-sm mt-1.5 whitespace-pre-line" style={{ color: accentColor + "bb" }}>{displaySubtitle}</p>
             )}
-            {venueName && (
-              <p className="text-xs text-text-faint mt-1">{venueName}</p>
+            {(weddingDate || venueName) && (
+              <div className="mt-3 pt-3 flex flex-col gap-1" style={{ borderTop: `1px solid ${accentColor}33` }}>
+                {weddingDate && (
+                  <p className="text-xs" style={{ color: accentColor }}>
+                    📅 {new Date(weddingDate).toLocaleDateString("zh-TW", { year: "numeric", month: "long", day: "numeric", weekday: "long" })}
+                  </p>
+                )}
+                {venueName && (
+                  <p className="text-xs" style={{ color: accentColor }}>
+                    📍 {venueName}
+                  </p>
+                )}
+              </div>
             )}
           </div>
         </div>
