@@ -200,15 +200,8 @@ export function RsvpLinkCard({
 
       {/* 分享連結 */}
       <div className="panel">
-        <div className="flex items-center justify-between mb-2">
+        <div className="mb-2">
           <div className="font-bold text-[15px]">分享連結</div>
-          <button
-            onClick={handleRegenerate}
-            disabled={pending}
-            className="text-xs text-text-soft hover:text-coral"
-          >
-            重新產生
-          </button>
         </div>
         <p className="text-[12.5px] text-text-soft mb-3">
           分享連結或讓賓客掃 QR Code，填寫的回覆會自動加進賓客名冊。
