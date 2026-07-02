@@ -59,12 +59,17 @@ export function RsvpLinkCard({
     if (!file) return;
     setUploadError(null);
     setUploading(true);
-    const fd = new FormData();
-    fd.append("image", file);
-    const result = await uploadRsvpCardImage(fd);
-    setUploading(false);
-    if (!result.ok) setUploadError(result.error);
-    else router.refresh();
+    try {
+      const fd = new FormData();
+      fd.append("image", file);
+      const result = await uploadRsvpCardImage(weddingId, fd);
+      if (!result.ok) setUploadError(result.error);
+      else router.refresh();
+    } catch {
+      setUploadError("上傳失敗，請再試一次");
+    } finally {
+      setUploading(false);
+    }
   }
 
   async function handleRemoveImage() {

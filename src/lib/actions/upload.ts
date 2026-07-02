@@ -3,16 +3,14 @@
 import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/prisma";
 import { supabaseAdmin } from "@/lib/supabase";
-import { requireCurrentWedding } from "@/lib/wedding";
 
-export async function uploadRsvpCardImage(formData: FormData) {
-  const current = await requireCurrentWedding();
+export async function uploadRsvpCardImage(weddingId: string, formData: FormData) {
   const file = formData.get("image") as File | null;
   if (!file || file.size === 0) return { ok: false as const, error: "請選擇圖片" };
   if (file.size > 5 * 1024 * 1024) return { ok: false as const, error: "圖片不能超過 5MB" };
 
   const ext = file.name.split(".").pop() ?? "jpg";
-  const path = `${current.wedding.id}/rsvp-card.${ext}`;
+  const path = `${weddingId}/rsvp-card.${ext}`;
   const buffer = Buffer.from(await file.arrayBuffer());
 
   const { error } = await supabaseAdmin.storage
@@ -22,13 +20,13 @@ export async function uploadRsvpCardImage(formData: FormData) {
       upsert: true,
     });
 
-  if (error) return { ok: false as const, error: "上傳失敗，請再試一次" };
+  if (error) return { ok: false as const, error: `上傳失敗：${error.message}` };
 
   const { data } = supabaseAdmin.storage.from("wedding-images").getPublicUrl(path);
   const publicUrl = `${data.publicUrl}?t=${Date.now()}`;
 
   await prisma.wedding.update({
-    where: { id: current.wedding.id },
+    where: { id: weddingId },
     data: { rsvpCardImageUrl: publicUrl },
   });
 
