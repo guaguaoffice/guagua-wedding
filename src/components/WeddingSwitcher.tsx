@@ -62,8 +62,12 @@ export function WeddingSwitcher({
         onClick={() => canSwitch && setOpen((v) => !v)}
         className="flex items-center gap-2.5"
       >
-        <div className="w-[30px] h-[30px] rounded-[9px] bg-gradient-to-br from-accent to-accent-hover grid place-items-center text-white font-display font-semibold text-[16px] shadow-[0_4px_10px_rgba(79,146,116,0.3)] flex-none">
-          呱
+        <div className="w-[30px] h-[30px] rounded-[9px] bg-gradient-to-br from-accent to-accent-hover grid place-items-center shadow-[0_4px_10px_rgba(79,146,116,0.3)] flex-none">
+          <svg viewBox="0 0 20 20" className="w-4 h-4 fill-none stroke-white" strokeWidth={1.8} strokeLinecap="round">
+            <line x1="3" y1="6" x2="17" y2="6" />
+            <line x1="3" y1="10" x2="17" y2="10" />
+            <line x1="3" y1="14" x2="17" y2="14" />
+          </svg>
         </div>
         <div className="text-left">
           <span className="flex items-center gap-1">
