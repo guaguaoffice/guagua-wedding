@@ -26,7 +26,7 @@ function InvitationCard({
     <div className="w-full max-w-sm rounded-2xl overflow-hidden shadow-md bg-[#f5f0eb] mb-6">
       {imageUrl ? (
         // eslint-disable-next-line @next/next/no-img-element
-        <img src={imageUrl} alt="婚禮照片" className="w-full max-h-72 object-contain bg-[#f5f0eb]" />
+        <img src={imageUrl} alt="婚禮照片" className="w-full h-auto" />
       ) : (
         <div className="w-full h-40 bg-gradient-to-br from-accent-soft to-[#e8e0d8] flex items-center justify-center">
           <svg viewBox="0 0 40 40" className="w-12 h-12 opacity-30" fill="none">
@@ -38,7 +38,7 @@ function InvitationCard({
         <p className="text-[10px] tracking-[0.25em] text-text-soft/70 uppercase mb-1.5">Wedding Invitation</p>
         <h1 className="text-[22px] font-bold tracking-wide leading-tight">{displayTitle}</h1>
         {displaySubtitle && (
-          <p className="text-sm text-text-soft mt-1.5">{displaySubtitle}</p>
+          <p className="text-sm text-text-soft mt-1.5 whitespace-pre-line">{displaySubtitle}</p>
         )}
       </div>
     </div>

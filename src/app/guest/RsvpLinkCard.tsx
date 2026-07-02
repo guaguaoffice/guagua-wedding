@@ -101,7 +101,7 @@ export function RsvpLinkCard({
             onClick={() => setEditing((v) => !v)}
             className="text-xs font-semibold text-accent-hover hover:underline"
           >
-            {editing ? "取消" : "編輯文字"}
+            {editing ? "取消" : "編輯邀請內容"}
           </button>
         </div>
 
@@ -112,7 +112,7 @@ export function RsvpLinkCard({
             <img
               src={cardImageUrl}
               alt="卡片照片"
-              className="w-full max-h-64 object-contain bg-[#f5f0eb]"
+              className="w-full h-auto"
             />
           )}
           {!cardImageUrl && (
@@ -127,7 +127,7 @@ export function RsvpLinkCard({
           <div className="px-5 py-4 text-center">
             <p className="text-[11px] tracking-[0.2em] text-text-soft uppercase mb-1">Wedding Invitation</p>
             <h2 className="text-xl font-bold tracking-wide">{displayTitle}</h2>
-            <p className="text-sm text-text-soft mt-1">{displaySubtitle}</p>
+            <p className="text-sm text-text-soft mt-1 whitespace-pre-line">{displaySubtitle}</p>
           </div>
         </div>
 
@@ -146,12 +146,13 @@ export function RsvpLinkCard({
             </label>
             <label className="flex flex-col gap-1">
               <span className="text-[11px] text-text-soft font-semibold">副標題</span>
-              <input
+              <textarea
                 name="subtitle"
                 defaultValue={cardSubtitle ?? ""}
                 placeholder="期待與您共度這份喜悅"
                 disabled={pending}
-                className="border border-border rounded-[9px] px-3 py-2 text-sm bg-card"
+                rows={3}
+                className="border border-border rounded-[9px] px-3 py-2 text-sm bg-card resize-none"
               />
             </label>
             <button type="submit" disabled={pending} className="btn btn-primary text-sm">
