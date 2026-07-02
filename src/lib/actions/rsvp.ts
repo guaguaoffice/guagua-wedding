@@ -67,6 +67,5 @@ export async function submitRsvp(token: string, formData: FormData) {
     },
   });
 
-  revalidatePath("/guest");
   return { ok: true as const, checkinToken, attending };
 }
