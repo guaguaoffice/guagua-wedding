@@ -55,7 +55,7 @@ function EmptyState({
   );
 }
 
-function AttendingBadge({
+function AttendingButton({
   attending,
   pending,
   onClick,
@@ -65,9 +65,18 @@ function AttendingBadge({
   onClick: () => void;
 }) {
   const label = attending === true ? "出席" : attending === false ? "不出席" : "未回覆";
-  const cls = attending === true ? "status-done" : attending === false ? "status-overdue" : "status-idle";
+  const style =
+    attending === true
+      ? "bg-accent text-white"
+      : attending === false
+      ? "bg-coral text-white"
+      : "bg-card-hover text-text-soft border border-border";
   return (
-    <button disabled={pending} onClick={onClick} className={`status ${cls}`}>
+    <button
+      disabled={pending}
+      onClick={onClick}
+      className={`text-xs font-semibold px-3 py-1 rounded-[7px] transition-colors flex-none ${style}`}
+    >
       {label}
     </button>
   );
@@ -192,61 +201,61 @@ export function GuestClient({
               cta="＋ 新增賓客"
             />
           ) : (
-            <div className="panel flex flex-col gap-2">
+            <div className="panel">
               {guests.map((g) => {
                 const isExpanded = expandedQrId === g.id;
                 const checkinUrl = g.checkinToken ? `${origin}/checkin/${g.checkinToken}` : null;
                 return (
-                <div key={g.id}>
-                  <div className="lrow flex-wrap gap-y-1.5">
-                    <span
-                      className={`text-[11px] font-semibold px-2 py-0.5 rounded-full flex-none ${
-                        g.side === "GROOM" ? "bg-[#e2eaf0] text-[#5b7a92]" : "bg-coral-tint text-coral"
-                      }`}
-                    >
-                      {g.side === "GROOM" ? "男方" : "女方"}
-                    </span>
-                    <div className="flex-1 min-w-0">
-                      <div className="font-semibold text-sm">{g.name}</div>
-                      {(g.relation || g.phone) && (
-                        <div className="text-xs text-text-soft mt-0.5">
-                          {[g.relation, g.phone].filter(Boolean).join(" · ")}
-                        </div>
-                      )}
-                    </div>
-                    <span
-                      className={`text-[11px] font-semibold px-2 py-1 rounded-full flex-none whitespace-nowrap ${
-                        g.tableId ? "bg-accent-soft text-accent-hover" : "bg-card-hover text-text-faint"
-                      }`}
-                    >
-                      {g.tableId ? tables.find((t) => t.id === g.tableId)?.name ?? "已安排" : "未安排桌位"}
-                    </span>
-                    <AttendingBadge
+                <div key={g.id} className="py-2.5 border-b border-border last:border-0">
+                  {/* 第一行：姓名 + 出席按鈕 + 刪除 */}
+                  <div className="flex items-center gap-2">
+                    <div className="font-semibold text-sm flex-1 min-w-0 truncate">{g.name}</div>
+                    <AttendingButton
                       attending={g.attending}
                       pending={pending}
                       onClick={() => cycleAttending(g)}
                     />
-                    {checkinUrl && (
-                      <button
-                        onClick={() => setExpandedQrId(isExpanded ? null : g.id)}
-                        className={`text-[11px] font-semibold px-2 py-1 rounded-full flex-none ${
-                          isExpanded ? "bg-accent-soft text-accent-hover" : "bg-card-hover text-text-soft hover:text-accent-hover"
-                        }`}
-                      >
-                        QR
-                      </button>
-                    )}
                     <button
                       disabled={pending}
                       onClick={() => handleDelete(g.id)}
                       aria-label="刪除賓客"
-                      className="text-text-faint hover:text-coral p-1 flex-none"
+                      className="text-text-faint hover:text-coral flex-none p-1"
                     >
-                      ✕
+                      <svg viewBox="0 0 16 16" className="w-3.5 h-3.5 fill-none stroke-current" strokeWidth={1.6}>
+                        <line x1="3" y1="3" x2="13" y2="13" /><line x1="13" y1="3" x2="3" y2="13" />
+                      </svg>
                     </button>
                   </div>
+                  {/* 第二行：男女方、桌位、QR */}
+                  <div className="flex items-center gap-1.5 mt-1.5 flex-wrap">
+                    <span className={`text-[11px] font-semibold px-2 py-0.5 rounded-full ${
+                      g.side === "GROOM" ? "bg-[#e2eaf0] text-[#5b7a92]" : "bg-coral-tint text-coral"
+                    }`}>
+                      {g.side === "GROOM" ? "男方" : "女方"}
+                    </span>
+                    <span className={`text-[11px] font-semibold px-2 py-0.5 rounded-full ${
+                      g.tableId ? "bg-accent-soft text-accent-hover" : "bg-card-hover text-text-faint"
+                    }`}>
+                      {g.tableId ? tables.find((t) => t.id === g.tableId)?.name ?? "已安排" : "未安排桌位"}
+                    </span>
+                    {checkinUrl && (
+                      <button
+                        onClick={() => setExpandedQrId(isExpanded ? null : g.id)}
+                        className={`text-[11px] font-semibold px-2 py-0.5 rounded-full transition-colors ${
+                          isExpanded ? "bg-accent-soft text-accent-hover" : "bg-card-hover text-text-soft hover:text-accent-hover"
+                        }`}
+                      >
+                        QR Code
+                      </button>
+                    )}
+                    {(g.relation || g.phone) && (
+                      <span className="text-[11px] text-text-faint">
+                        {[g.relation, g.phone].filter(Boolean).join(" · ")}
+                      </span>
+                    )}
+                  </div>
                   {isExpanded && checkinUrl && (
-                    <div className="mt-2 ml-2 flex flex-col items-start gap-1.5">
+                    <div className="mt-2 flex flex-col items-start gap-1.5">
                       <div className="bg-white p-2 rounded-xl shadow-sm">
                         <QrCode url={checkinUrl} size={140} />
                       </div>
