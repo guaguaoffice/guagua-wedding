@@ -112,7 +112,7 @@ export function RsvpLinkCard({
             <img
               src={cardImageUrl}
               alt="卡片照片"
-              className="w-full h-48 object-cover"
+              className="w-full max-h-64 object-contain bg-[#f5f0eb]"
             />
           )}
           {!cardImageUrl && (
