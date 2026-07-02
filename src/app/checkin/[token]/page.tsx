@@ -31,6 +31,8 @@ export default async function CheckinPage({
       guestName={guest.name}
       tableName={guest.table?.name ?? null}
       checkedInAt={guest.checkedInAt}
+      attendeeCount={guest.plusOneCount + 1}
+      vegetarianCount={guest.vegetarianCount}
       weddingName={guest.wedding.name}
       weddingDate={guest.wedding.weddingDate}
       venueName={guest.wedding.venueName}

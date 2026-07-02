@@ -8,6 +8,8 @@ export function GuestCheckinPage({
   guestName,
   tableName,
   checkedInAt,
+  attendeeCount,
+  vegetarianCount,
   weddingName,
   weddingDate,
   venueName,
@@ -20,6 +22,8 @@ export function GuestCheckinPage({
   guestName: string;
   tableName: string | null;
   checkedInAt: Date | null;
+  attendeeCount: number;
+  vegetarianCount: number;
   weddingName: string;
   weddingDate: Date | null;
   venueName: string | null;
@@ -98,6 +102,19 @@ export function GuestCheckinPage({
               ) : (
                 <span className="status status-idle text-xs">未報到</span>
               )}
+            </div>
+
+            {/* 出席資訊 */}
+            <div className="rounded-[12px] px-4 py-3 flex gap-4" style={{ backgroundColor: "rgba(255,255,255,0.5)" }}>
+              <div className="flex-1 text-center">
+                <div className="text-xs mb-0.5" style={{ color: accentColor + "99" }}>出席人數</div>
+                <div className="font-bold text-lg" style={{ color: accentColor }}>{attendeeCount}</div>
+              </div>
+              <div className="w-px" style={{ backgroundColor: accentColor + "33" }} />
+              <div className="flex-1 text-center">
+                <div className="text-xs mb-0.5" style={{ color: accentColor + "99" }}>素食人數</div>
+                <div className="font-bold text-lg" style={{ color: accentColor }}>{vegetarianCount}</div>
+              </div>
             </div>
 
             {/* 座位 */}
