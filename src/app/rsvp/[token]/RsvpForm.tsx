@@ -132,7 +132,8 @@ export function RsvpForm({
               name="name"
               required
               disabled={pending}
-              className="w-full border border-border rounded-[9px] px-3 py-2 text-sm bg-bg"
+              className="w-full rounded-[9px] px-3 py-2 text-sm"
+              style={{ backgroundColor: "rgba(255,255,255,0.6)", border: "1px solid rgba(0,0,0,0.1)" }}
             />
           </label>
 
@@ -141,13 +142,13 @@ export function RsvpForm({
             <div className="flex gap-1.5">
               <label className="flex-1">
                 <input type="radio" name="side" value="GROOM" defaultChecked className="hidden peer" />
-                <div className="peer-checked:bg-accent peer-checked:text-white text-center text-sm font-semibold py-2 rounded-[9px] bg-card-hover text-text-soft cursor-pointer transition-colors">
+                <div className="peer-checked:bg-accent peer-checked:text-white text-center text-sm font-semibold py-2 rounded-[9px] text-text-soft cursor-pointer transition-colors" style={{ backgroundColor: "rgba(255,255,255,0.5)" }}>
                   新郎方
                 </div>
               </label>
               <label className="flex-1">
                 <input type="radio" name="side" value="BRIDE" className="hidden peer" />
-                <div className="peer-checked:bg-accent peer-checked:text-white text-center text-sm font-semibold py-2 rounded-[9px] bg-card-hover text-text-soft cursor-pointer transition-colors">
+                <div className="peer-checked:bg-accent peer-checked:text-white text-center text-sm font-semibold py-2 rounded-[9px] text-text-soft cursor-pointer transition-colors" style={{ backgroundColor: "rgba(255,255,255,0.5)" }}>
                   新娘方
                 </div>
               </label>
@@ -162,8 +163,9 @@ export function RsvpForm({
                 type="button"
                 onClick={() => setAttending("yes")}
                 className={`flex-1 text-sm font-semibold py-2 rounded-[9px] transition-colors ${
-                  attending === "yes" ? "bg-accent text-white" : "bg-card-hover text-text-soft"
+                  attending === "yes" ? "bg-accent text-white" : "text-text-soft"
                 }`}
+                style={attending !== "yes" ? { backgroundColor: "rgba(255,255,255,0.5)" } : undefined}
               >
                 出席
               </button>
@@ -171,8 +173,9 @@ export function RsvpForm({
                 type="button"
                 onClick={() => setAttending("no")}
                 className={`flex-1 text-sm font-semibold py-2 rounded-[9px] transition-colors ${
-                  attending === "no" ? "bg-coral text-white" : "bg-card-hover text-text-soft"
+                  attending === "no" ? "bg-coral text-white" : "text-text-soft"
                 }`}
+                style={attending !== "no" ? { backgroundColor: "rgba(255,255,255,0.5)" } : undefined}
               >
                 無法出席
               </button>
@@ -189,7 +192,8 @@ export function RsvpForm({
                   min={1}
                   defaultValue={1}
                   disabled={pending}
-                  className="w-full border border-border rounded-[9px] px-3 py-2 text-sm bg-bg"
+                  className="w-full rounded-[9px] px-3 py-2 text-sm"
+                  style={{ backgroundColor: "rgba(255,255,255,0.6)", border: "1px solid rgba(0,0,0,0.1)" }}
                 />
               </label>
               <label className="flex flex-col gap-1">
@@ -200,7 +204,8 @@ export function RsvpForm({
                   min={0}
                   defaultValue={0}
                   disabled={pending}
-                  className="w-full border border-border rounded-[9px] px-3 py-2 text-sm bg-bg"
+                  className="w-full rounded-[9px] px-3 py-2 text-sm"
+                  style={{ backgroundColor: "rgba(255,255,255,0.6)", border: "1px solid rgba(0,0,0,0.1)" }}
                 />
                 <span className="text-[11px] text-text-faint">填 0 表示全員葷食</span>
               </label>
@@ -213,7 +218,8 @@ export function RsvpForm({
               name="note"
               disabled={pending}
               rows={3}
-              className="w-full border border-border rounded-[9px] px-3 py-2 text-sm bg-bg resize-none"
+              className="w-full rounded-[9px] px-3 py-2 text-sm resize-none"
+              style={{ backgroundColor: "rgba(255,255,255,0.6)", border: "1px solid rgba(0,0,0,0.1)" }}
             />
           </label>
 

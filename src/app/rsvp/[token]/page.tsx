@@ -16,8 +16,9 @@ export default async function RsvpPage({ params }: { params: Promise<{ token: st
     );
   }
 
+  const bgColor = wedding.rsvpCardColor || "#e4f0ea";
   return (
-    <main className="flex-1 flex flex-col items-center px-6 py-16 min-h-screen">
+    <main className="flex-1 flex flex-col items-center px-6 py-16 min-h-screen" style={{ backgroundColor: bgColor }}>
       <RsvpForm
         token={token}
         weddingName={wedding.name}
