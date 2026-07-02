@@ -11,6 +11,7 @@ const CARD_COLORS = [
   { label: "紅", value: "#f5e8e8" },
   { label: "橙", value: "#f5ede3" },
   { label: "黃", value: "#f5f0de" },
+  { label: "綠", value: "#e4f0ea" },
   { label: "藍", value: "#e8eef5" },
   { label: "紫", value: "#ede8f5" },
   { label: "灰", value: "#ececec" },
