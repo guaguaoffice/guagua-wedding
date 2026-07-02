@@ -44,7 +44,7 @@ export function GuestCheckinPage({
     : null;
 
   return (
-    <main className="min-h-screen bg-bg flex flex-col items-center pb-10">
+    <main className="min-h-screen flex flex-col items-center pb-10" style={{ backgroundColor: bgColor, "--color-accent": accentColor } as React.CSSProperties}>
       {/* 喜帖卡片 */}
       <div className="w-full max-w-sm">
         <div className="overflow-hidden" style={{ backgroundColor: bgColor }}>
