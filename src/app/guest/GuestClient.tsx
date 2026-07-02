@@ -55,30 +55,37 @@ function EmptyState({
   );
 }
 
-function AttendingButton({
+function AttendingSelect({
   attending,
   pending,
-  onClick,
+  onChange,
 }: {
   attending: boolean | null;
   pending: boolean;
-  onClick: () => void;
+  onChange: (value: boolean | null) => void;
 }) {
-  const label = attending === true ? "出席" : attending === false ? "不出席" : "未回覆";
-  const style =
+  const value = attending === true ? "yes" : attending === false ? "no" : "";
+  const colorClass =
     attending === true
       ? "bg-accent text-white"
       : attending === false
       ? "bg-coral text-white"
-      : "bg-card-hover text-text-soft border border-border";
+      : "bg-card-hover text-text-soft";
   return (
-    <button
+    <select
       disabled={pending}
-      onClick={onClick}
-      className={`text-xs font-semibold px-3 py-1 rounded-[7px] transition-colors flex-none ${style}`}
+      value={value}
+      onChange={(e) => {
+        const v = e.target.value;
+        onChange(v === "yes" ? true : v === "no" ? false : null);
+      }}
+      className={`text-xs font-semibold px-2 py-1 rounded-[7px] flex-none cursor-pointer border-none outline-none appearance-none pr-5 ${colorClass}`}
+      style={{ backgroundImage: "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath stroke='currentColor' stroke-width='1.5' fill='none' d='M4 6l4 4 4-4'/%3E%3C/svg%3E\")", backgroundRepeat: "no-repeat", backgroundPosition: "right 4px center", backgroundSize: "12px" }}
     >
-      {label}
-    </button>
+      <option value="">未回覆</option>
+      <option value="yes">出席</option>
+      <option value="no">不出席</option>
+    </select>
   );
 }
 
@@ -127,10 +134,9 @@ export function GuestClient({
     });
   }
 
-  function cycleAttending(guest: GuestRow) {
-    const next = guest.attending === null ? true : guest.attending === true ? false : null;
+  function changeAttending(guest: GuestRow, value: boolean | null) {
     startTransition(async () => {
-      await setGuestAttending(guest.id, next);
+      await setGuestAttending(guest.id, value);
       router.refresh();
     });
   }
@@ -210,10 +216,10 @@ export function GuestClient({
                   {/* 第一行：姓名 + 出席按鈕 + 刪除 */}
                   <div className="flex items-center gap-2">
                     <div className="font-semibold text-sm flex-1 min-w-0 truncate">{g.name}</div>
-                    <AttendingButton
+                    <AttendingSelect
                       attending={g.attending}
                       pending={pending}
-                      onClick={() => cycleAttending(g)}
+                      onChange={(value) => changeAttending(g, value)}
                     />
                     <button
                       disabled={pending}
