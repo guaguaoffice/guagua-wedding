@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter, useSearchParams } from "next/navigation";
-import { useState, useTransition, useRef, useCallback } from "react";
+import { useState, useTransition, useRef, useCallback, useEffect } from "react";
 import { QrCode } from "@/components/QrCode";
 import {
   addGuest,
@@ -167,27 +167,44 @@ export function GuestClient({
   const [editingTableId, setEditingTableId] = useState<string | null>(null);
   const [unassignedSearch, setUnassignedSearch] = useState("");
   const [tableView, setTableView] = useState<"plan" | "list">("plan");
-  // 位置用 0~1 比例儲存，與螢幕尺寸無關
   const [tablePositions, setTablePositions] = useState<Record<string, { x: number; y: number }>>(
     () => Object.fromEntries(tables.map((t) => [t.id, { x: t.x, y: t.y }]))
   );
   const [focusedTableId, setFocusedTableId] = useState<string | null>(null);
+  const [zoom, setZoom] = useState(1);
+  const [pan, setPan] = useState({ x: 0, y: 0 });
   const canvasRef = useRef<HTMLDivElement>(null);
-  const draggingRef = useRef<{ id: string; startFracX: number; startFracY: number; origX: number; origY: number } | null>(null);
+  const draggingRef = useRef<{ id: string; startClientX: number; startClientY: number; origWorldX: number; origWorldY: number } | null>(null);
+  const panDragRef = useRef<{ startClientX: number; startClientY: number; startPanX: number; startPanY: number } | null>(null);
+  const pinchRef = useRef<{ dist: number; midX: number; midY: number; startZoom: number; startPanX: number; startPanY: number } | null>(null);
+  const zoomRef = useRef(zoom);
+  const panRef = useRef(pan);
+  zoomRef.current = zoom;
+  panRef.current = pan;
 
-  const MARGIN = 0.07;
+  const WORLD_W = 800;
+  const WORLD_H = 600;
+  const TABLE_D = 80;
 
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const rect = canvas.getBoundingClientRect();
+    const fitZoom = Math.min(rect.width / WORLD_W, rect.height / WORLD_H);
+    setZoom(fitZoom);
+    setPan({ x: (rect.width - WORLD_W * fitZoom) / 2, y: (rect.height - WORLD_H * fitZoom) / 2 });
+  }, [tableView]);
+
+  // 桌子拖拉
   const handleTablePointerDown = useCallback((e: React.PointerEvent, tableId: string) => {
     e.currentTarget.setPointerCapture(e.pointerId);
-    const rect = canvasRef.current?.getBoundingClientRect();
-    if (!rect) return;
     const pos = tablePositions[tableId] ?? { x: 0.5, y: 0.5 };
     draggingRef.current = {
       id: tableId,
-      startFracX: (e.clientX - rect.left) / rect.width,
-      startFracY: (e.clientY - rect.top) / rect.height,
-      origX: pos.x,
-      origY: pos.y,
+      startClientX: e.clientX,
+      startClientY: e.clientY,
+      origWorldX: pos.x * WORLD_W,
+      origWorldY: pos.y * WORLD_H,
     };
     setFocusedTableId(null);
   }, [tablePositions]);
@@ -195,30 +212,84 @@ export function GuestClient({
   const handleTablePointerMove = useCallback((e: React.PointerEvent) => {
     const d = draggingRef.current;
     if (!d) return;
-    const rect = canvasRef.current?.getBoundingClientRect();
-    if (!rect) return;
-    const fracX = (e.clientX - rect.left) / rect.width;
-    const fracY = (e.clientY - rect.top) / rect.height;
-    const nx = Math.max(MARGIN, Math.min(1 - MARGIN, d.origX + (fracX - d.startFracX)));
-    const ny = Math.max(MARGIN, Math.min(1 - MARGIN, d.origY + (fracY - d.startFracY)));
-    setTablePositions((prev) => ({ ...prev, [d.id]: { x: nx, y: ny } }));
+    const z = zoomRef.current;
+    const dxWorld = (e.clientX - d.startClientX) / z;
+    const dyWorld = (e.clientY - d.startClientY) / z;
+    const nx = Math.max(TABLE_D / 2, Math.min(WORLD_W - TABLE_D / 2, d.origWorldX + dxWorld));
+    const ny = Math.max(TABLE_D / 2, Math.min(WORLD_H - TABLE_D / 2, d.origWorldY + dyWorld));
+    setTablePositions((prev) => ({ ...prev, [d.id]: { x: nx / WORLD_W, y: ny / WORLD_H } }));
   }, []);
 
   const handleTablePointerUp = useCallback((e: React.PointerEvent, tableId: string) => {
     const d = draggingRef.current;
     if (!d) return;
-    const rect = canvasRef.current?.getBoundingClientRect();
-    const movedPx = rect
-      ? Math.hypot((e.clientX - rect.left) / rect.width - d.startFracX, (e.clientY - rect.top) / rect.height - d.startFracY) * rect.width
-      : 0;
+    const moved = Math.hypot(e.clientX - d.startClientX, e.clientY - d.startClientY);
     draggingRef.current = null;
-    if (movedPx < 5) {
+    if (moved < 5) {
       setFocusedTableId((prev) => prev === tableId ? null : tableId);
       return;
     }
     const pos = tablePositions[tableId];
     if (pos) updateTablePosition(tableId, pos.x, pos.y);
   }, [tablePositions]);
+
+  // 畫布平移
+  const handleCanvasPointerDown = useCallback((e: React.PointerEvent) => {
+    e.currentTarget.setPointerCapture(e.pointerId);
+    panDragRef.current = { startClientX: e.clientX, startClientY: e.clientY, startPanX: panRef.current.x, startPanY: panRef.current.y };
+    setFocusedTableId(null);
+  }, []);
+
+  const handleCanvasPointerMove = useCallback((e: React.PointerEvent) => {
+    const d = panDragRef.current;
+    if (!d) return;
+    setPan({ x: d.startPanX + e.clientX - d.startClientX, y: d.startPanY + e.clientY - d.startClientY });
+  }, []);
+
+  const handleCanvasPointerUp = useCallback(() => { panDragRef.current = null; }, []);
+
+  // 滾輪縮放
+  const handleWheel = useCallback((e: React.WheelEvent) => {
+    e.preventDefault();
+    const rect = canvasRef.current?.getBoundingClientRect();
+    if (!rect) return;
+    const cx = e.clientX - rect.left;
+    const cy = e.clientY - rect.top;
+    const z = zoomRef.current;
+    const p = panRef.current;
+    const newZoom = Math.max(0.3, Math.min(4, z * (e.deltaY < 0 ? 1.1 : 0.9)));
+    const wx = (cx - p.x) / z;
+    const wy = (cy - p.y) / z;
+    setZoom(newZoom);
+    setPan({ x: cx - wx * newZoom, y: cy - wy * newZoom });
+  }, []);
+
+  // 捏合縮放
+  const handleTouchStart = useCallback((e: React.TouchEvent) => {
+    if (e.touches.length !== 2) return;
+    const t1 = e.touches[0], t2 = e.touches[1];
+    const rect = canvasRef.current?.getBoundingClientRect();
+    if (!rect) return;
+    const dist = Math.hypot(t2.clientX - t1.clientX, t2.clientY - t1.clientY);
+    const midX = (t1.clientX + t2.clientX) / 2 - rect.left;
+    const midY = (t1.clientY + t2.clientY) / 2 - rect.top;
+    pinchRef.current = { dist, midX, midY, startZoom: zoomRef.current, startPanX: panRef.current.x, startPanY: panRef.current.y };
+  }, []);
+
+  const handleTouchMove = useCallback((e: React.TouchEvent) => {
+    if (e.touches.length !== 2 || !pinchRef.current) return;
+    e.preventDefault();
+    const t1 = e.touches[0], t2 = e.touches[1];
+    const p = pinchRef.current;
+    const newDist = Math.hypot(t2.clientX - t1.clientX, t2.clientY - t1.clientY);
+    const newZoom = Math.max(0.3, Math.min(4, p.startZoom * (newDist / p.dist)));
+    const wx = (p.midX - p.startPanX) / p.startZoom;
+    const wy = (p.midY - p.startPanY) / p.startZoom;
+    setZoom(newZoom);
+    setPan({ x: p.midX - wx * newZoom, y: p.midY - wy * newZoom });
+  }, []);
+
+  const handleTouchEnd = useCallback(() => { pinchRef.current = null; }, []);
 
   function handleAddTable(formData: FormData) {
     startTransition(async () => {
@@ -441,51 +512,54 @@ export function GuestClient({
                 ) : (
                   <div
                     ref={canvasRef}
-                    className="relative rounded-[14px] border border-border bg-[repeating-linear-gradient(0deg,transparent,transparent_39px,var(--color-border)_39px,var(--color-border)_40px),repeating-linear-gradient(90deg,transparent,transparent_39px,var(--color-border)_39px,var(--color-border)_40px)] overflow-hidden select-none"
-                    style={{ width: "100%", paddingBottom: "75%", position: "relative" }}
+                    className="relative rounded-[14px] border border-border overflow-hidden select-none bg-[#f8f9fa]"
+                    style={{ width: "100%", height: 360, cursor: "grab" }}
+                    onPointerDown={handleCanvasPointerDown}
+                    onPointerMove={handleCanvasPointerMove}
+                    onPointerUp={handleCanvasPointerUp}
+                    onWheel={handleWheel}
+                    onTouchStart={handleTouchStart}
+                    onTouchMove={handleTouchMove}
+                    onTouchEnd={handleTouchEnd}
                     onClick={() => setFocusedTableId(null)}
                   >
-                    <div style={{ position: "absolute", inset: 0 }}>
+                    {/* 縮放按鈕 */}
+                    <div className="absolute bottom-3 right-3 flex flex-col gap-1 z-30">
+                      <button onClick={(e) => { e.stopPropagation(); const z = Math.min(4, zoomRef.current * 1.25); const rect = canvasRef.current!.getBoundingClientRect(); const cx = rect.width/2, cy = rect.height/2; const wx=(cx-panRef.current.x)/zoomRef.current, wy=(cy-panRef.current.y)/zoomRef.current; setZoom(z); setPan({x:cx-wx*z,y:cy-wy*z}); }}
+                        className="w-8 h-8 bg-card border border-border rounded-lg shadow text-lg font-bold flex items-center justify-center hover:bg-card-hover">＋</button>
+                      <button onClick={(e) => { e.stopPropagation(); const z = Math.max(0.3, zoomRef.current * 0.8); const rect = canvasRef.current!.getBoundingClientRect(); const cx = rect.width/2, cy = rect.height/2; const wx=(cx-panRef.current.x)/zoomRef.current, wy=(cy-panRef.current.y)/zoomRef.current; setZoom(z); setPan({x:cx-wx*z,y:cy-wy*z}); }}
+                        className="w-8 h-8 bg-card border border-border rounded-lg shadow text-lg font-bold flex items-center justify-center hover:bg-card-hover">－</button>
+                    </div>
+                    {/* 世界座標層 */}
+                    <div style={{ position: "absolute", width: WORLD_W, height: WORLD_H, transformOrigin: "0 0", transform: `translate(${pan.x}px,${pan.y}px) scale(${zoom})`, backgroundImage: "repeating-linear-gradient(0deg,transparent,transparent 49px,var(--color-border) 49px,var(--color-border) 50px),repeating-linear-gradient(90deg,transparent,transparent 49px,var(--color-border) 49px,var(--color-border) 50px)" }}>
                       {tables.map((t) => {
                         const pos = tablePositions[t.id] ?? { x: 0.5, y: 0.5 };
+                        const wx = pos.x * WORLD_W;
+                        const wy = pos.y * WORLD_H;
                         const seated = guests.filter((g) => g.tableId === t.id);
                         const seats = seated.reduce((s, g) => s + 1 + g.plusOneCount, 0);
                         const isFocused = focusedTableId === t.id;
                         return (
-                          <div key={t.id} onClick={(e) => e.stopPropagation()} style={{ position: "absolute", left: `${pos.x * 100}%`, top: `${pos.y * 100}%`, width: "13%", aspectRatio: "1/1", transform: "translate(-50%,-50%)", zIndex: isFocused ? 20 : 10 }}>
-                            {/* 桌子圓形 */}
+                          <div key={t.id} onClick={(e) => e.stopPropagation()} style={{ position: "absolute", left: wx, top: wy, width: TABLE_D, height: TABLE_D, transform: "translate(-50%,-50%)", zIndex: isFocused ? 20 : 10 }}>
                             <div
                               onPointerDown={(e) => { e.stopPropagation(); handleTablePointerDown(e, t.id); }}
                               onPointerMove={handleTablePointerMove}
                               onPointerUp={(e) => handleTablePointerUp(e, t.id)}
-                              className={`w-full h-full rounded-full flex flex-col items-center justify-center cursor-grab active:cursor-grabbing shadow-md transition-shadow ${
-                                isFocused ? "shadow-lg ring-2 ring-accent" : ""
-                              }`}
+                              className={`w-full h-full rounded-full flex flex-col items-center justify-center cursor-grab active:cursor-grabbing shadow-md ${isFocused ? "ring-2 ring-accent" : ""}`}
                               style={{ backgroundColor: isFocused ? "var(--color-accent)" : "var(--color-card)", border: "2px solid var(--color-border)" }}
                             >
-                              <span className={`text-[11px] font-bold text-center leading-tight px-1 ${isFocused ? "text-white" : "text-text"}`}>
-                                {t.name}
-                              </span>
-                              <span className={`text-[10px] ${isFocused ? "text-white/80" : "text-text-faint"}`}>
-                                {seats}{t.capacity ? `/${t.capacity}` : ""} 人
-                              </span>
+                              <span className={`text-[13px] font-bold whitespace-nowrap overflow-hidden text-ellipsis max-w-[64px] text-center ${isFocused ? "text-white" : "text-text"}`}>{t.name}</span>
+                              <span className={`text-[11px] whitespace-nowrap ${isFocused ? "text-white/80" : "text-text-faint"}`}>{seats}{t.capacity ? `/${t.capacity}` : ""} 人</span>
                             </div>
-                            {/* 點開後的賓客清單 */}
                             {isFocused && (
-                              <div
-                                className="absolute left-1/2 -translate-x-1/2 mt-2 bg-card border border-border rounded-[12px] shadow-[var(--shadow-lg)] p-3 min-w-[140px] z-30"
-                                style={{ top: "100%" }}
-                                onClick={(e) => e.stopPropagation()}
-                              >
+                              <div className="absolute left-1/2 bg-card border border-border rounded-[12px] shadow-[var(--shadow-lg)] p-3 min-w-[140px] z-30" style={{ top: TABLE_D + 8, transform: "translateX(-50%)" }} onClick={(e) => e.stopPropagation()}>
                                 {seated.length === 0 ? (
                                   <p className="text-xs text-text-faint text-center">還沒有人坐這桌</p>
                                 ) : (
                                   <ul className="flex flex-col gap-1">
                                     {seated.map((g) => (
-                                      <li key={g.id} className="text-xs flex items-center gap-1.5">
-                                        <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded-full ${SIDE_TAG[g.side]}`}>
-                                          {g.side === "GROOM" ? "男" : "女"}
-                                        </span>
+                                      <li key={g.id} className="text-xs flex items-center gap-1.5 whitespace-nowrap">
+                                        <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded-full flex-none ${SIDE_TAG[g.side]}`}>{g.side === "GROOM" ? "男" : "女"}</span>
                                         {g.name}{g.plusOneCount > 0 && ` +${g.plusOneCount}`}
                                       </li>
                                     ))}
@@ -499,7 +573,7 @@ export function GuestClient({
                     </div>
                   </div>
                 )}
-                <p className="text-[11px] text-text-faint mt-2">拖動桌子調整位置，點擊查看賓客名單</p>
+                <p className="text-[11px] text-text-faint mt-2">拖動桌子調整位置，點擊查看賓客名單・捏合或滾輪縮放</p>
               </div>
             )}
 
