@@ -1,5 +1,7 @@
 "use client";
 
+import { useEffect } from "react";
+import { useRouter } from "next/navigation";
 import { QrCode } from "@/components/QrCode";
 import { getCardBg, getCardAccent } from "@/lib/cardColors";
 
@@ -32,8 +34,15 @@ export function GuestCheckinPage({
   cardImageUrl: string | null;
   cardColor: string | null;
 }) {
+  const router = useRouter();
   const bgColor = getCardBg(cardColor);
   const accentColor = getCardAccent(cardColor);
+
+  useEffect(() => {
+    if (checkedInAt) return;
+    const id = setInterval(() => router.refresh(), 3000);
+    return () => clearInterval(id);
+  }, [checkedInAt, router]);
   const checkinUrl = typeof window !== "undefined"
     ? `${window.location.origin}/checkin/${token}`
     : `https://yourdomain.com/checkin/${token}`;

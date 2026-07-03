@@ -21,6 +21,7 @@ export async function checkInGuest(checkinToken: string) {
   });
 
   revalidatePath("/onsite");
+  revalidatePath(`/checkin/${checkinToken}`);
   return {
     ok: true as const,
     alreadyCheckedIn: false,
