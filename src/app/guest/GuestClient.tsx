@@ -148,6 +148,9 @@ export function GuestClient({
     });
   }
 
+  const [giftSearch, setGiftSearch] = useState("");
+  const [giftSort, setGiftSort] = useState<"default" | "asc" | "desc">("default");
+
   const attendingCount = guests.filter((g) => g.attending === true).length;
   const plusOneTotal = guests
     .filter((g) => g.attending === true)
@@ -335,27 +338,58 @@ export function GuestClient({
               description="現場收禮可在這裡逐筆登記，並對應到賓客；事後統計、回禮都方便。"
               cta="＋ 新增紀錄"
             />
-          ) : (
-            <div className="panel flex flex-col gap-2">
-              {guests.map((g) => (
-                <div key={g.id} className="lrow">
-                  <div className="flex-1 min-w-0">
-                    <div className="font-semibold text-sm">{g.name}</div>
-                  </div>
-                  <div className="flex items-center gap-1 flex-none">
-                    <span className="text-xs text-text-soft">NT$</span>
-                    <input
-                      type="text"
-                      defaultValue={g.giftAmount ?? ""}
-                      placeholder="0"
-                      onBlur={(e) => handleGiftBlur(g.id, e.target.value)}
-                      className="w-24 border border-border rounded-[9px] px-2 py-1 text-sm bg-card text-right"
-                    />
-                  </div>
+          ) : (() => {
+            const filtered = guests
+              .filter((g) => g.name.includes(giftSearch))
+              .sort((a, b) => {
+                if (giftSort === "desc") return (b.giftAmount ?? 0) - (a.giftAmount ?? 0);
+                if (giftSort === "asc") return (a.giftAmount ?? 0) - (b.giftAmount ?? 0);
+                return 0;
+              });
+            return (
+              <>
+                <div className="flex gap-2 mb-2.5">
+                  <input
+                    type="text"
+                    placeholder="搜尋賓客姓名"
+                    value={giftSearch}
+                    onChange={(e) => setGiftSearch(e.target.value)}
+                    className="flex-1 min-w-0 border border-border rounded-[9px] px-3 py-2 text-sm bg-card"
+                  />
+                  <select
+                    value={giftSort}
+                    onChange={(e) => setGiftSort(e.target.value as typeof giftSort)}
+                    className="border border-border rounded-[9px] px-2 py-2 text-sm bg-card"
+                  >
+                    <option value="default">預設</option>
+                    <option value="desc">高至低</option>
+                    <option value="asc">低至高</option>
+                  </select>
                 </div>
-              ))}
-            </div>
-          )}
+                <div className="panel flex flex-col gap-2">
+                  {filtered.length === 0 ? (
+                    <p className="text-sm text-text-faint text-center py-4">找不到「{giftSearch}」</p>
+                  ) : filtered.map((g) => (
+                    <div key={g.id} className="lrow">
+                      <div className="flex-1 min-w-0">
+                        <div className="font-semibold text-sm">{g.name}</div>
+                      </div>
+                      <div className="flex items-center gap-1 flex-none">
+                        <span className="text-xs text-text-soft">NT$</span>
+                        <input
+                          type="text"
+                          defaultValue={g.giftAmount ?? ""}
+                          placeholder="0"
+                          onBlur={(e) => handleGiftBlur(g.id, e.target.value)}
+                          className="w-24 border border-border rounded-[9px] px-2 py-1 text-sm bg-card text-right"
+                        />
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </>
+            );
+          })()}
         </div>
       )}
     </div>
