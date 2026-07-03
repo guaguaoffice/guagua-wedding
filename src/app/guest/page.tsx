@@ -27,7 +27,7 @@ export default async function GuestPage() {
     giftAmount: toNumOrNull(g.giftAmount),
     checkinToken: g.checkinToken,
   }));
-  const tables = tablesRaw.map((t) => ({ id: t.id, name: t.name }));
+  const tables = tablesRaw.map((t) => ({ id: t.id, name: t.name, capacity: t.capacity }));
 
   return (
     <Suspense>
