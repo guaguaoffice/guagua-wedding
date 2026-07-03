@@ -329,6 +329,27 @@ export function OnsiteClient({
 
       {tab === "table" && (
         <div>
+          <form action={handleAddTable} className="flex gap-2 mb-3.5">
+            <input
+              name="name"
+              placeholder="桌次名稱，例如：第 1 桌"
+              required
+              disabled={pending}
+              className="flex-1 min-w-0 border border-border rounded-[9px] px-3 py-2 text-sm bg-card"
+            />
+            <input
+              name="capacity"
+              type="number"
+              min={1}
+              placeholder="人數"
+              disabled={pending}
+              className="w-20 border border-border rounded-[9px] px-3 py-2 text-sm bg-card"
+            />
+            <button disabled={pending} className="btn btn-primary text-sm px-4">
+              新增桌次
+            </button>
+          </form>
+
           {tables.length === 0 ? (
             <EmptyState
               icon={
@@ -449,27 +470,6 @@ export function OnsiteClient({
               })}
             </div>
           )}
-
-          <form action={handleAddTable} className="flex gap-2 mt-3.5">
-            <input
-              name="name"
-              placeholder="桌次名稱，例如：第 1 桌"
-              required
-              disabled={pending}
-              className="flex-1 min-w-0 border border-border rounded-[9px] px-3 py-2 text-sm bg-card"
-            />
-            <input
-              name="capacity"
-              type="number"
-              min={1}
-              placeholder="人數"
-              disabled={pending}
-              className="w-20 border border-border rounded-[9px] px-3 py-2 text-sm bg-card"
-            />
-            <button disabled={pending} className="btn btn-primary text-sm px-4">
-              新增桌次
-            </button>
-          </form>
 
           {unassigned.length > 0 && (
             <div className="rounded-[var(--radius-sm)] bg-accent-tint p-4 mt-3.5">
