@@ -150,6 +150,7 @@ export function GuestClient({
 
   const [giftSearch, setGiftSearch] = useState("");
   const [giftSort, setGiftSort] = useState<"default" | "asc" | "desc">("default");
+  const [listSearch, setListSearch] = useState("");
 
   const attendingCount = guests.filter((g) => g.attending === true).length;
   const plusOneTotal = guests
@@ -211,7 +212,16 @@ export function GuestClient({
             />
           ) : (
             <div className="panel">
-              {guests.map((g) => {
+              <div className="pb-2.5 border-b border-border mb-0.5">
+                <input
+                  type="text"
+                  placeholder="搜尋賓客姓名"
+                  value={listSearch}
+                  onChange={(e) => setListSearch(e.target.value)}
+                  className="w-full border border-border rounded-[9px] px-3 py-2 text-sm bg-bg"
+                />
+              </div>
+              {guests.filter((g) => g.name.includes(listSearch)).map((g) => {
                 const isExpanded = expandedQrId === g.id;
                 const checkinUrl = g.checkinToken ? `${origin}/checkin/${g.checkinToken}` : null;
                 return (
