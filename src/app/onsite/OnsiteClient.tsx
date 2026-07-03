@@ -243,6 +243,7 @@ export function OnsiteClient({
   const tab = searchParams.get("tab") ?? "table";
   const [pending, startTransition] = useTransition();
   const [editingTableId, setEditingTableId] = useState<string | null>(null);
+  const [unassignedSearch, setUnassignedSearch] = useState("");
 
   function setTab(next: string) {
     router.replace(`/onsite?tab=${next}`, { scroll: false });
@@ -484,8 +485,17 @@ export function OnsiteClient({
                   尚未安排桌位（{unassigned.length}）
                 </span>
               </div>
+              <input
+                type="text"
+                placeholder="搜尋賓客姓名"
+                value={unassignedSearch}
+                onChange={(e) => setUnassignedSearch(e.target.value)}
+                className="w-full border border-border rounded-[9px] px-3 py-2 text-sm bg-card mb-2.5"
+              />
               <div className="flex flex-col gap-1.5">
-                {unassigned.map((g) => (
+                {unassigned
+                  .filter((g) => g.name.includes(unassignedSearch))
+                  .map((g) => (
                   <div
                     key={g.id}
                     className="flex items-center gap-3 bg-card text-accent-hover font-bold shadow-[var(--shadow)] rounded-[10px] px-3 py-2.5"
