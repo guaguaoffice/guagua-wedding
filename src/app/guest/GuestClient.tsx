@@ -167,40 +167,52 @@ export function GuestClient({
   const [editingTableId, setEditingTableId] = useState<string | null>(null);
   const [unassignedSearch, setUnassignedSearch] = useState("");
   const [tableView, setTableView] = useState<"plan" | "list">("plan");
+  // 位置用 0~1 比例儲存，與螢幕尺寸無關
   const [tablePositions, setTablePositions] = useState<Record<string, { x: number; y: number }>>(
     () => Object.fromEntries(tables.map((t) => [t.id, { x: t.x, y: t.y }]))
   );
   const [focusedTableId, setFocusedTableId] = useState<string | null>(null);
   const canvasRef = useRef<HTMLDivElement>(null);
-  const draggingRef = useRef<{ id: string; startX: number; startY: number; origX: number; origY: number } | null>(null);
+  const draggingRef = useRef<{ id: string; startFracX: number; startFracY: number; origX: number; origY: number } | null>(null);
 
-  const CANVAS_W = 560;
-  const CANVAS_H = 480;
-  const TABLE_R = 44;
+  const MARGIN = 0.07;
 
   const handleTablePointerDown = useCallback((e: React.PointerEvent, tableId: string) => {
     e.currentTarget.setPointerCapture(e.pointerId);
-    const pos = tablePositions[tableId] ?? { x: 0, y: 0 };
-    draggingRef.current = { id: tableId, startX: e.clientX, startY: e.clientY, origX: pos.x, origY: pos.y };
+    const rect = canvasRef.current?.getBoundingClientRect();
+    if (!rect) return;
+    const pos = tablePositions[tableId] ?? { x: 0.5, y: 0.5 };
+    draggingRef.current = {
+      id: tableId,
+      startFracX: (e.clientX - rect.left) / rect.width,
+      startFracY: (e.clientY - rect.top) / rect.height,
+      origX: pos.x,
+      origY: pos.y,
+    };
     setFocusedTableId(null);
   }, [tablePositions]);
 
   const handleTablePointerMove = useCallback((e: React.PointerEvent) => {
     const d = draggingRef.current;
     if (!d) return;
-    const dx = e.clientX - d.startX;
-    const dy = e.clientY - d.startY;
-    const nx = Math.max(TABLE_R, Math.min(CANVAS_W - TABLE_R, d.origX + dx));
-    const ny = Math.max(TABLE_R, Math.min(CANVAS_H - TABLE_R, d.origY + dy));
+    const rect = canvasRef.current?.getBoundingClientRect();
+    if (!rect) return;
+    const fracX = (e.clientX - rect.left) / rect.width;
+    const fracY = (e.clientY - rect.top) / rect.height;
+    const nx = Math.max(MARGIN, Math.min(1 - MARGIN, d.origX + (fracX - d.startFracX)));
+    const ny = Math.max(MARGIN, Math.min(1 - MARGIN, d.origY + (fracY - d.startFracY)));
     setTablePositions((prev) => ({ ...prev, [d.id]: { x: nx, y: ny } }));
   }, []);
 
   const handleTablePointerUp = useCallback((e: React.PointerEvent, tableId: string) => {
     const d = draggingRef.current;
     if (!d) return;
-    const moved = Math.abs(e.clientX - d.startX) > 4 || Math.abs(e.clientY - d.startY) > 4;
+    const rect = canvasRef.current?.getBoundingClientRect();
+    const movedPx = rect
+      ? Math.hypot((e.clientX - rect.left) / rect.width - d.startFracX, (e.clientY - rect.top) / rect.height - d.startFracY) * rect.width
+      : 0;
     draggingRef.current = null;
-    if (!moved) {
+    if (movedPx < 5) {
       setFocusedTableId((prev) => prev === tableId ? null : tableId);
       return;
     }
@@ -430,18 +442,17 @@ export function GuestClient({
                   <div
                     ref={canvasRef}
                     className="relative rounded-[14px] border border-border bg-[repeating-linear-gradient(0deg,transparent,transparent_39px,var(--color-border)_39px,var(--color-border)_40px),repeating-linear-gradient(90deg,transparent,transparent_39px,var(--color-border)_39px,var(--color-border)_40px)] overflow-hidden select-none"
-                    style={{ width: "100%", paddingBottom: `${(CANVAS_H / CANVAS_W) * 100}%`, position: "relative" }}
+                    style={{ width: "100%", paddingBottom: "75%", position: "relative" }}
                     onClick={() => setFocusedTableId(null)}
                   >
                     <div style={{ position: "absolute", inset: 0 }}>
                       {tables.map((t) => {
-                        const pos = tablePositions[t.id] ?? { x: CANVAS_W / 2, y: CANVAS_H / 2 };
+                        const pos = tablePositions[t.id] ?? { x: 0.5, y: 0.5 };
                         const seated = guests.filter((g) => g.tableId === t.id);
                         const seats = seated.reduce((s, g) => s + 1 + g.plusOneCount, 0);
                         const isFocused = focusedTableId === t.id;
-                        const pct = (v: number, total: number) => `${(v / total) * 100}%`;
                         return (
-                          <div key={t.id} onClick={(e) => e.stopPropagation()} style={{ position: "absolute", left: pct(pos.x, CANVAS_W), top: pct(pos.y, CANVAS_H), transform: "translate(-50%,-50%)", zIndex: isFocused ? 20 : 10 }}>
+                          <div key={t.id} onClick={(e) => e.stopPropagation()} style={{ position: "absolute", left: `${pos.x * 100}%`, top: `${pos.y * 100}%`, transform: "translate(-50%,-50%)", zIndex: isFocused ? 20 : 10 }}>
                             {/* 桌子圓形 */}
                             <div
                               onPointerDown={(e) => { e.stopPropagation(); handleTablePointerDown(e, t.id); }}
@@ -450,7 +461,7 @@ export function GuestClient({
                               className={`rounded-full flex flex-col items-center justify-center cursor-grab active:cursor-grabbing shadow-md transition-shadow ${
                                 isFocused ? "shadow-lg ring-2 ring-accent" : ""
                               }`}
-                              style={{ width: TABLE_R * 2, height: TABLE_R * 2, backgroundColor: isFocused ? "var(--color-accent)" : "var(--color-card)", border: "2px solid var(--color-border)" }}
+                              style={{ width: 88, height: 88, backgroundColor: isFocused ? "var(--color-accent)" : "var(--color-card)", border: "2px solid var(--color-border)" }}
                             >
                               <span className={`text-[11px] font-bold text-center leading-tight px-1 ${isFocused ? "text-white" : "text-text"}`}>
                                 {t.name}

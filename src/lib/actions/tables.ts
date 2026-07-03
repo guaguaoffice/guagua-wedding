@@ -16,8 +16,8 @@ export async function addTable(weddingId: string, formData: FormData) {
       name,
       capacity: capacity !== null && !Number.isNaN(capacity) ? capacity : null,
       order: count,
-      x: 280,
-      y: 240,
+      x: 0.5,
+      y: 0.5,
     },
   });
   revalidatePath("/onsite");
