@@ -369,6 +369,8 @@ model Table {
   name      String
   capacity  Int?
   order     Int      @default(0)
+  x         Float    @default(0)
+  y         Float    @default(0)
   createdAt DateTime @default(now())
 
   wedding Wedding         @relation(fields: [weddingId], references: [id], onDelete: Cascade)

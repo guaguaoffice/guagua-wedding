@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter, useSearchParams } from "next/navigation";
-import { useState, useTransition } from "react";
+import { useState, useTransition, useRef, useCallback } from "react";
 import { QrCode } from "@/components/QrCode";
 import {
   addGuest,
@@ -14,6 +14,7 @@ import {
   assignGuestTable,
   deleteTable,
   updateTable,
+  updateTablePosition,
 } from "@/lib/actions/tables";
 import { RsvpLinkCard } from "@/app/guest/RsvpLinkCard";
 
@@ -42,7 +43,7 @@ export type GuestRow = {
   checkinToken: string | null;
 };
 
-export type TableRow = { id: string; name: string; capacity: number | null };
+export type TableRow = { id: string; name: string; capacity: number | null; x: number; y: number };
 
 function EmptyState({
   icon,
@@ -165,6 +166,47 @@ export function GuestClient({
   const [listSearch, setListSearch] = useState("");
   const [editingTableId, setEditingTableId] = useState<string | null>(null);
   const [unassignedSearch, setUnassignedSearch] = useState("");
+  const [tableView, setTableView] = useState<"plan" | "list">("plan");
+  const [tablePositions, setTablePositions] = useState<Record<string, { x: number; y: number }>>(
+    () => Object.fromEntries(tables.map((t) => [t.id, { x: t.x, y: t.y }]))
+  );
+  const [focusedTableId, setFocusedTableId] = useState<string | null>(null);
+  const canvasRef = useRef<HTMLDivElement>(null);
+  const draggingRef = useRef<{ id: string; startX: number; startY: number; origX: number; origY: number } | null>(null);
+
+  const CANVAS_W = 560;
+  const CANVAS_H = 480;
+  const TABLE_R = 44;
+
+  const handleTablePointerDown = useCallback((e: React.PointerEvent, tableId: string) => {
+    e.currentTarget.setPointerCapture(e.pointerId);
+    const pos = tablePositions[tableId] ?? { x: 0, y: 0 };
+    draggingRef.current = { id: tableId, startX: e.clientX, startY: e.clientY, origX: pos.x, origY: pos.y };
+    setFocusedTableId(null);
+  }, [tablePositions]);
+
+  const handleTablePointerMove = useCallback((e: React.PointerEvent) => {
+    const d = draggingRef.current;
+    if (!d) return;
+    const dx = e.clientX - d.startX;
+    const dy = e.clientY - d.startY;
+    const nx = Math.max(TABLE_R, Math.min(CANVAS_W - TABLE_R, d.origX + dx));
+    const ny = Math.max(TABLE_R, Math.min(CANVAS_H - TABLE_R, d.origY + dy));
+    setTablePositions((prev) => ({ ...prev, [d.id]: { x: nx, y: ny } }));
+  }, []);
+
+  const handleTablePointerUp = useCallback((e: React.PointerEvent, tableId: string) => {
+    const d = draggingRef.current;
+    if (!d) return;
+    const moved = Math.abs(e.clientX - d.startX) > 4 || Math.abs(e.clientY - d.startY) > 4;
+    draggingRef.current = null;
+    if (!moved) {
+      setFocusedTableId((prev) => prev === tableId ? null : tableId);
+      return;
+    }
+    const pos = tablePositions[tableId];
+    if (pos) updateTablePosition(tableId, pos.x, pos.y);
+  }, [tablePositions]);
 
   function handleAddTable(formData: FormData) {
     startTransition(async () => {
@@ -365,6 +407,93 @@ export function GuestClient({
         const unassigned = guests.filter((g) => !g.tableId && g.attending !== false);
         return (
           <div>
+            {/* 視圖切換 */}
+            <div className="flex gap-1 mb-3.5 bg-card-hover rounded-[10px] p-1 w-fit">
+              {(["plan", "list"] as const).map((v) => (
+                <button key={v} onClick={() => setTableView(v)}
+                  className={`px-4 py-1.5 text-sm font-semibold rounded-[8px] transition-colors ${
+                    tableView === v ? "bg-card shadow-sm text-text" : "text-text-soft hover:text-text"
+                  }`}>
+                  {v === "plan" ? "平面圖" : "清單"}
+                </button>
+              ))}
+            </div>
+
+            {/* 平面圖 */}
+            {tableView === "plan" && (
+              <div className="mb-4">
+                {tables.length === 0 ? (
+                  <div className="panel text-center py-10 text-text-soft text-sm">
+                    先用「清單」模式新增桌次，再回來排列位置。
+                  </div>
+                ) : (
+                  <div
+                    ref={canvasRef}
+                    className="relative rounded-[14px] border border-border bg-[repeating-linear-gradient(0deg,transparent,transparent_39px,var(--color-border)_39px,var(--color-border)_40px),repeating-linear-gradient(90deg,transparent,transparent_39px,var(--color-border)_39px,var(--color-border)_40px)] overflow-hidden select-none"
+                    style={{ width: "100%", paddingBottom: `${(CANVAS_H / CANVAS_W) * 100}%`, position: "relative" }}
+                    onClick={() => setFocusedTableId(null)}
+                  >
+                    <div style={{ position: "absolute", inset: 0 }}>
+                      {tables.map((t) => {
+                        const pos = tablePositions[t.id] ?? { x: CANVAS_W / 2, y: CANVAS_H / 2 };
+                        const seated = guests.filter((g) => g.tableId === t.id);
+                        const seats = seated.reduce((s, g) => s + 1 + g.plusOneCount, 0);
+                        const isFocused = focusedTableId === t.id;
+                        const pct = (v: number, total: number) => `${(v / total) * 100}%`;
+                        return (
+                          <div key={t.id} style={{ position: "absolute", left: pct(pos.x, CANVAS_W), top: pct(pos.y, CANVAS_H), transform: "translate(-50%,-50%)", zIndex: isFocused ? 20 : 10 }}>
+                            {/* 桌子圓形 */}
+                            <div
+                              onPointerDown={(e) => { e.stopPropagation(); handleTablePointerDown(e, t.id); }}
+                              onPointerMove={handleTablePointerMove}
+                              onPointerUp={(e) => handleTablePointerUp(e, t.id)}
+                              className={`rounded-full flex flex-col items-center justify-center cursor-grab active:cursor-grabbing shadow-md transition-shadow ${
+                                isFocused ? "shadow-lg ring-2 ring-accent" : ""
+                              }`}
+                              style={{ width: TABLE_R * 2, height: TABLE_R * 2, backgroundColor: isFocused ? "var(--color-accent)" : "var(--color-card)", border: "2px solid var(--color-border)" }}
+                            >
+                              <span className={`text-[11px] font-bold text-center leading-tight px-1 ${isFocused ? "text-white" : "text-text"}`}>
+                                {t.name}
+                              </span>
+                              <span className={`text-[10px] ${isFocused ? "text-white/80" : "text-text-faint"}`}>
+                                {seats}{t.capacity ? `/${t.capacity}` : ""} 人
+                              </span>
+                            </div>
+                            {/* 點開後的賓客清單 */}
+                            {isFocused && (
+                              <div
+                                className="absolute left-1/2 -translate-x-1/2 mt-2 bg-card border border-border rounded-[12px] shadow-[var(--shadow-lg)] p-3 min-w-[140px] z-30"
+                                style={{ top: "100%" }}
+                                onClick={(e) => e.stopPropagation()}
+                              >
+                                {seated.length === 0 ? (
+                                  <p className="text-xs text-text-faint text-center">還沒有人坐這桌</p>
+                                ) : (
+                                  <ul className="flex flex-col gap-1">
+                                    {seated.map((g) => (
+                                      <li key={g.id} className="text-xs flex items-center gap-1.5">
+                                        <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded-full ${SIDE_TAG[g.side]}`}>
+                                          {g.side === "GROOM" ? "男" : "女"}
+                                        </span>
+                                        {g.name}{g.plusOneCount > 0 && ` +${g.plusOneCount}`}
+                                      </li>
+                                    ))}
+                                  </ul>
+                                )}
+                              </div>
+                            )}
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
+                <p className="text-[11px] text-text-faint mt-2">拖動桌子調整位置，點擊查看賓客名單</p>
+              </div>
+            )}
+
+            {/* 清單模式 */}
+            {tableView === "list" && <>
             <form action={handleAddTable} className="flex gap-2 mb-3.5">
               <input
                 name="name"
@@ -501,6 +630,7 @@ export function GuestClient({
                 </div>
               </div>
             )}
+            </>}
           </div>
         );
       })()}
