@@ -46,6 +46,7 @@ export type OnsiteGuest = {
   identity: "GROOM" | "BRIDE" | "PARTNER" | "OTHER" | null;
   checkinToken: string | null;
   checkedInAt: Date | null;
+  attending: boolean | null;
 };
 
 const SIDE_LABEL: Record<string, string> = {
