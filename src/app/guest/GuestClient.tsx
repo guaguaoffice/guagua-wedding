@@ -441,7 +441,7 @@ export function GuestClient({
                         const isFocused = focusedTableId === t.id;
                         const pct = (v: number, total: number) => `${(v / total) * 100}%`;
                         return (
-                          <div key={t.id} style={{ position: "absolute", left: pct(pos.x, CANVAS_W), top: pct(pos.y, CANVAS_H), transform: "translate(-50%,-50%)", zIndex: isFocused ? 20 : 10 }}>
+                          <div key={t.id} onClick={(e) => e.stopPropagation()} style={{ position: "absolute", left: pct(pos.x, CANVAS_W), top: pct(pos.y, CANVAS_H), transform: "translate(-50%,-50%)", zIndex: isFocused ? 20 : 10 }}>
                             {/* 桌子圓形 */}
                             <div
                               onPointerDown={(e) => { e.stopPropagation(); handleTablePointerDown(e, t.id); }}
