@@ -452,16 +452,16 @@ export function GuestClient({
                         const seats = seated.reduce((s, g) => s + 1 + g.plusOneCount, 0);
                         const isFocused = focusedTableId === t.id;
                         return (
-                          <div key={t.id} onClick={(e) => e.stopPropagation()} style={{ position: "absolute", left: `${pos.x * 100}%`, top: `${pos.y * 100}%`, transform: "translate(-50%,-50%)", zIndex: isFocused ? 20 : 10 }}>
+                          <div key={t.id} onClick={(e) => e.stopPropagation()} style={{ position: "absolute", left: `${pos.x * 100}%`, top: `${pos.y * 100}%`, width: "13%", aspectRatio: "1/1", transform: "translate(-50%,-50%)", zIndex: isFocused ? 20 : 10 }}>
                             {/* 桌子圓形 */}
                             <div
                               onPointerDown={(e) => { e.stopPropagation(); handleTablePointerDown(e, t.id); }}
                               onPointerMove={handleTablePointerMove}
                               onPointerUp={(e) => handleTablePointerUp(e, t.id)}
-                              className={`rounded-full flex flex-col items-center justify-center cursor-grab active:cursor-grabbing shadow-md transition-shadow ${
+                              className={`w-full h-full rounded-full flex flex-col items-center justify-center cursor-grab active:cursor-grabbing shadow-md transition-shadow ${
                                 isFocused ? "shadow-lg ring-2 ring-accent" : ""
                               }`}
-                              style={{ width: "13%", aspectRatio: "1/1", backgroundColor: isFocused ? "var(--color-accent)" : "var(--color-card)", border: "2px solid var(--color-border)" }}
+                              style={{ backgroundColor: isFocused ? "var(--color-accent)" : "var(--color-card)", border: "2px solid var(--color-border)" }}
                             >
                               <span className={`text-[11px] font-bold text-center leading-tight px-1 ${isFocused ? "text-white" : "text-text"}`}>
                                 {t.name}
