@@ -524,7 +524,7 @@ export function GuestClient({
                     onClick={() => setFocusedTableId(null)}
                   >
                     {/* 縮放按鈕 */}
-                    <div className="absolute bottom-3 right-3 flex flex-col gap-1 z-30">
+                    <div className="absolute bottom-3 right-3 flex flex-col gap-1 z-30" onPointerDown={(e) => e.stopPropagation()}>
                       <button onClick={(e) => { e.stopPropagation(); const z = Math.min(4, zoomRef.current * 1.25); const rect = canvasRef.current!.getBoundingClientRect(); const cx = rect.width/2, cy = rect.height/2; const wx=(cx-panRef.current.x)/zoomRef.current, wy=(cy-panRef.current.y)/zoomRef.current; setZoom(z); setPan({x:cx-wx*z,y:cy-wy*z}); }}
                         className="w-8 h-8 bg-card border border-border rounded-lg shadow text-lg font-bold flex items-center justify-center hover:bg-card-hover">＋</button>
                       <button onClick={(e) => { e.stopPropagation(); const z = Math.max(0.3, zoomRef.current * 0.8); const rect = canvasRef.current!.getBoundingClientRect(); const cx = rect.width/2, cy = rect.height/2; const wx=(cx-panRef.current.x)/zoomRef.current, wy=(cy-panRef.current.y)/zoomRef.current; setZoom(z); setPan({x:cx-wx*z,y:cy-wy*z}); }}
