@@ -198,6 +198,33 @@ export function GuestClient({
             </div>
           </div>
 
+          <form action={handleAddGuest} className="flex gap-2 mb-3.5">
+            <input
+              name="name"
+              placeholder="賓客姓名"
+              required
+              disabled={pending}
+              className="flex-1 min-w-0 border border-border rounded-[9px] px-3 py-2 text-sm bg-card"
+            />
+            <select
+              name="side"
+              disabled={pending}
+              className="border border-border rounded-[9px] px-2 py-2 text-sm bg-card"
+            >
+              <option value="GROOM">男方</option>
+              <option value="BRIDE">女方</option>
+            </select>
+            <input
+              name="relation"
+              placeholder="關係（選填）"
+              disabled={pending}
+              className="flex-1 min-w-0 border border-border rounded-[9px] px-3 py-2 text-sm bg-card"
+            />
+            <button disabled={pending} className="btn btn-primary text-sm px-4">
+              新增
+            </button>
+          </form>
+
           {guests.length === 0 ? (
             <EmptyState
               icon={
@@ -287,32 +314,6 @@ export function GuestClient({
             </div>
           )}
 
-          <form action={handleAddGuest} className="flex gap-2 mt-3.5">
-            <input
-              name="name"
-              placeholder="賓客姓名"
-              required
-              disabled={pending}
-              className="flex-1 min-w-0 border border-border rounded-[9px] px-3 py-2 text-sm bg-card"
-            />
-            <select
-              name="side"
-              disabled={pending}
-              className="border border-border rounded-[9px] px-2 py-2 text-sm bg-card"
-            >
-              <option value="GROOM">男方</option>
-              <option value="BRIDE">女方</option>
-            </select>
-            <input
-              name="relation"
-              placeholder="關係（選填）"
-              disabled={pending}
-              className="flex-1 min-w-0 border border-border rounded-[9px] px-3 py-2 text-sm bg-card"
-            />
-            <button disabled={pending} className="btn btn-primary text-sm px-4">
-              新增
-            </button>
-          </form>
         </div>
       )}
 
