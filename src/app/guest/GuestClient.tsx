@@ -371,8 +371,13 @@ export function GuestClient({
                     <p className="text-sm text-text-faint text-center py-4">找不到「{giftSearch}」</p>
                   ) : filtered.map((g) => (
                     <div key={g.id} className="lrow">
-                      <div className="flex-1 min-w-0">
-                        <div className="font-semibold text-sm">{g.name}</div>
+                      <div className="flex-1 min-w-0 flex items-center gap-1.5">
+                        <span className={`text-[11px] font-semibold px-2 py-0.5 rounded-full flex-none ${
+                          g.side === "GROOM" ? "bg-[#e2eaf0] text-[#5b7a92]" : "bg-coral-tint text-coral"
+                        }`}>
+                          {g.side === "GROOM" ? "男方" : "女方"}
+                        </span>
+                        <div className="font-semibold text-sm truncate">{g.name}</div>
                       </div>
                       <div className="flex items-center gap-1 flex-none">
                         <span className="text-xs text-text-soft">NT$</span>
