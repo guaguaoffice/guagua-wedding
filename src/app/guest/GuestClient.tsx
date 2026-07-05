@@ -532,6 +532,10 @@ export function GuestClient({
                     </div>
                     {/* 世界座標層 */}
                     <div style={{ position: "absolute", width: WORLD_W, height: WORLD_H, transformOrigin: "0 0", transform: `translate(${pan.x}px,${pan.y}px) scale(${zoom})`, backgroundImage: "repeating-linear-gradient(0deg,transparent,transparent 49px,var(--color-border) 49px,var(--color-border) 50px),repeating-linear-gradient(90deg,transparent,transparent 49px,var(--color-border) 49px,var(--color-border) 50px)" }}>
+                      {/* 舞台 */}
+                      <div style={{ position: "absolute", left: "50%", top: 20, transform: "translateX(-50%)", width: 200, height: 44, borderRadius: 10, background: "var(--color-accent)", opacity: 0.85, display: "flex", alignItems: "center", justifyContent: "center" }}>
+                        <span style={{ color: "white", fontSize: 14, fontWeight: 700, letterSpacing: "0.1em" }}>舞　台</span>
+                      </div>
                       {tables.map((t) => {
                         const pos = tablePositions[t.id] ?? { x: 0.5, y: 0.5 };
                         const wx = pos.x * WORLD_W;
