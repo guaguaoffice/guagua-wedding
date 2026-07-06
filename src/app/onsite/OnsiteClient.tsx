@@ -613,10 +613,9 @@ export function OnsiteClient({
                 <span className="text-xs text-text-soft">自動更新狀態</span>
                 <button
                   onClick={() => setRunMode(runMode === "auto" ? "manual" : "auto")}
-                  className={`relative w-10 h-5.5 rounded-full transition-colors ${runMode === "auto" ? "bg-accent" : "bg-border"}`}
-                  style={{ minWidth: 40, height: 22 }}
+                  style={{ position: "relative", width: 40, height: 22, borderRadius: 999, background: runMode === "auto" ? "var(--color-accent)" : "var(--color-border)", transition: "background 0.2s", flexShrink: 0 }}
                 >
-                  <span className={`absolute top-0.5 w-4.5 h-4.5 bg-white rounded-full shadow transition-transform ${runMode === "auto" ? "translate-x-5" : "translate-x-0.5"}`} style={{ width: 18, height: 18, top: 2, transitionProperty: "transform" }} />
+                  <span style={{ position: "absolute", top: 2, left: runMode === "auto" ? 20 : 2, width: 18, height: 18, background: "white", borderRadius: "50%", boxShadow: "0 1px 3px rgba(0,0,0,0.2)", transition: "left 0.2s" }} />
                 </button>
               </div>
               <div className="panel flex flex-col gap-2">
