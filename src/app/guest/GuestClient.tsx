@@ -497,7 +497,7 @@ export function GuestClient({
           <div>
             {/* 視圖切換 */}
             <div className="flex gap-1 mb-3.5 bg-card-hover rounded-[10px] p-1 w-fit">
-              {(["plan", "list"] as const).map((v) => (
+              {(["list", "plan"] as const).map((v) => (
                 <button key={v} onClick={() => setTableView(v)}
                   className={`px-4 py-1.5 text-sm font-semibold rounded-[8px] transition-colors ${
                     tableView === v ? "bg-card shadow-sm text-text" : "text-text-soft hover:text-text"
