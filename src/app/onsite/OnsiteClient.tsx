@@ -277,9 +277,12 @@ export function OnsiteClient({
   }
 
   function handleAddEvent(formData: FormData) {
+    const timeVal = String(formData.get("time") || "");
+    setNewEventTime(timeVal);
     startTransition(async () => {
       await addWeddingDayEvent(weddingId, formData);
       router.refresh();
+      setTimeout(() => setNewEventTime(null), 1800);
     });
   }
 
@@ -310,6 +313,7 @@ export function OnsiteClient({
 
   // 當天流程：自動 / 手動模式
   const [runMode, setRunMode] = useState<"auto" | "manual">("manual");
+  const [newEventTime, setNewEventTime] = useState<string | null>(null);
   const [now, setNow] = useState(() => new Date());
   useEffect(() => {
     if (runMode !== "auto") return;
@@ -616,6 +620,33 @@ export function OnsiteClient({
 
       {tab === "run" && (
         <div>
+          {/* 新增表單 */}
+          <form action={handleAddEvent} className="flex flex-wrap gap-2 mb-3.5">
+            <input
+              type="time"
+              name="time"
+              required
+              disabled={pending}
+              className="border border-border rounded-[9px] px-3 py-2 text-sm bg-card"
+            />
+            <input
+              name="title"
+              placeholder="流程項目，例如：新人進場"
+              required
+              disabled={pending}
+              className="flex-1 min-w-0 border border-border rounded-[9px] px-3 py-2 text-sm bg-card"
+            />
+            <input
+              name="ownerName"
+              placeholder="負責人（選填）"
+              disabled={pending}
+              className="flex-1 min-w-0 border border-border rounded-[9px] px-3 py-2 text-sm bg-card"
+            />
+            <button disabled={pending} className="btn btn-primary text-sm px-4">
+              新增
+            </button>
+          </form>
+
           {events.length === 0 ? (
             <EmptyState
               icon={
@@ -644,8 +675,10 @@ export function OnsiteClient({
                   const sorted = [...events].sort((a, b) => new Date(a.time).getTime() - new Date(b.time).getTime());
                   return sorted.map((e) => {
                     const status = runMode === "auto" ? getAutoStatus(e, sorted) : e.status;
+                    const eTimeStr = new Date(e.time).toTimeString().slice(0, 5);
+                    const isNew = newEventTime !== null && eTimeStr === newEventTime;
                     return (
-                      <div key={e.id} className="lrow flex-wrap gap-y-1.5">
+                      <div key={e.id} className={`lrow flex-wrap gap-y-1.5 ${isNew ? "animate-insert" : ""}`}>
                         <span className="font-display font-semibold text-sm flex-none w-12">
                           {formatTime(e.time)}
                         </span>
@@ -683,32 +716,6 @@ export function OnsiteClient({
               </div>
             </>
           )}
-
-          <form action={handleAddEvent} className="flex flex-wrap gap-2 mt-3.5">
-            <input
-              type="time"
-              name="time"
-              required
-              disabled={pending}
-              className="border border-border rounded-[9px] px-3 py-2 text-sm bg-card"
-            />
-            <input
-              name="title"
-              placeholder="流程項目，例如：新人進場"
-              required
-              disabled={pending}
-              className="flex-1 min-w-0 border border-border rounded-[9px] px-3 py-2 text-sm bg-card"
-            />
-            <input
-              name="ownerName"
-              placeholder="負責人（選填）"
-              disabled={pending}
-              className="flex-1 min-w-0 border border-border rounded-[9px] px-3 py-2 text-sm bg-card"
-            />
-            <button disabled={pending} className="btn btn-primary text-sm px-4">
-              新增
-            </button>
-          </form>
         </div>
       )}
     </div>

@@ -419,6 +419,17 @@ body {
   }
 }
 
+@keyframes insertHighlight {
+  0%   { background-color: var(--color-accent-tint); }
+  60%  { background-color: var(--color-accent-tint); }
+  100% { background-color: transparent; }
+}
+
+.animate-insert {
+  animation: insertHighlight 1.6s ease-out forwards;
+  border-radius: var(--radius-sm);
+}
+
 @keyframes shimmer {
   0% {
     background-position: -200% 0;
