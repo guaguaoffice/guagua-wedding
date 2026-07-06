@@ -401,12 +401,6 @@ export function GuestClient({
               <option value="GROOM">男方</option>
               <option value="BRIDE">女方</option>
             </select>
-            <input
-              name="relation"
-              placeholder="關係（選填）"
-              disabled={pending}
-              className="flex-1 min-w-0 border border-border rounded-[9px] px-3 py-2 text-sm bg-card"
-            />
             <button disabled={pending} className="btn btn-primary text-sm px-4">
               新增
             </button>
@@ -481,8 +475,10 @@ export function GuestClient({
                         QR Code
                       </button>
                     )}
-                    {g.phone && (
-                      <span className="text-[11px] text-text-faint">{g.phone}</span>
+                    {(g.relation || g.phone) && (
+                      <span className="text-[11px] text-text-faint">
+                        {[g.relation, g.phone].filter(Boolean).join(" · ")}
+                      </span>
                     )}
                   </div>
                   {isExpanded && checkinUrl && (
