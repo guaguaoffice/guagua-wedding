@@ -91,7 +91,8 @@ function CheckinTab({ guests }: { guests: OnsiteGuest[] }) {
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [scanning, setScanning] = useState(false);
   const [toggling, setToggling] = useState<string | null>(null);
-  const origin = typeof window !== "undefined" ? window.location.origin : "";
+  const [origin, setOrigin] = useState("");
+  useEffect(() => { setOrigin(window.location.origin); }, []);
 
   async function handleToggle(g: OnsiteGuest) {
     setToggling(g.id);
@@ -147,7 +148,7 @@ function CheckinTab({ guests }: { guests: OnsiteGuest[] }) {
               : null;
             return (
               <div key={g.id} className={i > 0 ? "border-t border-border" : ""}>
-                <div className={`lrow flex-wrap gap-y-1.5 py-2.5 ${isExpanded ? "border-b-0" : ""}`}>
+                <div className="lrow flex-wrap gap-y-1.5 py-2.5" style={isExpanded ? { borderBottom: "none" } : {}}>
                   {g.side && (
                     <span className={`text-[11px] font-semibold px-2 py-0.5 rounded-full flex-none ${SIDE_TAG_CLASS[g.side]}`}>
                       {SIDE_LABEL[g.side]}
