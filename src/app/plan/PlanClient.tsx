@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter, useSearchParams } from "next/navigation";
-import { useState, useTransition, useRef } from "react";
+import { useState, useTransition, useRef, useEffect } from "react";
 import { ConfirmDialog } from "@/components/ConfirmDialog";
 import { DecisionSheet, type SheetDecisionItem } from "@/components/DecisionSheet";
 import {
@@ -86,11 +86,21 @@ export function PlanClient({
   const router = useRouter();
   const searchParams = useSearchParams();
   const [pending, startTransition] = useTransition();
+  const tab = searchParams.get("tab") ?? "tl";
   const [showAddPanel, setShowAddPanel] = useState(false);
   const addPanelRef = useRef<HTMLDivElement>(null);
+  const addBtnRef = useRef<HTMLButtonElement>(null);
+  const [addBtnVisible, setAddBtnVisible] = useState(false);
   const [editingDateId, setEditingDateId] = useState<string | null>(null);
   const [confirmRemove, setConfirmRemove] = useState<PlanDecisionItem | null>(null);
-  const tab = searchParams.get("tab") ?? "tl";
+
+  useEffect(() => {
+    const el = addBtnRef.current;
+    if (!el) return;
+    const obs = new IntersectionObserver(([e]) => setAddBtnVisible(e.isIntersecting), { threshold: 0.5 });
+    obs.observe(el);
+    return () => obs.disconnect();
+  }, [tab, showAddPanel]);
   const openId = searchParams.get("open");
 
   function setTab(next: string) {
@@ -408,6 +418,7 @@ export function PlanClient({
               </div>
             ) : (
               <button
+                ref={addBtnRef}
                 onClick={() => setShowAddPanel(true)}
                 className="w-full border-[1.5px] border-dashed border-border-2 text-text-soft rounded-2xl py-3.5 font-semibold text-[13.5px] hover:border-accent hover:text-accent-hover"
               >
@@ -416,7 +427,7 @@ export function PlanClient({
             )}
           </div>
 
-          {!showAddPanel && (
+          {!showAddPanel && !addBtnVisible && (
             <button
               onClick={() => {
                 setShowAddPanel(true);
@@ -424,7 +435,7 @@ export function PlanClient({
                   addPanelRef.current?.scrollIntoView({ behavior: "smooth", block: "center" });
                 }, 50);
               }}
-              className="fixed bottom-24 right-5 md:bottom-8 md:right-8 z-40 flex items-center gap-2 bg-accent text-white font-semibold text-[13px] px-4 py-3 rounded-full shadow-lg hover:bg-accent-hover active:scale-95 transition-transform"
+              className="fixed bottom-24 left-1/2 -translate-x-1/2 md:bottom-8 z-40 flex items-center gap-2 bg-accent text-white font-semibold text-[13px] px-4 py-3 rounded-full shadow-lg hover:bg-accent-hover active:scale-95 transition-transform"
               aria-label="新增決策類別"
             >
               <svg viewBox="0 0 24 24" className="w-4 h-4 stroke-current fill-none flex-none" strokeWidth={2.5}>
