@@ -1,10 +1,22 @@
 import { requireCurrentWedding, getMemberships, createOwnWedding } from "@/lib/wedding";
 import { BackToMore } from "@/components/BackToMore";
 import { WeddingListSwitcher } from "@/app/more/WeddingListSwitcher";
+import { prisma } from "@/lib/prisma";
 
 export default async function WeddingsPage() {
   const current = await requireCurrentWedding();
   const memberships = await getMemberships();
+
+  const stats = await Promise.all(
+    memberships.map(async (m) => {
+      const [guestCount, tableCount] = await Promise.all([
+        prisma.guest.count({ where: { weddingId: m.weddingId, attending: true } }),
+        prisma.table.count({ where: { weddingId: m.weddingId } }),
+      ]);
+      return { weddingId: m.weddingId, guestCount, tableCount };
+    })
+  );
+  const statsMap = Object.fromEntries(stats.map((s) => [s.weddingId, s]));
 
   return (
     <div className="animate-fade-in">
@@ -25,6 +37,9 @@ export default async function WeddingsPage() {
           weddingId: m.weddingId,
           name: m.wedding.name,
           role: m.role,
+          weddingDate: m.wedding.weddingDate?.toISOString() ?? null,
+          guestCount: statsMap[m.weddingId]?.guestCount ?? 0,
+          tableCount: statsMap[m.weddingId]?.tableCount ?? 0,
         }))}
       />
 
