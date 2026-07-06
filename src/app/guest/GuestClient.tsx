@@ -518,7 +518,15 @@ export function GuestClient({
                   <div
                     ref={canvasRef}
                     className="relative rounded-[14px] border border-border overflow-hidden select-none"
-                    style={{ width: "100%", height: 360, cursor: "grab", backgroundColor: "#f8f9fa", backgroundImage: "repeating-linear-gradient(0deg,transparent,transparent 49px,rgba(0,0,0,0.08) 49px,rgba(0,0,0,0.08) 50px),repeating-linear-gradient(90deg,transparent,transparent 49px,rgba(0,0,0,0.08) 49px,rgba(0,0,0,0.08) 50px)", backgroundSize: `${50 * zoom}px ${50 * zoom}px`, backgroundPosition: `${pan.x % (50 * zoom)}px ${pan.y % (50 * zoom)}px` }}
+                    style={(() => {
+                      // 讓格線在畫面上永遠保持約 50px 間距
+                      const niceGrids = [25, 50, 100, 200, 400];
+                      const worldGrid = niceGrids.find((g) => g * zoom >= 40) ?? 400;
+                      const s = worldGrid * zoom;
+                      const ox = pan.x % s;
+                      const oy = pan.y % s;
+                      return { width: "100%", height: 360, cursor: "grab", backgroundColor: "#f8f9fa", backgroundImage: `repeating-linear-gradient(0deg,transparent,transparent ${s - 1}px,rgba(0,0,0,0.12) ${s - 1}px,rgba(0,0,0,0.12) ${s}px),repeating-linear-gradient(90deg,transparent,transparent ${s - 1}px,rgba(0,0,0,0.12) ${s - 1}px,rgba(0,0,0,0.12) ${s}px)`, backgroundSize: `${s}px ${s}px`, backgroundPosition: `${ox}px ${oy}px` };
+                    })()}
                     onPointerDown={handleCanvasPointerDown}
                     onPointerMove={handleCanvasPointerMove}
                     onPointerUp={handleCanvasPointerUp}
