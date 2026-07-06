@@ -4,6 +4,7 @@ import { useEffect, useRef, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import QRCode from "qrcode";
 import { regenerateInviteLink } from "@/lib/actions/invites";
+import { ConfirmDialog } from "@/components/ConfirmDialog";
 
 const ROLE_LABEL = { COLLABORATOR: "協作者", VIEWER: "檢視者" } as const;
 
@@ -20,6 +21,7 @@ function InviteLinkRow({
   const [pending, startTransition] = useTransition();
   const [copied, setCopied] = useState(false);
   const [showQr, setShowQr] = useState(false);
+  const [confirmRegen, setConfirmRegen] = useState(false);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [origin] = useState(() =>
     typeof window !== "undefined" ? window.location.origin : ""
@@ -41,7 +43,11 @@ function InviteLinkRow({
   }
 
   function handleRegenerate() {
-    if (!window.confirm(`重新產生「${ROLE_LABEL[role]}連結」？舊連結會立刻失效。`)) return;
+    setConfirmRegen(true);
+  }
+
+  function doRegenerate() {
+    setConfirmRegen(false);
     startTransition(async () => {
       await regenerateInviteLink(weddingId, role);
       setShowQr(false);
@@ -51,6 +57,16 @@ function InviteLinkRow({
 
   return (
     <div className="panel">
+      {confirmRegen && (
+        <ConfirmDialog
+          title={`重新產生${ROLE_LABEL[role]}連結`}
+          message="舊連結會立刻失效，已分享的連結將無法使用。"
+          confirmLabel="重新產生"
+          danger={false}
+          onConfirm={doRegenerate}
+          onCancel={() => setConfirmRegen(false)}
+        />
+      )}
       <div className="flex items-center justify-between mb-2">
         <div className="font-bold text-[15px]">{ROLE_LABEL[role]}連結</div>
         <button

@@ -6,6 +6,7 @@ import QRCode from "qrcode";
 import { regenerateRsvpToken, updateRsvpCard } from "@/lib/actions/rsvp";
 import { uploadRsvpCardImage, removeRsvpCardImage } from "@/lib/actions/upload";
 import { CARD_COLORS, getCardBg, getCardAccent } from "@/lib/cardColors";
+import { ConfirmDialog } from "@/components/ConfirmDialog";
 
 export function RsvpLinkCard({
   weddingId,
@@ -29,6 +30,7 @@ export function RsvpLinkCard({
   const [editing, setEditing] = useState(false);
   const [uploadError, setUploadError] = useState<string | null>(null);
   const [uploading, setUploading] = useState(false);
+  const [confirmRegen, setConfirmRegen] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [origin] = useState(() => (typeof window !== "undefined" ? window.location.origin : ""));
@@ -49,7 +51,11 @@ export function RsvpLinkCard({
   }
 
   function handleRegenerate() {
-    if (!window.confirm("重新產生出席回覆連結？舊連結會立刻失效。")) return;
+    setConfirmRegen(true);
+  }
+
+  function doRegenerate() {
+    setConfirmRegen(false);
     startTransition(async () => {
       await regenerateRsvpToken(weddingId);
       setShowQr(false);
@@ -97,6 +103,16 @@ export function RsvpLinkCard({
 
   return (
     <div className="flex flex-col gap-3.5">
+      {confirmRegen && (
+        <ConfirmDialog
+          title="重新產生連結"
+          message="舊的出席回覆連結會立刻失效，確定嗎？"
+          confirmLabel="重新產生"
+          danger={false}
+          onConfirm={doRegenerate}
+          onCancel={() => setConfirmRegen(false)}
+        />
+      )}
 
       {/* 卡片預覽 */}
       <div className="panel overflow-hidden">

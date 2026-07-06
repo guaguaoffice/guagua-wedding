@@ -2,6 +2,7 @@
 
 import { useRouter, useSearchParams } from "next/navigation";
 import { useState, useTransition } from "react";
+import { ConfirmDialog } from "@/components/ConfirmDialog";
 import { DecisionSheet, type SheetDecisionItem } from "@/components/DecisionSheet";
 import {
   addDecisionCategory,
@@ -87,6 +88,7 @@ export function PlanClient({
   const [pending, startTransition] = useTransition();
   const [showAddPanel, setShowAddPanel] = useState(false);
   const [editingDateId, setEditingDateId] = useState<string | null>(null);
+  const [confirmRemove, setConfirmRemove] = useState<PlanDecisionItem | null>(null);
   const tab = searchParams.get("tab") ?? "tl";
   const openId = searchParams.get("open");
 
@@ -160,13 +162,7 @@ export function PlanClient({
   }
 
   function handleRemoveCategory(item: PlanDecisionItem) {
-    if (!window.confirm(`移除「${item.title}」這個決策類別？候選方案與相關資料都會一併刪除。`)) {
-      return;
-    }
-    startTransition(async () => {
-      await removeDecisionCategory(item.id);
-      router.refresh();
-    });
+    setConfirmRemove(item);
   }
 
   function handleDateChange(itemId: string, value: string) {
@@ -283,6 +279,19 @@ export function PlanClient({
 
   return (
     <div className="animate-fade-in">
+      {confirmRemove && (
+        <ConfirmDialog
+          title={`移除「${confirmRemove.title}」`}
+          message="候選方案與相關資料都會一併刪除，這個動作無法復原。"
+          confirmLabel="移除"
+          onConfirm={() => {
+            const item = confirmRemove;
+            setConfirmRemove(null);
+            startTransition(async () => { await removeDecisionCategory(item.id); router.refresh(); });
+          }}
+          onCancel={() => setConfirmRemove(null)}
+        />
+      )}
       <div className="text-[11px] tracking-[0.16em] uppercase text-accent-hover font-bold">
         規劃
       </div>

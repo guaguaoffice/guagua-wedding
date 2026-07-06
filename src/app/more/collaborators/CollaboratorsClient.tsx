@@ -3,6 +3,7 @@
 import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
 import { removeMember, updateMemberRole } from "@/lib/actions/members";
+import { ConfirmDialog } from "@/components/ConfirmDialog";
 
 const ROLE_LABEL: Record<string, string> = {
   OWNER: "主辦人",
@@ -34,6 +35,7 @@ export function CollaboratorsClient({
   const router = useRouter();
   const [pending, startTransition] = useTransition();
   const [message, setMessage] = useState<{ ok: boolean; text: string } | null>(null);
+  const [confirmRemove, setConfirmRemove] = useState<{ id: string; name: string } | null>(null);
 
   function handleRoleChange(memberId: string, role: "COLLABORATOR" | "VIEWER") {
     startTransition(async () => {
@@ -44,16 +46,28 @@ export function CollaboratorsClient({
   }
 
   function handleRemove(memberId: string, name: string) {
-    if (!window.confirm(`確定要移除「${name}」嗎？`)) return;
-    startTransition(async () => {
-      const result = await removeMember(memberId);
-      setMessage({ ok: result.ok, text: result.message });
-      router.refresh();
-    });
+    setConfirmRemove({ id: memberId, name });
   }
 
   return (
     <div className="flex flex-col gap-4">
+      {confirmRemove && (
+        <ConfirmDialog
+          title={`移除「${confirmRemove.name}」`}
+          message="移除後對方將無法存取這場婚禮。"
+          confirmLabel="移除"
+          onConfirm={() => {
+            const { id } = confirmRemove;
+            setConfirmRemove(null);
+            startTransition(async () => {
+              const result = await removeMember(id);
+              setMessage({ ok: result.ok, text: result.message });
+              router.refresh();
+            });
+          }}
+          onCancel={() => setConfirmRemove(null)}
+        />
+      )}
       <div className="panel">
         {members.map((m) => (
           <div key={m.id} className="lrow">

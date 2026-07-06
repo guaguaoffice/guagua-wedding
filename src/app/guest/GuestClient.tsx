@@ -3,6 +3,7 @@
 import { useRouter, useSearchParams } from "next/navigation";
 import { useState, useTransition, useRef, useCallback, useEffect } from "react";
 import { QrCode } from "@/components/QrCode";
+import { ConfirmDialog } from "@/components/ConfirmDialog";
 import {
   addGuest,
   deleteGuest,
@@ -140,10 +141,10 @@ export function GuestClient({
   }
 
   function handleDelete(guestId: string) {
-    if (!window.confirm("刪除這位賓客？")) return;
-    startTransition(async () => {
-      await deleteGuest(guestId);
-      router.refresh();
+    setConfirm({
+      title: "刪除賓客",
+      message: "這個動作無法復原，確定要刪除嗎？",
+      onConfirm: () => startTransition(async () => { await deleteGuest(guestId); router.refresh(); }),
     });
   }
 
@@ -161,6 +162,7 @@ export function GuestClient({
     });
   }
 
+  const [confirm, setConfirm] = useState<{ title: string; message: string; onConfirm: () => void } | null>(null);
   const [giftSearch, setGiftSearch] = useState("");
   const [giftSort, setGiftSort] = useState<"default" | "asc" | "desc">("default");
   const [listSearch, setListSearch] = useState("");
@@ -325,10 +327,10 @@ export function GuestClient({
   }
 
   function handleDeleteTable(tableId: string) {
-    if (!window.confirm("刪除這個桌次？桌上的賓客會變成尚未安排桌位。")) return;
-    startTransition(async () => {
-      await deleteTable(tableId);
-      router.refresh();
+    setConfirm({
+      title: "刪除桌次",
+      message: "桌上的賓客會變成尚未安排桌位，這個動作無法復原。",
+      onConfirm: () => startTransition(async () => { await deleteTable(tableId); router.refresh(); }),
     });
   }
 
@@ -347,6 +349,14 @@ export function GuestClient({
 
   return (
     <div className="animate-fade-in">
+      {confirm && (
+        <ConfirmDialog
+          title={confirm.title}
+          message={confirm.message}
+          onConfirm={() => { confirm.onConfirm(); setConfirm(null); }}
+          onCancel={() => setConfirm(null)}
+        />
+      )}
       <div className="text-[11px] tracking-[0.16em] uppercase text-accent-hover font-bold">
         賓客
       </div>
