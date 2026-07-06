@@ -26,6 +26,17 @@ export default async function HomePage() {
   ]);
 
   const days = wedding.weddingDate ? daysUntil(wedding.weddingDate) : null;
+
+  function getGreeting(d: number | null): string {
+    if (d === null) return "嗨，開始規劃你們的婚禮吧";
+    if (d <= 0) return "今天是你們的大日子！";
+    if (d <= 7) return "就是這週了！";
+    if (d <= 14) return "快了快了，深呼吸";
+    if (d <= 30) return "最後衝刺，你做得到";
+    if (d <= 90) return "倒數計時，穩住！";
+    if (d <= 180) return "嗨，準備進入狀況了";
+    return "婚禮還早，慢慢來！";
+  }
   const totalBudget = toNumOrNull(wedding.totalBudget) ?? 0;
 
   const itemsWithState = decisionItems.map((item) => ({
@@ -67,7 +78,7 @@ export default async function HomePage() {
         總覽
       </div>
       <h1 className="text-[25px] md:text-[30px] font-bold tracking-tight mt-0.5 mb-0.5">
-        嗨，準備得不錯
+        {getGreeting(days)}
       </h1>
       <p className="text-text-soft text-sm">
         這個月最重要的事：把進度落後的決策定下來。
