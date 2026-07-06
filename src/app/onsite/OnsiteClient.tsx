@@ -300,6 +300,23 @@ export function OnsiteClient({
 
   const unassigned = guests.filter((g) => !g.tableId && g.attending !== false);
 
+  // 當天流程：自動 / 手動模式
+  const [runMode, setRunMode] = useState<"auto" | "manual">("manual");
+  const [now, setNow] = useState(() => new Date());
+  useEffect(() => {
+    if (runMode !== "auto") return;
+    setNow(new Date());
+    const id = setInterval(() => setNow(new Date()), 30000);
+    return () => clearInterval(id);
+  }, [runMode]);
+
+  function getAutoStatus(event: OnsiteEvent, sortedEvents: OnsiteEvent[]): EventStatus {
+    const firstUpcoming = sortedEvents.find((e) => new Date(e.time) > now);
+    if (!firstUpcoming) return "DONE";
+    if (event.id === firstUpcoming.id) return "IN_PROGRESS";
+    return new Date(event.time) < new Date(firstUpcoming.time) ? "DONE" : "PENDING";
+  }
+
   // 座位表 state
   const [seatingSearch, setSeatingSearch] = useState("");
   const [seatingView, setSeatingView] = useState<"list" | "plan">("list");
@@ -590,40 +607,61 @@ export function OnsiteClient({
               description="把進場、敬酒、送客等時間排成流程表，可指派負責人並分享給協作者與廠商。"
             />
           ) : (
-            <div className="panel flex flex-col gap-2">
-              {events.map((e) => (
-                <div key={e.id} className="lrow flex-wrap gap-y-1.5">
-                  <span className="font-display font-semibold text-sm flex-none w-12">
-                    {formatTime(e.time)}
-                  </span>
-                  <div className="flex-1 min-w-0">
-                    <div className="font-semibold text-sm">{e.title}</div>
-                    {(e.location || e.ownerName) && (
-                      <div className="text-xs text-text-soft mt-0.5">
-                        {[e.location, e.ownerName && `負責人：${e.ownerName}`]
-                          .filter(Boolean)
-                          .join(" · ")}
+            <>
+              {/* 自動 / 手動切換 */}
+              <div className="flex items-center justify-end gap-2 mb-2">
+                <span className="text-xs text-text-soft">自動更新狀態</span>
+                <button
+                  onClick={() => setRunMode(runMode === "auto" ? "manual" : "auto")}
+                  className={`relative w-10 h-5.5 rounded-full transition-colors ${runMode === "auto" ? "bg-accent" : "bg-border"}`}
+                  style={{ minWidth: 40, height: 22 }}
+                >
+                  <span className={`absolute top-0.5 w-4.5 h-4.5 bg-white rounded-full shadow transition-transform ${runMode === "auto" ? "translate-x-5" : "translate-x-0.5"}`} style={{ width: 18, height: 18, top: 2, transitionProperty: "transform" }} />
+                </button>
+              </div>
+              <div className="panel flex flex-col gap-2">
+                {(() => {
+                  const sorted = [...events].sort((a, b) => new Date(a.time).getTime() - new Date(b.time).getTime());
+                  return sorted.map((e) => {
+                    const status = runMode === "auto" ? getAutoStatus(e, sorted) : e.status;
+                    return (
+                      <div key={e.id} className="lrow flex-wrap gap-y-1.5">
+                        <span className="font-display font-semibold text-sm flex-none w-12">
+                          {formatTime(e.time)}
+                        </span>
+                        <div className="flex-1 min-w-0">
+                          <div className="font-semibold text-sm">{e.title}</div>
+                          {(e.location || e.ownerName) && (
+                            <div className="text-xs text-text-soft mt-0.5">
+                              {[e.location, e.ownerName && `負責人：${e.ownerName}`]
+                                .filter(Boolean)
+                                .join(" · ")}
+                            </div>
+                          )}
+                        </div>
+                        <button
+                          disabled={pending || runMode === "auto"}
+                          onClick={() => handleCycleStatus(e.id, e.status)}
+                          className={`status ${STATUS_CLASS[status]} flex-none ${runMode === "auto" ? "cursor-default" : ""}`}
+                        >
+                          {STATUS_LABEL[status]}
+                        </button>
+                        {runMode === "manual" && (
+                          <button
+                            disabled={pending}
+                            onClick={() => handleDeleteEvent(e.id)}
+                            aria-label="刪除流程項目"
+                            className="text-text-faint hover:text-coral p-1 flex-none"
+                          >
+                            ✕
+                          </button>
+                        )}
                       </div>
-                    )}
-                  </div>
-                  <button
-                    disabled={pending}
-                    onClick={() => handleCycleStatus(e.id, e.status)}
-                    className={`status ${STATUS_CLASS[e.status]} flex-none`}
-                  >
-                    {STATUS_LABEL[e.status]}
-                  </button>
-                  <button
-                    disabled={pending}
-                    onClick={() => handleDeleteEvent(e.id)}
-                    aria-label="刪除流程項目"
-                    className="text-text-faint hover:text-coral p-1 flex-none"
-                  >
-                    ✕
-                  </button>
-                </div>
-              ))}
-            </div>
+                    );
+                  });
+                })()}
+              </div>
+            </>
           )}
 
           <form action={handleAddEvent} className="flex flex-wrap gap-2 mt-3.5">
