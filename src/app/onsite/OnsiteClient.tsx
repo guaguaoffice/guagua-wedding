@@ -290,10 +290,18 @@ export function OnsiteClient({
     });
   }
 
+  const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
+
   function handleDeleteEvent(eventId: string) {
-    if (!window.confirm("刪除這個流程項目？")) return;
+    setConfirmDeleteId(eventId);
+  }
+
+  function confirmDelete() {
+    if (!confirmDeleteId) return;
+    const id = confirmDeleteId;
+    setConfirmDeleteId(null);
     startTransition(async () => {
-      await deleteWeddingDayEvent(eventId);
+      await deleteWeddingDayEvent(id);
       router.refresh();
     });
   }
@@ -387,6 +395,19 @@ export function OnsiteClient({
 
   return (
     <div className="animate-fade-in">
+      {/* 刪除確認彈窗 */}
+      {confirmDeleteId && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4" style={{ background: "rgba(0,0,0,0.4)" }} onClick={() => setConfirmDeleteId(null)}>
+          <div className="bg-card rounded-2xl shadow-2xl p-6 w-full max-w-xs" onClick={(e) => e.stopPropagation()}>
+            <div className="text-[17px] font-bold mb-1">刪除流程項目</div>
+            <p className="text-sm text-text-soft mb-5">這個動作無法復原，確定要刪除嗎？</p>
+            <div className="flex gap-2">
+              <button onClick={() => setConfirmDeleteId(null)} className="flex-1 btn border border-border text-text-soft hover:bg-card-hover">取消</button>
+              <button onClick={confirmDelete} disabled={pending} className="flex-1 btn bg-coral text-white hover:opacity-90">刪除</button>
+            </div>
+          </div>
+        </div>
+      )}
       <div className="text-[11px] tracking-[0.16em] uppercase text-accent-hover font-bold">
         現場
       </div>
