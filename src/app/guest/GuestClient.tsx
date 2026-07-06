@@ -248,21 +248,26 @@ export function GuestClient({
 
   const handleCanvasPointerUp = useCallback(() => { panDragRef.current = null; }, []);
 
-  // 滾輪縮放
-  const handleWheel = useCallback((e: React.WheelEvent) => {
-    e.preventDefault();
-    const rect = canvasRef.current?.getBoundingClientRect();
-    if (!rect) return;
-    const cx = e.clientX - rect.left;
-    const cy = e.clientY - rect.top;
-    const z = zoomRef.current;
-    const p = panRef.current;
-    const newZoom = Math.max(0.3, Math.min(4, z * (e.deltaY < 0 ? 1.1 : 0.9)));
-    const wx = (cx - p.x) / z;
-    const wy = (cy - p.y) / z;
-    setZoom(newZoom);
-    setPan({ x: cx - wx * newZoom, y: cy - wy * newZoom });
-  }, []);
+  // 滾輪縮放（需 non-passive 才能 preventDefault）
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const handler = (e: WheelEvent) => {
+      e.preventDefault();
+      const rect = canvas.getBoundingClientRect();
+      const cx = e.clientX - rect.left;
+      const cy = e.clientY - rect.top;
+      const z = zoomRef.current;
+      const p = panRef.current;
+      const newZoom = Math.max(0.3, Math.min(4, z * (e.deltaY < 0 ? 1.1 : 0.9)));
+      const wx = (cx - p.x) / z;
+      const wy = (cy - p.y) / z;
+      setZoom(newZoom);
+      setPan({ x: cx - wx * newZoom, y: cy - wy * newZoom });
+    };
+    canvas.addEventListener("wheel", handler, { passive: false });
+    return () => canvas.removeEventListener("wheel", handler);
+  }, [tableView]);
 
   // 捏合縮放
   const handleTouchStart = useCallback((e: React.TouchEvent) => {
@@ -513,11 +518,10 @@ export function GuestClient({
                   <div
                     ref={canvasRef}
                     className="relative rounded-[14px] border border-border overflow-hidden select-none"
-                    style={{ width: "100%", height: 360, cursor: "grab", backgroundColor: "#f8f9fa", backgroundImage: "repeating-linear-gradient(0deg,transparent,transparent 49px,var(--color-border) 49px,var(--color-border) 50px),repeating-linear-gradient(90deg,transparent,transparent 49px,var(--color-border) 49px,var(--color-border) 50px)", backgroundSize: `${50 * zoom}px ${50 * zoom}px`, backgroundPosition: `${pan.x % (50 * zoom)}px ${pan.y % (50 * zoom)}px` }}
+                    style={{ width: "100%", height: 360, cursor: "grab", backgroundColor: "#f8f9fa", backgroundImage: "repeating-linear-gradient(0deg,transparent,transparent 49px,rgba(0,0,0,0.08) 49px,rgba(0,0,0,0.08) 50px),repeating-linear-gradient(90deg,transparent,transparent 49px,rgba(0,0,0,0.08) 49px,rgba(0,0,0,0.08) 50px)", backgroundSize: `${50 * zoom}px ${50 * zoom}px`, backgroundPosition: `${pan.x % (50 * zoom)}px ${pan.y % (50 * zoom)}px` }}
                     onPointerDown={handleCanvasPointerDown}
                     onPointerMove={handleCanvasPointerMove}
                     onPointerUp={handleCanvasPointerUp}
-                    onWheel={handleWheel}
                     onTouchStart={handleTouchStart}
                     onTouchMove={handleTouchMove}
                     onTouchEnd={handleTouchEnd}
