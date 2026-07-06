@@ -512,8 +512,8 @@ export function GuestClient({
                 ) : (
                   <div
                     ref={canvasRef}
-                    className="relative rounded-[14px] border border-border overflow-hidden select-none bg-[#f8f9fa]"
-                    style={{ width: "100%", height: 360, cursor: "grab" }}
+                    className="relative rounded-[14px] border border-border overflow-hidden select-none"
+                    style={{ width: "100%", height: 360, cursor: "grab", backgroundColor: "#f8f9fa", backgroundImage: "repeating-linear-gradient(0deg,transparent,transparent 49px,var(--color-border) 49px,var(--color-border) 50px),repeating-linear-gradient(90deg,transparent,transparent 49px,var(--color-border) 49px,var(--color-border) 50px)", backgroundSize: `${50 * zoom}px ${50 * zoom}px`, backgroundPosition: `${pan.x % (50 * zoom)}px ${pan.y % (50 * zoom)}px` }}
                     onPointerDown={handleCanvasPointerDown}
                     onPointerMove={handleCanvasPointerMove}
                     onPointerUp={handleCanvasPointerUp}
@@ -531,7 +531,7 @@ export function GuestClient({
                         className="w-8 h-8 bg-card border border-border rounded-lg shadow text-lg font-bold flex items-center justify-center hover:bg-card-hover">－</button>
                     </div>
                     {/* 世界座標層 */}
-                    <div style={{ position: "absolute", width: WORLD_W, height: WORLD_H, transformOrigin: "0 0", transform: `translate(${pan.x}px,${pan.y}px) scale(${zoom})`, backgroundImage: "repeating-linear-gradient(0deg,transparent,transparent 49px,var(--color-border) 49px,var(--color-border) 50px),repeating-linear-gradient(90deg,transparent,transparent 49px,var(--color-border) 49px,var(--color-border) 50px)" }}>
+                    <div style={{ position: "absolute", width: WORLD_W, height: WORLD_H, transformOrigin: "0 0", transform: `translate(${pan.x}px,${pan.y}px) scale(${zoom})` }}>
                       {/* 舞台 */}
                       <div style={{ position: "absolute", left: "50%", top: 20, transform: "translateX(-50%)", width: 200, height: 44, borderRadius: 10, background: "var(--color-accent)", opacity: 0.85, display: "flex", alignItems: "center", justifyContent: "center" }}>
                         <span style={{ color: "white", fontSize: 14, fontWeight: 700, letterSpacing: "0.1em" }}>舞　台</span>
