@@ -91,6 +91,7 @@ function CheckinTab({ guests }: { guests: OnsiteGuest[] }) {
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [scanning, setScanning] = useState(false);
   const [toggling, setToggling] = useState<string | null>(null);
+  const [checkinSearch, setCheckinSearch] = useState("");
   const [origin, setOrigin] = useState("");
   useEffect(() => { setOrigin(window.location.origin); }, []);
 
@@ -140,7 +141,16 @@ function CheckinTab({ guests }: { guests: OnsiteGuest[] }) {
         <div className="panel text-center py-6 text-text-soft text-sm">還沒有賓客</div>
       ) : (
         <div className="panel flex flex-col">
-          {guestOnly.map((g, i) => {
+          <div className="pb-2.5 border-b border-border mb-0.5">
+            <input
+              type="text"
+              placeholder="搜尋賓客姓名"
+              value={checkinSearch}
+              onChange={(e) => { setCheckinSearch(e.target.value); setExpandedId(null); }}
+              className="w-full border border-border rounded-[9px] px-3 py-2 text-sm bg-bg"
+            />
+          </div>
+          {guestOnly.filter((g) => g.name.includes(checkinSearch)).map((g, i) => {
             const isExpanded = expandedId === g.id;
             const checkinUrl = g.checkinToken ? `${origin}/checkin/${g.checkinToken}` : null;
             const timeStr = g.checkedInAt
