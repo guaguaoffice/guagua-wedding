@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter, useSearchParams } from "next/navigation";
-import { useState, useTransition } from "react";
+import { useState, useTransition, useRef } from "react";
 import { ConfirmDialog } from "@/components/ConfirmDialog";
 import { DecisionSheet, type SheetDecisionItem } from "@/components/DecisionSheet";
 import {
@@ -87,6 +87,7 @@ export function PlanClient({
   const searchParams = useSearchParams();
   const [pending, startTransition] = useTransition();
   const [showAddPanel, setShowAddPanel] = useState(false);
+  const addPanelRef = useRef<HTMLDivElement>(null);
   const [editingDateId, setEditingDateId] = useState<string | null>(null);
   const [confirmRemove, setConfirmRemove] = useState<PlanDecisionItem | null>(null);
   const tab = searchParams.get("tab") ?? "tl";
@@ -319,7 +320,7 @@ export function PlanClient({
       </div>
 
       {tab === "tl" && (
-        <div>
+        <>
           <div className="flex gap-3.5 flex-wrap mb-3">
             <span className="inline-flex items-center gap-1.5 text-xs text-text-soft">
               <i className="dot dot-done" />
@@ -349,6 +350,7 @@ export function PlanClient({
           </div>
 
           <div className="mt-3">
+            <div ref={addPanelRef} />
             {showAddPanel ? (
               <div className="card p-4 flex flex-col gap-3">
                 <div className="text-xs font-bold text-text-soft">快速加入常見項目</div>
@@ -413,7 +415,25 @@ export function PlanClient({
               </button>
             )}
           </div>
-        </div>
+
+          {!showAddPanel && (
+            <button
+              onClick={() => {
+                setShowAddPanel(true);
+                setTimeout(() => {
+                  addPanelRef.current?.scrollIntoView({ behavior: "smooth", block: "center" });
+                }, 50);
+              }}
+              className="fixed bottom-24 right-5 md:bottom-8 md:right-8 z-40 flex items-center gap-2 bg-accent text-white font-semibold text-[13px] px-4 py-3 rounded-full shadow-lg hover:bg-accent-hover active:scale-95 transition-transform"
+              aria-label="新增決策類別"
+            >
+              <svg viewBox="0 0 24 24" className="w-4 h-4 stroke-current fill-none flex-none" strokeWidth={2.5}>
+                <path d="M12 5v14M5 12h14" />
+              </svg>
+              新增決策類別
+            </button>
+          )}
+        </>
       )}
 
       {tab === "budget" && (
