@@ -481,10 +481,8 @@ export function GuestClient({
                         QR Code
                       </button>
                     )}
-                    {(g.relation || g.phone) && (
-                      <span className="text-[11px] text-text-faint">
-                        {[g.relation, g.phone].filter(Boolean).join(" · ")}
-                      </span>
+                    {g.phone && (
+                      <span className="text-[11px] text-text-faint">{g.phone}</span>
                     )}
                   </div>
                   {isExpanded && checkinUrl && (
