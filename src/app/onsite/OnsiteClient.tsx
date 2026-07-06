@@ -253,7 +253,7 @@ const STATUS_CLASS: Record<EventStatus, string> = {
 };
 
 function formatTime(d: Date) {
-  return new Date(d).toLocaleTimeString("zh-TW", { hour: "2-digit", minute: "2-digit" });
+  return new Date(d).toLocaleTimeString("zh-TW", { hour: "2-digit", minute: "2-digit", timeZone: "UTC" });
 }
 
 export function OnsiteClient({
@@ -675,7 +675,7 @@ export function OnsiteClient({
                   const sorted = [...events].sort((a, b) => new Date(a.time).getTime() - new Date(b.time).getTime());
                   return sorted.map((e) => {
                     const status = runMode === "auto" ? getAutoStatus(e, sorted) : e.status;
-                    const eTimeStr = new Date(e.time).toTimeString().slice(0, 5);
+                    const eTimeStr = new Date(e.time).toISOString().slice(11, 16);
                     const isNew = newEventTime !== null && eTimeStr === newEventTime;
                     return (
                       <div key={e.id} className={`lrow flex-wrap gap-y-1.5 ${isNew ? "animate-insert" : ""}`}>
