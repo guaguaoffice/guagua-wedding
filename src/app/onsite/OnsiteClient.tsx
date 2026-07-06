@@ -11,6 +11,7 @@ import {
   cycleWeddingDayEventStatus,
   deleteWeddingDayEvent,
 } from "@/lib/actions/onsite";
+import { toggleManualCheckin } from "@/lib/actions/checkin";
 const TABS = [
   { key: "seating", label: "座位表" },
   { key: "checkin", label: "報到" },
@@ -84,11 +85,20 @@ export type OnsiteTable = {
 };
 
 function CheckinTab({ guests }: { guests: OnsiteGuest[] }) {
+  const router = useRouter();
   const guestOnly = guests.filter((g) => g.kind === "guest");
   const checkedIn = guestOnly.filter((g) => g.checkedInAt);
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [scanning, setScanning] = useState(false);
+  const [toggling, setToggling] = useState<string | null>(null);
   const origin = typeof window !== "undefined" ? window.location.origin : "";
+
+  async function handleToggle(g: OnsiteGuest) {
+    setToggling(g.id);
+    await toggleManualCheckin(g.id, !g.checkedInAt);
+    router.refresh();
+    setToggling(null);
+  }
 
   return (
     <div>
@@ -128,16 +138,16 @@ function CheckinTab({ guests }: { guests: OnsiteGuest[] }) {
       {guestOnly.length === 0 ? (
         <div className="panel text-center py-6 text-text-soft text-sm">還沒有賓客</div>
       ) : (
-        <div className="panel flex flex-col gap-2">
-          {guestOnly.map((g) => {
+        <div className="panel flex flex-col">
+          {guestOnly.map((g, i) => {
             const isExpanded = expandedId === g.id;
             const checkinUrl = g.checkinToken ? `${origin}/checkin/${g.checkinToken}` : null;
             const timeStr = g.checkedInAt
               ? new Date(g.checkedInAt).toLocaleTimeString("zh-TW", { hour: "2-digit", minute: "2-digit" })
               : null;
             return (
-              <div key={g.id}>
-                <div className="lrow flex-wrap gap-y-1.5">
+              <div key={g.id} className={i > 0 ? "border-t border-border" : ""}>
+                <div className="lrow flex-wrap gap-y-1.5 py-2.5">
                   {g.side && (
                     <span className={`text-[11px] font-semibold px-2 py-0.5 rounded-full flex-none ${SIDE_TAG_CLASS[g.side]}`}>
                       {SIDE_LABEL[g.side]}
@@ -151,21 +161,35 @@ function CheckinTab({ guests }: { guests: OnsiteGuest[] }) {
                   ) : (
                     <span className="status status-idle text-[11px]">未報到</span>
                   )}
-                  {checkinUrl && (
-                    <button
-                      onClick={() => setExpandedId(isExpanded ? null : g.id)}
-                      className="text-[11px] font-semibold px-2 py-1 rounded-full bg-card-hover text-text-soft hover:text-accent-hover flex-none"
-                    >
-                      QR
-                    </button>
-                  )}
+                  <button
+                    onClick={() => setExpandedId(isExpanded ? null : g.id)}
+                    className="w-6 h-6 rounded-full bg-card-hover text-text-soft hover:text-accent-hover flex-none flex items-center justify-center text-lg leading-none transition-transform duration-200"
+                    style={{ transform: isExpanded ? "rotate(45deg)" : "none" }}
+                  >
+                    ＋
+                  </button>
                 </div>
-                {isExpanded && checkinUrl && (
-                  <div className="mt-2 ml-2 flex flex-col items-start gap-2">
-                    <div className="bg-white p-2 rounded-xl shadow-sm">
-                      <QrCode url={checkinUrl} size={140} />
-                    </div>
-                    <p className="text-[11px] text-text-faint">掃碼即可完成報到</p>
+                {isExpanded && (
+                  <div className="pb-3 pl-1 flex flex-col gap-3">
+                    <button
+                      disabled={toggling === g.id}
+                      onClick={() => handleToggle(g)}
+                      className={`self-start text-[12px] font-semibold px-3 py-1.5 rounded-full border transition-colors ${
+                        g.checkedInAt
+                          ? "border-border text-text-soft hover:border-rose-300 hover:text-rose-500"
+                          : "border-accent text-accent hover:bg-accent hover:text-white"
+                      }`}
+                    >
+                      {toggling === g.id ? "處理中…" : g.checkedInAt ? "取消報到" : "手動報到"}
+                    </button>
+                    {checkinUrl && (
+                      <div className="flex flex-col items-start gap-1.5">
+                        <div className="bg-white p-2 rounded-xl shadow-sm">
+                          <QrCode url={checkinUrl} size={130} />
+                        </div>
+                        <p className="text-[11px] text-text-faint">掃碼即可完成報到</p>
+                      </div>
+                    )}
                   </div>
                 )}
               </div>

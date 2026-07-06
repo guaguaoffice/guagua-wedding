@@ -30,6 +30,14 @@ export async function checkInGuest(checkinToken: string) {
   };
 }
 
+export async function toggleManualCheckin(guestId: string, checkedIn: boolean) {
+  await prisma.guest.update({
+    where: { id: guestId },
+    data: { checkedInAt: checkedIn ? new Date() : null },
+  });
+  revalidatePath("/onsite");
+}
+
 export async function ensureGuestCheckinToken(guestId: string) {
   const guest = await prisma.guest.findUnique({ where: { id: guestId } });
   if (!guest) return null;
