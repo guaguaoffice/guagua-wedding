@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-import { useState, useTransition } from "react";
+import { useState, useTransition, useRef, useEffect } from "react";
 import { QrCode } from "@/components/QrCode";
 import { QrScanner } from "@/components/QrScanner";
 import { checkInGuest } from "@/lib/actions/checkin";
@@ -79,6 +79,8 @@ export type OnsiteTable = {
   id: string;
   name: string;
   capacity: number | null;
+  x: number;
+  y: number;
 };
 
 function CheckinTab({ guests }: { guests: OnsiteGuest[] }) {
@@ -263,6 +265,73 @@ export function OnsiteClient({
 
   const unassigned = guests.filter((g) => !g.tableId && g.attending !== false);
 
+  // 平面圖 state
+  const [seatingView, setSeatingView] = useState<"list" | "plan">("list");
+  const [focusedTableId, setFocusedTableId] = useState<string | null>(null);
+  const [zoom, setZoom] = useState(1);
+  const [pan, setPan] = useState({ x: 0, y: 0 });
+  const canvasRef = useRef<HTMLDivElement>(null);
+  const panDragRef = useRef<{ startClientX: number; startClientY: number; startPanX: number; startPanY: number } | null>(null);
+  const pinchRef = useRef<{ dist: number; midX: number; midY: number; startZoom: number; startPanX: number; startPanY: number } | null>(null);
+  const zoomRef = useRef(zoom);
+  const panRef = useRef(pan);
+  zoomRef.current = zoom;
+  panRef.current = pan;
+  const WORLD_W = 800; const WORLD_H = 600; const TABLE_D = 80;
+
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const rect = canvas.getBoundingClientRect();
+    const stageLeft = WORLD_W / 2 - 100, stageRight = WORLD_W / 2 + 100, stageTop = 20, stageBottom = 64;
+    const pts = tables.map((t) => ({ x: t.x * WORLD_W, y: t.y * WORLD_H }));
+    const allX = [stageLeft, stageRight, ...pts.map((p) => p.x - TABLE_D / 2), ...pts.map((p) => p.x + TABLE_D / 2)];
+    const allY = [stageTop, stageBottom, ...pts.map((p) => p.y - TABLE_D / 2), ...pts.map((p) => p.y + TABLE_D / 2)];
+    const pad = 40;
+    const bx1 = Math.min(...allX) - pad, by1 = Math.min(...allY) - pad;
+    const bw = Math.max(...allX) + pad - bx1, bh = Math.max(...allY) + pad - by1;
+    const fitZoom = Math.min(rect.width / bw, rect.height / bh, 2);
+    setZoom(fitZoom);
+    setPan({ x: (rect.width - bw * fitZoom) / 2 - bx1 * fitZoom, y: (rect.height - bh * fitZoom) / 2 - by1 * fitZoom });
+  }, [seatingView, tables]);
+
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const handler = (e: WheelEvent) => {
+      e.preventDefault();
+      const rect = canvas.getBoundingClientRect();
+      const cx = e.clientX - rect.left, cy = e.clientY - rect.top;
+      const z = zoomRef.current, p = panRef.current;
+      const newZoom = Math.max(0.3, Math.min(4, z * (e.deltaY < 0 ? 1.1 : 0.9)));
+      const wx = (cx - p.x) / z, wy = (cy - p.y) / z;
+      setZoom(newZoom);
+      setPan({ x: cx - wx * newZoom, y: cy - wy * newZoom });
+    };
+    canvas.addEventListener("wheel", handler, { passive: false });
+    return () => canvas.removeEventListener("wheel", handler);
+  }, [seatingView]);
+
+  function handleCanvasPointerDown(e: React.PointerEvent) {
+    if (e.isPrimary) {
+      panDragRef.current = { startClientX: e.clientX, startClientY: e.clientY, startPanX: panRef.current.x, startPanY: panRef.current.y };
+    }
+    const touches = (e.currentTarget as HTMLDivElement).querySelectorAll ? null : null;
+    void touches;
+  }
+
+  function handleCanvasPointerMove(e: React.PointerEvent) {
+    if (pinchRef.current) return;
+    if (panDragRef.current) {
+      setPan({ x: panDragRef.current.startPanX + e.clientX - panDragRef.current.startClientX, y: panDragRef.current.startPanY + e.clientY - panDragRef.current.startClientY });
+    }
+  }
+
+  function handleCanvasPointerUp() {
+    panDragRef.current = null;
+    pinchRef.current = null;
+  }
+
   return (
     <div className="animate-fade-in">
       <div className="text-[11px] tracking-[0.16em] uppercase text-accent-hover font-bold">
@@ -297,40 +366,131 @@ export function OnsiteClient({
               description="請先在『賓客』頁面建立桌次並安排座位。"
             />
           ) : (
-            <div className="flex flex-col gap-3">
-              {tables.map((t) => {
-                const seated = guests.filter((g) => g.tableId === t.id);
-                const seats = seated.reduce((s, g) => s + 1 + g.plusOneCount, 0);
-                return (
-                  <div key={t.id} className="panel">
-                    <div className="flex items-center justify-between mb-2">
-                      <span className="font-bold text-[15px]">{t.name}</span>
-                      <span className="text-xs text-text-soft">
-                        {seats}{t.capacity ? ` / ${t.capacity}` : ""} 位
-                      </span>
-                    </div>
-                    <div className="flex flex-wrap gap-1.5">
-                      {seated.length === 0 ? (
-                        <span className="text-[12.5px] text-text-faint">還沒有人坐這桌</span>
-                      ) : seated.map((g) => (
-                        <span key={g.id}
-                          className="text-[12px] font-medium px-2.5 py-1 rounded-full bg-card-hover text-text flex items-center gap-1">
-                          {tagLabel(g) && (
-                            <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded-full ${tagClass(g)}`}>
-                              {tagLabel(g)}
+            <>
+              {/* 清單 / 平面圖 toggle */}
+              <div className="inline-flex bg-card-hover rounded-[var(--radius-sm)] p-0.5 gap-0.5 mb-4">
+                {(["list", "plan"] as const).map((v) => (
+                  <button
+                    key={v}
+                    onClick={() => { setSeatingView(v); setFocusedTableId(null); }}
+                    className={`px-3 py-1 text-[13px] font-medium rounded-[calc(var(--radius-sm)-2px)] transition-colors ${seatingView === v ? "bg-card shadow-sm text-text" : "text-text-soft hover:text-text"}`}
+                  >
+                    {v === "plan" ? "平面圖" : "清單"}
+                  </button>
+                ))}
+              </div>
+
+              {seatingView === "list" && (
+                <div className="flex flex-col gap-3">
+                  {tables.map((t) => {
+                    const seated = guests.filter((g) => g.tableId === t.id);
+                    const seats = seated.reduce((s, g) => s + 1 + g.plusOneCount, 0);
+                    return (
+                      <div key={t.id} className="panel">
+                        <div className="flex items-center justify-between mb-2">
+                          <span className="font-bold text-[15px]">{t.name}</span>
+                          <span className="text-xs text-text-soft">
+                            {seats}{t.capacity ? ` / ${t.capacity}` : ""} 位
+                          </span>
+                        </div>
+                        <div className="flex flex-wrap gap-1.5">
+                          {seated.length === 0 ? (
+                            <span className="text-[12.5px] text-text-faint">還沒有人坐這桌</span>
+                          ) : seated.map((g) => (
+                            <span key={g.id}
+                              className="text-[12px] font-medium px-2.5 py-1 rounded-full bg-card-hover text-text flex items-center gap-1">
+                              {tagLabel(g) && (
+                                <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded-full ${tagClass(g)}`}>
+                                  {tagLabel(g)}
+                                </span>
+                              )}
+                              {g.name}{g.plusOneCount > 0 && ` +${g.plusOneCount}`}
+                              {g.checkedInAt && (
+                                <span className="w-1.5 h-1.5 rounded-full bg-accent inline-block ml-0.5" title="已報到" />
+                              )}
                             </span>
-                          )}
-                          {g.name}{g.plusOneCount > 0 && ` +${g.plusOneCount}`}
-                          {g.checkedInAt && (
-                            <span className="w-1.5 h-1.5 rounded-full bg-accent inline-block ml-0.5" title="已報到" />
-                          )}
-                        </span>
-                      ))}
+                          ))}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+
+              {seatingView === "plan" && (
+                <div className="relative rounded-[var(--radius-sm)] overflow-hidden" style={(() => {
+                  const niceGrids = [25, 50, 100, 200, 400];
+                  const worldGrid = niceGrids.find((g) => g * zoom >= 40) ?? 400;
+                  const s = worldGrid * zoom;
+                  const ox = pan.x % s, oy = pan.y % s;
+                  return {
+                    width: "100%", height: 360, cursor: "grab", backgroundColor: "#f8f9fa",
+                    backgroundImage: `repeating-linear-gradient(0deg,transparent,transparent ${s - 1}px,#c4d8ce ${s - 1}px,#c4d8ce ${s}px),repeating-linear-gradient(90deg,transparent,transparent ${s - 1}px,#c4d8ce ${s - 1}px,#c4d8ce ${s}px)`,
+                    backgroundSize: `${s}px ${s}px`, backgroundPosition: `${ox}px ${oy}px`,
+                  };
+                })()}
+                  ref={canvasRef}
+                  onPointerDown={handleCanvasPointerDown}
+                  onPointerMove={handleCanvasPointerMove}
+                  onPointerUp={handleCanvasPointerUp}
+                  onPointerLeave={handleCanvasPointerUp}
+                  onClick={() => setFocusedTableId(null)}
+                >
+                  <div style={{ position: "absolute", width: WORLD_W, height: WORLD_H, transformOrigin: "0 0", transform: `translate(${pan.x}px,${pan.y}px) scale(${zoom})` }}>
+                    {/* 舞台 */}
+                    <div style={{ position: "absolute", left: "50%", top: 20, transform: "translateX(-50%)", width: 200, height: 44, borderRadius: 10, background: "var(--color-accent)", opacity: 0.85, display: "flex", alignItems: "center", justifyContent: "center" }}>
+                      <span style={{ color: "white", fontSize: 14, fontWeight: 700, letterSpacing: "0.1em" }}>舞　台</span>
                     </div>
+                    {/* 桌子 */}
+                    {tables.map((t) => {
+                      const wx = t.x * WORLD_W, wy = t.y * WORLD_H;
+                      const seated = guests.filter((g) => g.tableId === t.id);
+                      const checkedCount = seated.filter((g) => g.checkedInAt).length;
+                      const isFocused = focusedTableId === t.id;
+                      return (
+                        <div key={t.id} onClick={(e) => { e.stopPropagation(); setFocusedTableId(isFocused ? null : t.id); }}
+                          style={{ position: "absolute", left: wx, top: wy, width: TABLE_D, height: TABLE_D, transform: "translate(-50%,-50%)", cursor: "pointer", userSelect: "none" }}>
+                          <div style={{ width: "100%", height: "100%", borderRadius: "50%", background: "white", border: "2px solid var(--color-accent)", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", boxShadow: isFocused ? "0 0 0 3px var(--color-accent)" : "0 1px 4px rgba(0,0,0,0.10)" }}>
+                            <span style={{ fontSize: 11, fontWeight: 700, color: "var(--color-text)", whiteSpace: "nowrap", maxWidth: 64, overflow: "hidden", textOverflow: "ellipsis" }}>{t.name}</span>
+                            <span style={{ fontSize: 10, color: "var(--color-text-soft)" }}>{seated.length} 位</span>
+                            {checkedCount > 0 && <span style={{ fontSize: 9, color: "var(--color-accent)" }}>✓{checkedCount}</span>}
+                          </div>
+                          {/* popover */}
+                          {isFocused && (
+                            <div style={{ position: "absolute", left: "50%", bottom: TABLE_D / 2 + 8, transform: "translateX(-50%)", background: "white", border: "1px solid var(--color-border)", borderRadius: 10, padding: "10px 14px", minWidth: 140, maxWidth: 220, boxShadow: "0 4px 16px rgba(0,0,0,0.13)", zIndex: 50 }}>
+                              <div style={{ fontWeight: 700, fontSize: 13, marginBottom: 6 }}>{t.name}</div>
+                              <div style={{ display: "flex", flexWrap: "wrap", gap: 4 }}>
+                                {seated.length === 0 ? <span style={{ fontSize: 11, color: "var(--color-text-faint)" }}>尚無賓客</span> : seated.map((g) => (
+                                  <span key={g.id} style={{ fontSize: 11, padding: "2px 8px", borderRadius: 999, background: "var(--color-card-hover)", display: "flex", alignItems: "center", gap: 3 }}>
+                                    {tagLabel(g) && <span style={{ fontSize: 9, fontWeight: 700, padding: "1px 4px", borderRadius: 999 }} className={tagClass(g)}>{tagLabel(g)}</span>}
+                                    {g.name}
+                                    {g.checkedInAt && <span style={{ width: 6, height: 6, borderRadius: "50%", background: "var(--color-accent)", display: "inline-block" }} />}
+                                  </span>
+                                ))}
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                      );
+                    })}
                   </div>
-                );
-              })}
-            </div>
+                  {/* 縮放按鈕 */}
+                  <div className="absolute bottom-3 right-3 flex flex-col gap-1 z-30" onPointerDown={(e) => e.stopPropagation()}>
+                    {[["＋", 1.2], ["－", 1 / 1.2]].map(([label, factor]) => (
+                      <button key={label as string} onClick={() => {
+                        const canvas = canvasRef.current; if (!canvas) return;
+                        const rect = canvas.getBoundingClientRect();
+                        const cx = rect.width / 2, cy = rect.height / 2;
+                        const z = zoomRef.current, p = panRef.current;
+                        const newZoom = Math.max(0.3, Math.min(4, z * (factor as number)));
+                        const wx = (cx - p.x) / z, wy = (cy - p.y) / z;
+                        setZoom(newZoom); setPan({ x: cx - wx * newZoom, y: cy - wy * newZoom });
+                      }} style={{ width: 32, height: 32, borderRadius: 8, background: "white", border: "1px solid var(--color-border)", fontSize: 18, display: "flex", alignItems: "center", justifyContent: "center", boxShadow: "0 1px 4px rgba(0,0,0,0.10)", cursor: "pointer" }}>{label}</button>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </>
           )}
           {unassigned.length > 0 && (
             <div className="rounded-[var(--radius-sm)] bg-accent-tint p-4 mt-3.5">

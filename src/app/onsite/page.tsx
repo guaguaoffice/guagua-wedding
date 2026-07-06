@@ -52,6 +52,8 @@ export default async function OnsitePage() {
     id: t.id,
     name: t.name,
     capacity: t.capacity,
+    x: t.x,
+    y: t.y,
   }));
 
   return (
