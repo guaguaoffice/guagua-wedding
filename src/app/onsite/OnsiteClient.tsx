@@ -22,7 +22,7 @@ type EventStatus = "PENDING" | "IN_PROGRESS" | "DONE";
 
 export type OnsiteEvent = {
   id: string;
-  time: Date;
+  time: string;
   title: string;
   location: string | null;
   ownerName: string | null;
@@ -252,7 +252,7 @@ const STATUS_CLASS: Record<EventStatus, string> = {
   DONE: "status-done",
 };
 
-function formatTime(d: Date) {
+function formatTime(d: Date | string) {
   return new Date(d).toLocaleTimeString("zh-TW", { hour: "2-digit", minute: "2-digit", timeZone: "UTC" });
 }
 

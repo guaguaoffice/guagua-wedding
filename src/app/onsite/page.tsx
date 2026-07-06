@@ -15,7 +15,7 @@ export default async function OnsitePage() {
 
   const events = eventsRaw.map((e) => ({
     id: e.id,
-    time: e.time,
+    time: e.time.toISOString(),
     title: e.title,
     location: e.location,
     ownerName: e.ownerName,
