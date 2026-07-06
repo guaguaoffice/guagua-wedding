@@ -277,7 +277,9 @@ export function OnsiteClient({
   }
 
   function handleAddEvent(formData: FormData) {
-    const timeVal = String(formData.get("time") || "");
+    const timeVal = String(formData.get("time") || "").trim();
+    const titleVal = String(formData.get("title") || "").trim();
+    if (!timeVal || !titleVal) return;
     setNewEventTime(timeVal);
     startTransition(async () => {
       await addWeddingDayEvent(weddingId, formData);
