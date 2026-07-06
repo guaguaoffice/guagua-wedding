@@ -190,9 +190,22 @@ export function GuestClient({
     const canvas = canvasRef.current;
     if (!canvas) return;
     const rect = canvas.getBoundingClientRect();
-    const fitZoom = Math.min(rect.width / WORLD_W, rect.height / WORLD_H);
+
+    // 計算所有桌子 + 舞台的 bounding box
+    const stageLeft = WORLD_W / 2 - 100, stageRight = WORLD_W / 2 + 100, stageTop = 20, stageBottom = 64;
+    const pts = Object.values(tablePositions).map((p) => ({
+      x: p.x * WORLD_W, y: p.y * WORLD_H,
+    }));
+    const allX = [stageLeft, stageRight, ...pts.map((p) => p.x - TABLE_D / 2), ...pts.map((p) => p.x + TABLE_D / 2)];
+    const allY = [stageTop, stageBottom, ...pts.map((p) => p.y - TABLE_D / 2), ...pts.map((p) => p.y + TABLE_D / 2)];
+    const pad = 40;
+    const bx1 = Math.min(...allX) - pad, by1 = Math.min(...allY) - pad;
+    const bx2 = Math.max(...allX) + pad, by2 = Math.max(...allY) + pad;
+    const bw = bx2 - bx1, bh = by2 - by1;
+
+    const fitZoom = Math.min(rect.width / bw, rect.height / bh, 2);
     setZoom(fitZoom);
-    setPan({ x: (rect.width - WORLD_W * fitZoom) / 2, y: (rect.height - WORLD_H * fitZoom) / 2 });
+    setPan({ x: (rect.width - bw * fitZoom) / 2 - bx1 * fitZoom, y: (rect.height - bh * fitZoom) / 2 - by1 * fitZoom });
   }, [tableView]);
 
   // 桌子拖拉
