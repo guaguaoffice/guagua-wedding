@@ -369,13 +369,15 @@ export function OnsiteClient({
           ) : (
             <>
               {/* 搜尋 */}
-              <input
-                type="text"
-                placeholder="搜尋賓客姓名…"
-                value={seatingSearch}
-                onChange={(e) => setSeatingSearch(e.target.value)}
-                className="input w-full mb-3"
-              />
+              <div className="pb-2.5 border-b border-border mb-3">
+                <input
+                  type="text"
+                  placeholder="搜尋賓客姓名"
+                  value={seatingSearch}
+                  onChange={(e) => setSeatingSearch(e.target.value)}
+                  className="w-full border border-border rounded-[9px] px-3 py-2 text-sm bg-bg"
+                />
+              </div>
 
               {/* 清單 / 平面圖 toggle */}
               <div className="inline-flex bg-card-hover rounded-[var(--radius-sm)] p-0.5 gap-0.5 mb-4">
