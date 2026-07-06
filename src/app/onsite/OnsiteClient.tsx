@@ -147,7 +147,7 @@ function CheckinTab({ guests }: { guests: OnsiteGuest[] }) {
               : null;
             return (
               <div key={g.id} className={i > 0 ? "border-t border-border" : ""}>
-                <div className="lrow flex-wrap gap-y-1.5 py-2.5">
+                <div className={`lrow flex-wrap gap-y-1.5 py-2.5 ${isExpanded ? "border-b-0" : ""}`}>
                   {g.side && (
                     <span className={`text-[11px] font-semibold px-2 py-0.5 rounded-full flex-none ${SIDE_TAG_CLASS[g.side]}`}>
                       {SIDE_LABEL[g.side]}
