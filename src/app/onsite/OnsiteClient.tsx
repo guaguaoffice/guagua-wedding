@@ -312,7 +312,10 @@ export function OnsiteClient({
   const unassigned = guests.filter((g) => !g.tableId && g.attending !== false);
 
   // 當天流程：自動 / 手動模式
-  const [runMode, setRunMode] = useState<"auto" | "manual">("manual");
+  const [runMode, setRunMode] = useState<"auto" | "manual">(() => {
+    if (typeof window === "undefined") return "manual";
+    return (localStorage.getItem("runMode") as "auto" | "manual") ?? "manual";
+  });
   const [newEventTime, setNewEventTime] = useState<string | null>(null);
   const [now, setNow] = useState(() => new Date());
   useEffect(() => {
@@ -664,7 +667,7 @@ export function OnsiteClient({
               <div className="flex items-center justify-end gap-2 mb-2">
                 <span className="text-xs text-text-soft">自動更新狀態</span>
                 <button
-                  onClick={() => setRunMode(runMode === "auto" ? "manual" : "auto")}
+                  onClick={() => { const next = runMode === "auto" ? "manual" : "auto"; setRunMode(next); localStorage.setItem("runMode", next); }}
                   style={{ position: "relative", width: 40, height: 22, borderRadius: 999, background: runMode === "auto" ? "var(--color-accent)" : "var(--color-border)", transition: "background 0.2s", flexShrink: 0 }}
                 >
                   <span style={{ position: "absolute", top: 2, left: runMode === "auto" ? 20 : 2, width: 18, height: 18, background: "white", borderRadius: "50%", boxShadow: "0 1px 3px rgba(0,0,0,0.2)", transition: "left 0.2s" }} />
