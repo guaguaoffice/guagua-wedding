@@ -265,7 +265,8 @@ export function OnsiteClient({
 
   const unassigned = guests.filter((g) => !g.tableId && g.attending !== false);
 
-  // 平面圖 state
+  // 座位表 state
+  const [seatingSearch, setSeatingSearch] = useState("");
   const [seatingView, setSeatingView] = useState<"list" | "plan">("list");
   const [focusedTableId, setFocusedTableId] = useState<string | null>(null);
   const [zoom, setZoom] = useState(1);
@@ -367,6 +368,15 @@ export function OnsiteClient({
             />
           ) : (
             <>
+              {/* 搜尋 */}
+              <input
+                type="text"
+                placeholder="搜尋賓客姓名…"
+                value={seatingSearch}
+                onChange={(e) => setSeatingSearch(e.target.value)}
+                className="input w-full mb-3"
+              />
+
               {/* 清單 / 平面圖 toggle */}
               <div className="inline-flex bg-card-hover rounded-[var(--radius-sm)] p-0.5 gap-0.5 mb-4">
                 {(["list", "plan"] as const).map((v) => (
@@ -382,7 +392,10 @@ export function OnsiteClient({
 
               {seatingView === "list" && (
                 <div className="flex flex-col gap-3">
-                  {tables.map((t) => {
+                  {tables.filter((t) => {
+                    if (!seatingSearch) return true;
+                    return guests.some((g) => g.tableId === t.id && g.name.includes(seatingSearch));
+                  }).map((t) => {
                     const seated = guests.filter((g) => g.tableId === t.id);
                     const seats = seated.reduce((s, g) => s + 1 + g.plusOneCount, 0);
                     return (
