@@ -166,7 +166,7 @@ export function GuestClient({
   const [listSearch, setListSearch] = useState("");
   const [editingTableId, setEditingTableId] = useState<string | null>(null);
   const [unassignedSearch, setUnassignedSearch] = useState("");
-  const [tableView, setTableView] = useState<"plan" | "list">("plan");
+  const [tableView, setTableView] = useState<"plan" | "list">("list");
   const [tablePositions, setTablePositions] = useState<Record<string, { x: number; y: number }>>(
     () => Object.fromEntries(tables.map((t) => [t.id, { x: t.x, y: t.y }]))
   );
