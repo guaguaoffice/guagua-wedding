@@ -341,12 +341,25 @@ export function OnsiteClient({
   const [zoom, setZoom] = useState(1);
   const [pan, setPan] = useState({ x: 0, y: 0 });
   const canvasRef = useRef<HTMLDivElement>(null);
+  const [canvasHeight, setCanvasHeight] = useState(360);
   const panDragRef = useRef<{ startClientX: number; startClientY: number; startPanX: number; startPanY: number } | null>(null);
   const pinchRef = useRef<{ dist: number; midX: number; midY: number; startZoom: number; startPanX: number; startPanY: number } | null>(null);
   const zoomRef = useRef(zoom);
   const panRef = useRef(pan);
   zoomRef.current = zoom;
   panRef.current = pan;
+  useEffect(() => {
+    function updateHeight() {
+      if (!canvasRef.current) return;
+      const top = canvasRef.current.getBoundingClientRect().top;
+      const bottomPad = window.innerWidth < 900 ? 110 : 24;
+      setCanvasHeight(Math.max(360, window.innerHeight - top - bottomPad));
+    }
+    updateHeight();
+    window.addEventListener("resize", updateHeight);
+    return () => window.removeEventListener("resize", updateHeight);
+  }, [seatingView]);
+
   const WORLD_W = 800; const WORLD_H = 600; const TABLE_D = 80;
 
   useEffect(() => {
@@ -521,7 +534,7 @@ export function OnsiteClient({
                   const s = worldGrid * zoom;
                   const ox = pan.x % s, oy = pan.y % s;
                   return {
-                    width: "100%", height: "clamp(360px, calc(100dvh - 280px), 900px)", cursor: "grab", touchAction: "none", backgroundColor: "#f8f9fa",
+                    width: "100%", height: canvasHeight, cursor: "grab", touchAction: "none", backgroundColor: "#f8f9fa",
                     backgroundImage: `repeating-linear-gradient(0deg,transparent,transparent ${s - 1}px,#c4d8ce ${s - 1}px,#c4d8ce ${s}px),repeating-linear-gradient(90deg,transparent,transparent ${s - 1}px,#c4d8ce ${s - 1}px,#c4d8ce ${s}px)`,
                     backgroundSize: `${s}px ${s}px`, backgroundPosition: `${ox}px ${oy}px`,
                   };
