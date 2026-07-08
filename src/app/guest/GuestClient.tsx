@@ -542,7 +542,7 @@ export function GuestClient({
                       const s = worldGrid * zoom;
                       const ox = pan.x % s;
                       const oy = pan.y % s;
-                      return { width: "100%", height: 360, cursor: "grab", touchAction: "none", backgroundColor: "#f8f9fa", backgroundImage: `repeating-linear-gradient(0deg,transparent,transparent ${s - 1}px,#c4d8ce ${s - 1}px,#c4d8ce ${s}px),repeating-linear-gradient(90deg,transparent,transparent ${s - 1}px,#c4d8ce ${s - 1}px,#c4d8ce ${s}px)`, backgroundSize: `${s}px ${s}px`, backgroundPosition: `${ox}px ${oy}px` };
+                      return { width: "100%", height: "clamp(360px, calc(100dvh - 280px), 900px)", cursor: "grab", touchAction: "none", backgroundColor: "#f8f9fa", backgroundImage: `repeating-linear-gradient(0deg,transparent,transparent ${s - 1}px,#c4d8ce ${s - 1}px,#c4d8ce ${s}px),repeating-linear-gradient(90deg,transparent,transparent ${s - 1}px,#c4d8ce ${s - 1}px,#c4d8ce ${s}px)`, backgroundSize: `${s}px ${s}px`, backgroundPosition: `${ox}px ${oy}px` };
                     })()}
                     onPointerDown={handleCanvasPointerDown}
                     onPointerMove={handleCanvasPointerMove}
