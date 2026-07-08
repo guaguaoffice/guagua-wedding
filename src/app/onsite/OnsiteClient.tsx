@@ -568,15 +568,30 @@ export function OnsiteClient({
                           </div>
                           {/* popover */}
                           {isFocused && (
-                            <div style={{ position: "absolute", left: "50%", bottom: TABLE_D / 2 + 8, transform: "translateX(-50%)", background: "white", border: "1px solid var(--color-border)", borderRadius: 10, padding: "10px 14px", minWidth: 140, maxWidth: 220, boxShadow: "0 4px 16px rgba(0,0,0,0.13)", zIndex: 50 }}>
-                              <div style={{ fontWeight: 700, fontSize: 13, marginBottom: 6 }}>{t.name}</div>
-                              <div style={{ display: "flex", flexWrap: "wrap", gap: 4 }}>
-                                {seated.length === 0 ? <span style={{ fontSize: 11, color: "var(--color-text-faint)" }}>尚無賓客</span> : seated.map((g) => (
-                                  <span key={g.id} style={{ fontSize: 11, padding: "2px 8px", borderRadius: 999, background: "var(--color-card-hover)", display: "flex", alignItems: "center", gap: 3 }}>
-                                    {tagLabel(g) && <span style={{ fontSize: 9, fontWeight: 700, padding: "1px 4px", borderRadius: 999 }} className={tagClass(g)}>{tagLabel(g)}</span>}
-                                    {g.name}
-                                    {g.checkedInAt && <span style={{ width: 6, height: 6, borderRadius: "50%", background: "var(--color-accent)", display: "inline-block" }} />}
+                            <div style={{ position: "absolute", left: "50%", bottom: TABLE_D / 2 + 8, transform: "translateX(-50%)", background: "white", border: "1px solid var(--color-border)", borderRadius: 10, padding: "10px 14px", minWidth: 160, maxWidth: 240, boxShadow: "0 4px 16px rgba(0,0,0,0.13)", zIndex: 50 }}>
+                              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 8 }}>
+                                <span style={{ fontWeight: 700, fontSize: 13 }}>{t.name}</span>
+                                {seated.length > 0 && (
+                                  <span style={{ fontSize: 10, fontWeight: 600, color: "var(--color-accent-hover)", background: "var(--color-accent-tint)", padding: "1px 7px", borderRadius: 999 }}>
+                                    {checkedCount}/{seated.length} 已報到
                                   </span>
+                                )}
+                              </div>
+                              <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
+                                {seated.length === 0 ? (
+                                  <span style={{ fontSize: 11, color: "var(--color-text-faint)" }}>尚無賓客</span>
+                                ) : seated.map((g) => (
+                                  <div key={g.id} style={{ display: "flex", alignItems: "center", gap: 6, padding: "4px 8px", borderRadius: 8, background: g.checkedInAt ? "var(--color-accent-tint)" : "var(--color-card-hover)" }}>
+                                    {tagLabel(g) && <span style={{ fontSize: 9, fontWeight: 700, padding: "1px 4px", borderRadius: 999, flexShrink: 0 }} className={tagClass(g)}>{tagLabel(g)}</span>}
+                                    <span style={{ fontSize: 11, flex: 1, color: g.checkedInAt ? "var(--color-accent-hover)" : "var(--color-text-soft)", fontWeight: g.checkedInAt ? 600 : 400 }}>{g.name}</span>
+                                    {g.checkedInAt ? (
+                                      <svg viewBox="0 0 16 16" style={{ width: 13, height: 13, flexShrink: 0, stroke: "var(--color-accent)", fill: "none", strokeWidth: 2 }}>
+                                        <path d="M2.5 8l4 4 7-7" strokeLinecap="round" strokeLinejoin="round" />
+                                      </svg>
+                                    ) : (
+                                      <span style={{ width: 13, height: 13, flexShrink: 0, borderRadius: "50%", border: "1.5px solid var(--color-border-2)", display: "inline-block" }} />
+                                    )}
+                                  </div>
                                 ))}
                               </div>
                             </div>
