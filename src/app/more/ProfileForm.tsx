@@ -10,7 +10,7 @@ const IDENTITY_OPTIONS: { value: Identity; label: string }[] = [
   { value: "GROOM", label: "新郎" },
   { value: "BRIDE", label: "新娘" },
   { value: "PARTNER", label: "新人" },
-  { value: "OTHER", label: "其他協助者" },
+  { value: "OTHER", label: "協作者" },
 ];
 
 export function ProfileForm({

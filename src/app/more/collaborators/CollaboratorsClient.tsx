@@ -15,7 +15,7 @@ const IDENTITY_LABEL: Record<string, string> = {
   GROOM: "新郎",
   BRIDE: "新娘",
   PARTNER: "新人",
-  OTHER: "其他協助者",
+  OTHER: "協作者",
 };
 
 export type Member = {

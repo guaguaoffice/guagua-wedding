@@ -51,7 +51,7 @@ const IDENTITY_LABEL: Record<string, string> = {
   GROOM: "新郎",
   BRIDE: "新娘",
   PARTNER: "新人",
-  OTHER: "其他協助者",
+  OTHER: "協作者",
 };
 
 const SIDE_TAG_CLASS: Record<string, string> = {
@@ -67,7 +67,7 @@ const IDENTITY_TAG_CLASS: Record<string, string> = {
 };
 
 function tagLabel(g: OnsiteGuest) {
-  if (g.kind === "member") return g.identity ? IDENTITY_LABEL[g.identity] : "其他協助者";
+  if (g.kind === "member") return g.identity ? IDENTITY_LABEL[g.identity] : "協作者";
   return g.side ? SIDE_LABEL[g.side] : null;
 }
 
