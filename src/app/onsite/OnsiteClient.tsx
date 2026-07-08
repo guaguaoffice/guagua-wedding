@@ -365,7 +365,8 @@ export function OnsiteClient({
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
-    const rect = canvas.getBoundingClientRect();
+    const canvasW = canvas.getBoundingClientRect().width;
+    const canvasH = canvasHeight;
     const stageLeft = WORLD_W / 2 - 100, stageRight = WORLD_W / 2 + 100, stageTop = 20, stageBottom = 64;
     const pts = tables.map((t) => ({ x: t.x * WORLD_W, y: t.y * WORLD_H }));
     const allX = [stageLeft, stageRight, ...pts.map((p) => p.x - TABLE_D / 2), ...pts.map((p) => p.x + TABLE_D / 2)];
@@ -373,10 +374,10 @@ export function OnsiteClient({
     const pad = 40;
     const bx1 = Math.min(...allX) - pad, by1 = Math.min(...allY) - pad;
     const bw = Math.max(...allX) + pad - bx1, bh = Math.max(...allY) + pad - by1;
-    const fitZoom = Math.min(rect.width / bw, rect.height / bh, 2);
+    const fitZoom = Math.min(canvasW / bw, canvasH / bh, 2);
     setZoom(fitZoom);
-    setPan({ x: (rect.width - bw * fitZoom) / 2 - bx1 * fitZoom, y: (rect.height - bh * fitZoom) / 2 - by1 * fitZoom });
-  }, [seatingView, tables]);
+    setPan({ x: (canvasW - bw * fitZoom) / 2 - bx1 * fitZoom, y: (canvasH - bh * fitZoom) / 2 - by1 * fitZoom });
+  }, [seatingView, tables, canvasHeight]);
 
   useEffect(() => {
     const canvas = canvasRef.current;

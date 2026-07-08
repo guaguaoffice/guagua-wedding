@@ -204,7 +204,8 @@ export function GuestClient({
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
-    const rect = canvas.getBoundingClientRect();
+    const canvasW = canvas.getBoundingClientRect().width;
+    const canvasH = canvasHeight;
 
     // 計算所有桌子 + 舞台的 bounding box
     const stageLeft = WORLD_W / 2 - 100, stageRight = WORLD_W / 2 + 100, stageTop = 20, stageBottom = 64;
@@ -218,10 +219,10 @@ export function GuestClient({
     const bx2 = Math.max(...allX) + pad, by2 = Math.max(...allY) + pad;
     const bw = bx2 - bx1, bh = by2 - by1;
 
-    const fitZoom = Math.min(rect.width / bw, rect.height / bh, 2);
+    const fitZoom = Math.min(canvasW / bw, canvasH / bh, 2);
     setZoom(fitZoom);
-    setPan({ x: (rect.width - bw * fitZoom) / 2 - bx1 * fitZoom, y: (rect.height - bh * fitZoom) / 2 - by1 * fitZoom });
-  }, [tableView]);
+    setPan({ x: (canvasW - bw * fitZoom) / 2 - bx1 * fitZoom, y: (canvasH - bh * fitZoom) / 2 - by1 * fitZoom });
+  }, [tableView, canvasHeight]);
 
   // 桌子拖拉
   const handleTablePointerDown = useCallback((e: React.PointerEvent, tableId: string) => {
