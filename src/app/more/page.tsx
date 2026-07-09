@@ -120,6 +120,7 @@ export default async function MorePage() {
             weddingName={current.wedding.name}
             isOwner={isOwner}
             otherMembers={otherMembers}
+            userEmail={session?.user?.email ?? ""}
           />
         </div>
       </div>

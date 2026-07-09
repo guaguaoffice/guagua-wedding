@@ -3,6 +3,7 @@
 import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
 import { deleteWedding, leaveWedding, transferOwnership } from "@/lib/actions/wedding";
+import { deleteAccount } from "@/lib/actions/account";
 import { ConfirmDialog } from "@/components/ConfirmDialog";
 
 export type OtherMember = {
@@ -16,11 +17,13 @@ export function AccountSection({
   weddingName,
   isOwner,
   otherMembers,
+  userEmail,
 }: {
   weddingId: string;
   weddingName: string;
   isOwner: boolean;
   otherMembers: OtherMember[];
+  userEmail: string;
 }) {
   const router = useRouter();
   const [pending, startTransition] = useTransition();
@@ -30,6 +33,8 @@ export function AccountSection({
   const [confirmLeave, setConfirmLeave] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState(false);
   const [deleteInput, setDeleteInput] = useState("");
+  const [confirmDeleteAccount, setConfirmDeleteAccount] = useState(false);
+  const [deleteAccountInput, setDeleteAccountInput] = useState("");
 
   function handleTransfer() {
     setConfirmTransfer(true);
@@ -67,6 +72,20 @@ export function AccountSection({
     startTransition(async () => {
       const result = await deleteWedding(weddingId);
       if (result) setMessage({ ok: result.ok, text: result.message });
+    });
+  }
+
+  function handleDeleteAccount() {
+    setDeleteAccountInput("");
+    setConfirmDeleteAccount(true);
+  }
+
+  function doDeleteAccount() {
+    if (deleteAccountInput !== userEmail) return;
+    setConfirmDeleteAccount(false);
+    startTransition(async () => {
+      const result = await deleteAccount();
+      if (result && !result.ok) setMessage({ ok: false, text: result.message });
     });
   }
 
@@ -180,6 +199,56 @@ export function AccountSection({
           >
             刪除「{weddingName}」
           </button>
+        </div>
+      )}
+
+      <div className="panel border-coral/40">
+        <div className="font-bold text-[15px] mb-1 text-coral">刪除帳號</div>
+        <p className="text-text-soft text-sm mb-3">
+          永久刪除你的帳號及所有個人資料，此操作無法復原。
+        </p>
+        <button
+          onClick={handleDeleteAccount}
+          disabled={pending}
+          className="btn btn-secondary text-coral"
+        >
+          刪除帳號
+        </button>
+      </div>
+
+      {confirmDeleteAccount && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center p-4"
+          style={{ background: "rgba(0,0,0,0.4)" }}
+          onClick={() => setConfirmDeleteAccount(false)}
+        >
+          <div
+            className="bg-card rounded-2xl shadow-2xl p-6 w-full max-w-xs"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="text-[17px] font-bold mb-1 text-coral">刪除帳號</div>
+            <p className="text-sm text-text-soft mb-4">
+              此操作無法復原，所有個人資料都會被永久刪除。<br />
+              請輸入你的 Email「<strong>{userEmail}</strong>」以確認：
+            </p>
+            <input
+              type="text"
+              value={deleteAccountInput}
+              onChange={(e) => setDeleteAccountInput(e.target.value)}
+              placeholder={userEmail}
+              className="w-full border border-border rounded-[9px] px-3 py-2 text-sm bg-bg mb-4"
+            />
+            <div className="flex gap-2">
+              <button onClick={() => setConfirmDeleteAccount(false)} className="flex-1 btn border border-border text-text-soft hover:bg-card-hover">取消</button>
+              <button
+                onClick={doDeleteAccount}
+                disabled={deleteAccountInput !== userEmail || pending}
+                className="flex-1 btn bg-coral text-white hover:opacity-90 disabled:opacity-40"
+              >
+                確認刪除
+              </button>
+            </div>
+          </div>
         </div>
       )}
 
